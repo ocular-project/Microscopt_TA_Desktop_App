@@ -16,7 +16,7 @@ export default function Input({ value, onchange, setError }){
             }
         } catch (error) {
             console.error('Failed to select folder:', error);
-            setError("Failed to select path")
+            setError("Failed to open pc file browser")
         }
     };
 

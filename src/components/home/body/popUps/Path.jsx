@@ -20,14 +20,14 @@ export default function Path({ setIsPop, setLoader, setMessage }){
         setError(null)
         setLoader(true)
         try {
-            const result = await window.electronAPI.setConfig('folderPath', path);
+            const result = await window.electronAPI.savePath(path);
 
             if (result) {
                 setPath("")
                 setIsPop(false)
             }
             else {
-                setError("Failed to save new folder path")
+                setError("Failed to save folder path")
             }
         } catch (error) {
             console.error('Failed to save folder path:', error);
@@ -42,7 +42,7 @@ export default function Path({ setIsPop, setLoader, setMessage }){
             <div className={styles.header}>
                 <div className={styles.headerDiv1}>
                     <h1>Selecting a folder</h1>
-                    <p>Please choose the location where you wan to save your information.</p>
+                    <p>Please choose the location where you want to save your folders and images.</p>
                 </div>
                 <div className={styles.mainSpan} onClick={handleCancel}>
                     <FontAwesomeIcon icon={faXmark} />

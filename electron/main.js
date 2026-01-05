@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
+import { savePath, loadPath } from './storage.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,4 +28,25 @@ app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+ipcMain.handle('dialog:openDirectory', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  })
+  if(canceled) {
+    return null;
+  } else {
+    console.log(filePaths[0])
+    return filePaths[0]
+  }
+})
+
+ipcMain.handle('electron:savePath', (event, folderPath) => {
+  savePath(folderPath);
+  return true;
+});
+
+ipcMain.handle('electron:getPath', () => {
+  return loadPath();
 });

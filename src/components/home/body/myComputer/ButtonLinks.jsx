@@ -11,10 +11,15 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
     const fileInputRef = useRef(null);
     const { folderId } = useParams();
 
-    function handleAppClick () {
-        const path = localStorage.getItem("path")
-        if (path && path !== "none"){
+    async function handleAppClick () {
+        const path = await window.electronAPI.getPath();
+        // const path = localStorage.getItem("path")
+        if (path){
             setScreen(prev => ({...prev, folderCreate: true}))
+            setIsPop(true)
+        }
+        else {
+             setScreen(prev => ({...prev, pathCreate: true}))
             setIsPop(true)
         }
     }
