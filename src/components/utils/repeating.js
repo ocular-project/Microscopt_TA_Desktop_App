@@ -83,3 +83,7 @@ export function handleBack(navigate) {
        navigate("/")
    }
 }
+
+export async function getPath() {
+     return await window.electronAPI.getPath();
+}

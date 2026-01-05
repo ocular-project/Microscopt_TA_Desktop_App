@@ -4,7 +4,7 @@ import {useRef, useState} from "react";
 import dbApi from "../../../utils/files/dbApi";
 import axioss from "../../../utils/files/axios";
 import {useParams} from "react-router-dom";
-import {handleMessage} from "../../../utils/repeating";
+import {getPath, handleMessage} from "../../../utils/repeating";
 
 export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, setCheckedIds, checkedIds }){
 
@@ -12,7 +12,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
     const { folderId } = useParams();
 
     async function handleAppClick () {
-        const path = await window.electronAPI.getPath();
+        const path = await getPath();
         // const path = localStorage.getItem("path")
         if (path){
             setScreen(prev => ({...prev, folderCreate: true}))

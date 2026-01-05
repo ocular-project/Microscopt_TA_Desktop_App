@@ -8,7 +8,8 @@ import {useEffect, useState} from "react";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {useParams} from "react-router-dom";
 import axioss from "../../../utils/files/axios";
-import {handleMessage} from "../../../utils/repeating";
+import {getPath, handleMessage} from "../../../utils/repeating";
+import {config} from "../../../utils/files/config";
 
 export default function CreateFolder({ setIsPop, setLoader, folder, setFolder, setFolders, setMessage, cat }) {
 
@@ -35,14 +36,14 @@ export default function CreateFolder({ setIsPop, setLoader, folder, setFolder, s
                 let response
                 if (cat === "computer") {
 
-                    const path = localStorage.getItem("path")
+                    const path = await getPath();
                     if (path) {
-                         const data = {
-                             name: folder.name,
-                             parentId: folder.parentId,
-                             folderPath: path
-                         }
-                         response = await axioss.post('folders', data)
+                         // const data = {
+                         //     name: folder.name,
+                         //     parentId: folder.parentId,
+                         //     folderPath: path
+                         // }
+                         // response = await axioss.post('folders', folder)
                     }
 
                 }else {
