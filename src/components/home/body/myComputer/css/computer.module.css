@@ -1,0 +1,26 @@
+.main {
+    border-radius: 5px;
+    border: 1px solid #D8DDE7;
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.inputDiv {
+    position: relative;
+    background-color: #D8DDE7;
+    font-size: 12px;
+    color: #677080;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.input {
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 400;
+    flex: 1;
+}

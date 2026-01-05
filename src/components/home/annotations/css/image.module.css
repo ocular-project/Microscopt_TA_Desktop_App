@@ -1,0 +1,511 @@
+.main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 1;
+}
+
+.main2 {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: grid;
+    grid-template-columns: 300px 1fr; /* Fixed sidebar width for consistency */
+    gap: 10px;
+    padding: 10px;
+    min-height: 100vh; /* Ensure full height */
+}
+
+.main3 {
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 99;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main4 {
+    max-height: 84vh;
+    width: 60vw;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: white;
+    overflow-y: auto;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.image {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.2);
+    padding: 10px;
+    overflow: hidden; /* Changed from overflow-y: auto to prevent scrolling */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.imageSection {
+    position: relative;
+    display: inline-block; /* shrink-wrap to image size */
+}
+
+.imageSection img {
+    display: block;
+    border-radius: 10px;
+    /* Remove width: 100% and height: auto to allow manual sizing */
+}
+
+.drawingCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    pointer-events: auto;
+    cursor: crosshair; /* Better cursor for annotation */
+    border-radius: 10px; /* Match image border radius */
+}
+
+
+.info {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .main2 {
+        grid-template-columns: 1fr; /* Stack on mobile */
+        grid-template-rows: auto 1fr;
+    }
+
+    .info {
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+}
+
+.imageSection img[style*="display: none"] + .imageLoadingPlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+}
+
+.imageLoadingPlaceholder {
+    display: none;
+}
+
+.drawingCanvas {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.loader {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    right: 0;
+    height: 4px;
+    border-radius: 10px;
+    /*margin: 10px 50px 0 50px;*/
+    /*background-color: #F69220;*/
+    width: 98%;
+    z-index: 2222;
+     --c:no-repeat linear-gradient(#F69220 0 0);
+    background: var(--c),var(--c), #e5ebf1;
+    background-size: 60% 100%;
+    animation: l16 2s infinite;
+    visibility: hidden;
+}
+
+.loader.active{
+    visibility: visible;
+}
+
+@keyframes l16 {
+  0%   {background-position:-150% 0,-150% 0}
+  66%  {background-position: 250% 0,-150% 0}
+  100% {background-position: 250% 0, 250% 0}
+}
+
+.imgInfo {
+    background-color: white;
+    border-radius: 10px;
+    border: 1px solid #dad2d2;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.imgInfo h1 {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.imgInfo p {
+    font-weight: 400;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.imgInfo .even {
+     font-weight: 500;
+}
+
+.toolDiv {
+    display: grid;
+    grid-template-columns: 50% 1fr;
+    gap: 5px;
+}
+
+.tool {
+    border: 1px solid #F69220;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    color: #F69220;
+}
+
+.tool p {
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.tool:hover, .tool.active, .tool.active:hover {
+    color: white;
+    background-color: #F69220;
+}
+
+.tool:hover, .buttons:hover, .back:hover {
+    color: #F69220;
+    background-color: #f5e7d8;
+    border-color: #f5e7d8;
+}
+
+.buttons {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+     border: 1px solid #F69220;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    gap: 10px;
+    color: #F69220;
+}
+
+.delete {
+    margin-top: 8px;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    gap: 10px;
+    /*min-width: 60px;*/
+    font-size: 10px;
+    color: black;
+    text-align: center;
+}
+
+.delete:hover {
+    color: white;
+    background-color: red;
+    border-color: red;
+}
+
+.buttons.active {
+    color: white;
+    background-color: #F69220;
+}
+
+.buttons.disabled {
+    color: white;
+    background-color: #F69220;
+    opacity: 0.4;
+    cursor: none;
+}
+
+.buttons.disabledOutline {
+    color: rgba(246, 146, 32, 0.4);;
+    border-color: rgba(246, 146, 32, 0.4);
+    cursor: none;
+}
+
+.buttons span {
+    font-size: 12px;
+}
+
+.annoDiv {
+    background-color: #F7F9FB;
+}
+
+.annoDiv.active {
+    background-color: #FEF3E7;
+}
+
+.annoBtns {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    padding: 0 10px 10px 10px;
+}
+
+.annotatorDiv {
+    /*background-color: #F7F9FB;*/
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.annotatorDiv2 {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px;
+    margin: 10px -5px 10px -10px;
+    padding: 10px;
+}
+
+.annotatorDiv2.active {
+    background-color: #FEF3E7;
+}
+
+.feed {
+    background-color: #F7F9FB;
+    border-radius: 5px;
+    padding: 10px;
+    /*margin: 20px 0;*/
+
+}
+
+.divider {
+    border-bottom: 1px solid #f5e7d8;
+    margin: 20px 0;
+}
+
+.annotator {
+    display: flex;
+    flex-direction: column;
+}
+
+.labels {
+    display: flex;
+    justify-content: left;
+    gap: 5px;
+}
+
+.labels p:nth-child(2) {
+    width: auto;
+    word-break: break-word;
+}
+
+.annotator h2 {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.annotator p {
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.load {
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color: #F69220;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.load2 {
+    border-radius: 5px;
+    padding: 5px 5px;
+    background-color: #F69220;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+.load3 {
+    border-radius: 5px;
+    padding: 5px 5px;
+    border: 1px solid #F69220;
+    background-color: white;
+    color: #F69220;
+    font-size: 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+.closeDiv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.closeDiv h1 {
+    margin-bottom: 0;
+}
+
+.close {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.close:hover {
+    color: #F69220;
+}
+
+.closeH1 {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.select {
+    font-size: 12px;
+    font-weight: 400;
+    margin-top: -10px;
+}
+
+.tabDiv {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.tabDivInfo {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #677080;
+    font-weight: 400;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5e7d8;
+}
+
+.tabDivInfo.active {
+    background-color: #FEF3E7;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: black;
+    border-bottom: none;
+}
+
+.emailDiv {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #D8DDE7;
+    max-height: 37vh;
+    overflow-y: auto;
+}
+
+.selector {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+
+.selectorDiv {
+    margin-right: 10px;
+    border: 2px solid #cccccc;
+    border-radius: 5px;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    display: flex;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.selectorDiv.active {
+    border: none;
+    background-color: #F69220;
+}
+
+.selector span {
+    font-size: 13px;
+}
+
+.buttonsFlex {
+    display: grid;
+    grid-template-columns: 50% 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.tabLoader {
+    position: relative;
+}
+
+.box {
+    position: fixed;
+    z-index: 20;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgb(0,0,0,0.2);
+    width: 300px;
+}
+
+.backDiv {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.backDiv p {
+    font-size: 12px;
+    color: #677080;
+    font-weight: 400;
+}
+
+.back {
+    border-radius: 5px;
+    background-color: white;
+    padding: 5px 10px;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    border: 1px solid #dad2d2;
+}

@@ -1,0 +1,150 @@
+.main {
+    cursor: pointer;
+    padding: 10px 24px;
+    color: #F69220;
+    font-weight: 400;
+    font-size: 11px;
+    background-color: white;
+    border: 1px solid #F69220;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.remove {
+    cursor: pointer;
+    padding: 5px 6px;
+    color: #F69220;
+    font-weight: 400;
+    font-size: 11px;
+    background-color: white;
+    border: 1px solid #F69220;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.save {
+    cursor: pointer;
+    padding: 10px 24px 10px 16px;
+    color: white;
+    font-weight: 400;
+    font-size: 11px;
+    background-color: #F69220;
+    border-radius: 5px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 8px;
+}
+
+.load {
+    position: relative;
+}
+
+.load1 {
+    cursor: pointer;
+    padding: 10px 16px 10px 24px;
+    background-color: white;
+    border-radius: 5px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 8px;
+}
+
+.load1 span {
+    color: #F69220;
+    font-weight: 400;
+    font-size: 11px;
+}
+
+.load1 {
+    color: #F69220;
+    font-size: 15px;
+}
+
+.load2 {
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    padding: 8px 0;
+    z-index: 100;
+    right: 0px;
+    width: 100%;
+    margin-top: 5px;
+    display: none;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.load2.active {
+    display: inline;
+    transform: translateY(0);
+}
+
+.loadIcon {
+     transition: transform .3s ease;
+}
+
+.loadIcon.rotate {
+    transform: rotate(180deg);
+}
+
+.otherAnno {
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+
+}
+
+.otherAnno.active {
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+.anno {
+    cursor: pointer;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.anno:hover {
+    background-color: #FEF3E7;
+}
+
+.saveIcon {
+    color: white;
+    font-size: 15px;
+}
+
+.main.area {
+     width: 100%;
+}
+
+.main.link {
+    color: #F69220;
+    border: none;
+}
+
+.main.active {
+    color: white;
+    background-color: #F69220;
+}
+
+.main.cancel {
+    color: black;
+    border-color: #D8DDE7;
+    background-color: white;
+}
+
+.main.deactive {
+    color: #677080;
+    border-color: #D8DDE7;
+    background-color: #D8DDE7;
+    cursor: not-allowed;
+}
+

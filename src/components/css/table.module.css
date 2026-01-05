@@ -1,0 +1,202 @@
+.main {
+    margin: 10px;
+    overflow: hidden;
+}
+
+.main2 {
+   max-height: calc(100vh - 250px);
+   overflow-y: auto;
+}
+
+table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+    margin-bottom: 100px;
+}
+
+tbody tr {
+    cursor: pointer;
+}
+
+thead tr th {
+    color: black;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 20px;
+}
+
+thead {
+    background-color: #eef0f3;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+tbody tr td {
+    color: #677080;
+    font-weight: 400;
+    font-size: 12px;
+    padding: 10px 20px;
+}
+
+tbody tr:hover, .tr {
+    background-color: #F7F9FB;
+}
+
+.tdIcon, .thIcon {
+   text-align: center;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.action {
+    position: relative;
+}
+
+td:nth-child(1) {
+    width: 25%;
+}
+
+td:nth-child(1) span {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.iconDiv {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+}
+
+.popAction ul {
+    text-align: left;
+}
+
+.popAction ul li {
+    margin: 0;
+}
+
+.popAction ul div {
+    color: #444746;
+    font-size: 12px;
+    padding: 10px 10px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.popAction ul div:hover {
+    background-color: #FEF3E7;
+}
+
+.iconDiv:hover, .iconDiv.active {
+    background-color: #FEF3E7;
+    border: 1px solid #F09E54;
+}
+
+.popAction {
+    position: absolute;
+    right: 35px;
+    width: 200px;
+    padding: 10px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    background-color: white;
+    display: none;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.popAction.top {
+    top: 0;
+    transform: translateY(0);
+}
+
+.popAction.bottom {
+    bottom: 0;
+    transform: translateY(0);
+}
+
+.popAction.active {
+    display: inline-block;
+}
+
+.type {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    /*width: 50%;*/
+    /*background-color: #F69220;*/
+    /*white-space: nowrap;*/
+    /*overflow: hidden;*/
+    /*text-overflow: ellipsis;*/
+}
+
+.type img {
+    width: 20px;
+    height: 20px;
+}
+
+.action {
+    text-align: center;
+}
+
+.play {
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-align: center;
+}
+
+.play:hover {
+    background-color: #FEF3E7;
+}
+
+.plays {
+    color: #F69220;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.stop {
+    color: #dc3545;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.check {
+    font-size: 16px;
+    cursor: pointer;
+    color: #dad2d2;
+}
+
+.checking {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 10px;
+    margin: 10px 0 10px 30px;
+}
+
+.checking span {
+    font-size: 12px;
+    color: #677080;
+}
+
+.checked {
+    font-size: 16px;
+    cursor: pointer;
+    color: #F69220;
+}

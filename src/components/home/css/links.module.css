@@ -1,0 +1,115 @@
+.section {
+    position: relative;
+    padding: 20px 10px;
+}
+
+.sectionDiv {
+    display: flex;
+    height: 50px;
+    gap: 10px;
+}
+
+.sectionDiv1 {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.sectionDiv2 {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    height: 100%;
+    gap: 10px;
+}
+
+.sectionDiv1 ul li {
+    display: inline-block;
+}
+.sectionDiv1 ul li .linkDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sectionDiv1 ul li .linkDiv div {
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: black;
+    font-weight: 400;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.sectionDiv1 ul li .linkDiv span {
+    color: black;
+    margin: 0 5px;
+}
+
+/*.sectionDiv1 ul li .linkDiv div:hover {*/
+/*    background-color: #FEF3E7;*/
+/*    color: #F69220;*/
+/*}*/
+
+.sectionDiv1 ul li:not(:last-child) .linkDiv div:hover {
+    background-color: #FEF3E7;
+    color: #F69220;
+}
+
+.sectionDiv1 ul li:last-child .linkDiv div:hover {
+    cursor: auto;
+}
+
+.dropDown {
+    position: relative;
+}
+
+.dropText {
+    cursor: pointer;
+    padding: 10px 16px 10px 16px;
+    color: #F69220;
+    font-weight: 400;
+    font-size: 11px;
+    background-color: white;
+    border: 1px solid #F69220;
+    border-radius: 5px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100px;
+}
+
+.dropUl {
+    position: absolute;
+    background-color: white;
+    border-radius: 5px;
+    right: 1px;
+    box-shadow: 1px 2px 6px rgba(0,0,0,0.2);
+    padding: 8px 0;
+    width: 150px;
+    display: none;
+}
+
+.dropUl.active {
+    display: block;
+}
+
+.icon {
+
+}
+
+.icon.rotate {
+    transform: rotate(180deg);
+}
+
+.dropUl li {
+    padding: 10px;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+}
+.dropUl li:hover {
+    background-color: #FEF3E7;
+}

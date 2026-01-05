@@ -1,0 +1,18 @@
+import axios from "axios";
+import {getBaseUrl} from "./config";
+
+const axiosInstance = axios.create({
+    baseURL: `${getBaseUrl()}/api/`,
+    withCredentials:true
+})
+
+axiosInstance.interceptors.request.use(
+    (config) => {
+        return config
+    },
+    (error) => {
+        return Promise.reject(error)
+    }
+)
+
+export default axiosInstance

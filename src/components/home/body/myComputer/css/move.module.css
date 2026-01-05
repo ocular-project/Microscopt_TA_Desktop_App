@@ -1,0 +1,147 @@
+.empty {
+    font-size: 12px;
+    font-weight: 300;
+    color: #677080;
+}
+
+.current {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+}
+
+.currentText {
+    font-size: 12px;
+    font-weight: 300;
+    color: #677080;
+}
+
+.img {
+    height: 15px;
+    width: 15px;
+}
+
+.location {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #FEF3E7;
+}
+
+.location p {
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.linkBack {
+   display: flex;
+   justify-content: left;
+   align-items: center;
+   gap: 5px;
+    margin-top: 20px;
+}
+
+.linkBackDiv {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+}
+
+.linkBackDiv:hover {
+    background-color: #D8DDE7;
+}
+
+.linkBack p {
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.list {
+    height: 30vh;
+    overflow-y: auto;
+}
+
+.listDiv {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+    padding: 10px 8px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.listDivX {
+    padding: 10px 8px;
+    border-radius: 5px;
+    background-color: #e9eaec;
+    margin-bottom: 5px;
+    opacity: 0.4;
+}
+
+.listDiv:hover {
+    background-color: #e9eaec;
+}
+
+.listDivX .listDiv1 {
+    width: 100%;
+}
+
+.listDivX .listDiv1 p {
+    font-size: 12px;
+    font-weight: 400;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.listDiv1 {
+    display: flex;
+   justify-content: left;
+    gap: 10px;
+   align-items: center;
+    width: 65%;
+}
+
+.listDiv1 p {
+    font-size: 12px;
+    font-weight: 400;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.listDiv2 {
+   display: flex;
+   justify-content: right;
+   gap: 10px;
+   align-items: center;
+}
+
+.listDiv2 button {
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.links {
+    margin-top: 20px;
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.links ul li {
+    display: inline-block;
+    margin-right: 10px;
+}

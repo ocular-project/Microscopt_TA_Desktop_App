@@ -1,0 +1,250 @@
+.popup {
+    width: 100%;
+    height: calc(100vh - 20px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    background-color: rgba(255, 255, 200, 0.1);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: right;
+    opacity: 0;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    pointer-events: none;
+    padding: 10px;
+}
+
+.popup.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.popDiv {
+    position: relative;
+    background-color: white;
+    overflow: hidden;
+    height: fit-content;
+    width: 30vw;
+    margin-top: 40px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    padding: 20px 10px 20px 20px;
+}
+
+.main {
+    position: relative;
+    max-height: 85vh;
+    overflow-y: scroll;
+}
+
+.mainSpan {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    padding: 5px;
+    border: 1px solid #D8DDE7;
+    cursor: pointer;
+    text-align: center;
+    background-color: white;
+}
+
+.mainSpan:hover {
+    background-color: #FEF3E7;
+    color: #F69220;
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    /*justify-content: space-between;*/
+    /*align-items: center;*/
+    gap: 10px;
+}
+
+.headerDiv1 {
+    flex: 1;
+}
+
+.headerDiv1X {
+    display: flex;
+    justify-content: left;
+    gap: 15px;
+}
+
+.header h1 {
+    font-size: 15px;
+    font-weight: 500;
+    color: black;
+    word-break: break-word;
+}
+
+.header p {
+    font-size: 11px;
+    font-weight: 300;
+    color: #677080;
+    margin-top: 5px;
+}
+
+hr {
+    height: 1px;
+    background-color: #EBEFF5;
+    margin: 20px 0 20px 0;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.team {
+    margin: 20px 0;
+}
+
+.teamDiv {
+    margin: 5px 0;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.team p {
+    color: black;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.userDiv {
+    padding: 10px 10px 10px 0;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+}
+
+.userDivX {
+    flex: 1;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 15px;
+}
+
+.userDivX2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.userDiv1 {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #FEF3E7;
+    color: #F69220;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.userDiv2 div:nth-child(1) {
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.userDiv2 div:nth-child(2) {
+    font-weight: 400;
+    font-size: 11px;
+    color: #444746;
+}
+
+.role, .role2 {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.role:hover, .role.active {
+    background-color: #FEF3E7;
+}
+
+.roleDiv {
+    position: relative;
+}
+
+.roleList {
+    position: absolute;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    pointer-events: auto;
+    background-color: white;
+    z-index: 10;
+    right: 10px;
+    width: 150px;
+    display: none;
+    transform: translateY(-50%);
+}
+
+.roleList.top {
+    top: 0;
+    transform: translateY(0);
+}
+
+.roleList.bottom {
+    bottom: 0;
+    transform: translateY(0);
+}
+
+.roleList.active {
+    display: inline;
+}
+
+.roleList li {
+    padding: 8px 15px;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.roleList li:hover {
+    background-color: #FEF3E7;
+}
+
+.tabDiv {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.tabDivInfo {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #677080;
+    font-weight: 400;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5e7d8;
+}
+
+.tabDivInfo.active {
+    background-color: #FEF3E7;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: black;
+    border-bottom: none;
+}
+
+
+.headerDiv11 img {
+    height: 20px;
+    width: 20px;
+}
+

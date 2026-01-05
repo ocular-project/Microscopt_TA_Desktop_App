@@ -1,0 +1,108 @@
+.main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid #D8DDE7;
+    height: 50px;
+}
+
+.mainLeftDiv {
+    border-radius: 5px;
+    border: 1px solid #D8DDE7;
+    height: 100%;
+    width: 400px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    padding: 0 5px;
+}
+
+.leftSpan {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #677080;
+}
+
+.leftSpan:hover {
+    background-color: #FEF3E7;
+    color: #F69220;
+}
+
+.mainRight {
+    position: relative;
+}
+
+.mainRight span {
+    cursor: pointer;
+    height: 35px;
+    width: 35px;
+    border-radius: 50%;
+    background-color: #FEF3E7;
+    font-size: 14px;
+    font-weight: 500;
+    color: #F69220;
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.mainRight span:hover,  .mainRight span.active{
+    border: 1px solid #F69220;
+}
+
+.mainList {
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 10px 0;
+    z-index: 10;
+    right: 5px;
+    display: none;
+    min-width: 12vw;
+}
+
+.mainList.active {
+    display: block;
+}
+
+.mainList p {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.mainList .divHeader {
+    border-bottom: 1px solid #42ba96;
+    text-align: center;
+    padding: 10px 40px 20px 40px;
+}
+
+.divHeader p:nth-child(1) {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.mainList ul {
+    margin-top: 8px;
+}
+
+.mainList ul div {
+    cursor: pointer;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.mainList ul div:hover {
+    background-color: #F7F9FB;
+}
+

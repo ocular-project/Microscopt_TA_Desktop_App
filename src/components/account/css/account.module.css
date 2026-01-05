@@ -1,0 +1,125 @@
+.main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+.section {
+    width: 40vw;
+    border-radius: 5px;
+    background-color: white;
+    box-shadow: 1px 2px 6px rgba(0,0,0,0.2);
+    padding: 20px;
+    position: relative;
+}
+
+.sectionText {
+    text-align: center;
+}
+
+.sectionText h1 {
+    font-weight: 700;
+    font-size: 16px;
+    color: black;
+}
+
+.sectionText p {
+    font-weight: 400;
+    font-size: 12px;
+    color: #677080;
+    margin-top: 5px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.check {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 10px;
+}
+
+.checkSpan {
+    border-radius: 4px;
+    border: 1px solid #677080;
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
+    color: white;
+    text-align: center;
+}
+
+.checkSpan.active {
+   background-color: #F69220;
+   border: 1px solid #F69220;
+}
+
+.checkSpanIcon {
+    font-size: 14px;
+}
+
+.check p {
+    color: black;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.check p span {
+    color: #F69220;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.lower {
+    /*margin: 10px 0;*/
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lower div {
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.lower div:nth-child(1) {
+    margin: 20px 0;
+    color: #F69220;
+}
+
+.lower div:nth-child(2) {
+    color: #F69220;
+    margin: 20px 0;
+}
+
+.inputs {
+    margin-top: 30px;
+}
+
+.divider {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.msg {
+    border-radius: 5px;
+    background-color: #FEF3E7;
+    padding: 10px;
+    margin-top: 20px;
+    color: #F69220;
+    font-size: 12px;
+    font-weight: 400;
+}

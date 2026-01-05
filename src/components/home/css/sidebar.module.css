@@ -1,0 +1,91 @@
+.container {
+    padding: 20px 20px 20px 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+}
+
+.header .textDiv {
+    /*margin-left: -80px;*/
+}
+
+.header h1 {
+    font-size: 14px;
+    font-weight: 700;
+    color: black;
+}
+
+.header p {
+    font-size: 10px;
+    font-weight: 400;
+    color: #677080;
+}
+
+.imgDiv {
+    height: 40px;
+    width: 45px;
+}
+
+.img {
+    height: 100%;
+    width: 100%;
+}
+
+.list {
+    margin-top: 40px;
+}
+
+.list li {
+    margin-bottom: 10px;
+    margin-left: 5px;
+}
+
+.listLink {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: #677080;
+    padding: 10px 10px 10px 10px;
+}
+
+.linkDiv {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+}
+
+.linkDiv span {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.linkImg {
+    height: 25px;
+    width: 25px;
+    background-color: #F69220;
+}
+
+.listLink:hover, .listLink.active {
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    box-shadow: 1px 2px 6px rgba(0,0,0,0.2);
+}
+
+
+.linkGap {
+    margin: 30px 0;
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    background-color: #D8DDE7;
+}

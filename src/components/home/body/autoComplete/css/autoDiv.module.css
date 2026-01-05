@@ -1,0 +1,144 @@
+.main {
+    margin: 10px 0;
+    position: relative;
+    /*width: 100%;*/
+    /*padding: 0 5px;*/
+}
+
+.input {
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #D8DDE7;
+    /*width: 100%;*/
+    min-height: 44px;
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.list {
+    position: absolute;
+    background-color: #F7F9FB;
+    border-radius: 5px;
+    box-shadow: 1px 2px 6px rgba(0,0,0,0.2);
+    z-index: 2;
+    max-height: 40vh;
+    overflow-y: auto;
+    width: 100%;
+    /*display: none;*/
+}
+
+.list.active {
+    /*display: block;*/
+}
+
+.list ul {
+    padding: 8px 0;
+}
+
+.inputSpan2 {
+    /*background: #F69220;*/
+    /*width: 100%;*/
+}
+
+.list li {
+    /*margin-left: 0;*/
+    /*padding: 10px 10px 10px 10px;*/
+    cursor: pointer;
+    /*border-radius: 5px;*/
+    /*font-weight: 400;*/
+    /*font-size: 13px;*/
+}
+
+.list li:hover {
+    background-color: #FEF3E7;
+}
+
+.main p {
+    color: black;
+    font-weight: 400;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.inputSpan1 {
+    margin-right: 5px;
+}
+
+.inputSpan1 ul {
+    width: fit-content;
+}
+
+.inputSpan1 ul li {
+    display: inline-block;
+    margin-bottom: 5px;
+    margin-right: 5px;
+}
+
+.inputSpanDiv {
+    border-radius: 30px;
+    border: 1px solid #D8DDE7;
+    background-color: #F7F9FB;
+    font-size: 12px;
+    font-weight: 400;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    align-items: center;
+}
+
+/*.inputSpan2 {*/
+
+/*}*/
+
+.inputSpan2 input {
+    /*background-color: #F69220;*/
+    width: 100%;
+}
+
+.inputSpanDivIcon {
+    /*margin-left: 3px;*/
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    /*padding: 5px;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inputSpanDivIcon:hover {
+    background-color: #FEF3E7;
+}
+
+.userDiv {
+    padding: 10px 8px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 15px;
+}
+
+.userDiv1 {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #FEF3E7;
+    color: #F69220;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.userDiv2 div:nth-child(1) {
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.userDiv2 div:nth-child(2) {
+    font-weight: 400;
+    font-size: 11px;
+    color: #444746;
+}
