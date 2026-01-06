@@ -26,60 +26,78 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
 
     async function handleFileChange() {
        try {
-           const result = await dbApi.dialog.openFile({
-                properties: ['openFile', 'multiSelections'],
-                filters: [
-                  { name: 'Images', extensions: ['jpg', 'png', 'gif', 'jpeg', 'bmp', 'webp'] }
-                ]
-           })
+           const result = await window.electronAPI.selectImages(folderId || "")
 
-           if (!result.canceled && result.filePaths.length > 0) {
-                const filePath = result.filePaths[0]
-                const stats = await dbApi.fs.stat(filePath);
+           setLoader(true)
 
-                // Calculate file size in MB with 2 decimal places
-                const fileSizeInBytes = stats.size;
-                const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
-                const size = `${fileSizeInMB} MB`
-
-
-                const path = localStorage.getItem("path")
-                if (path) {
-                    const data = {
-                        filePath,
-                        parentId: "",
-                        folderPath: path,
-                        size
-                    }
-                    setLoader(true)
-                    try {
-                        const response = await axioss.post('file', data)
-                        setFolders(prev => [response.data, ...prev])
-                        setMessage([{show: true, message: "Folder uploaded successfully", status: "success"}])
-                    }catch (err) {
-                        setMessage([{
-                            show: true,
-                            message: `Error loading an image file ${err}`,
-                            status: "error"
-                        }]);
-                    }finally {
-                        setLoader(false)
-                    }
-                }else {
-                    setMessage([{
-                        show: true,
-                        message: "Primary folder not configured",
-                        status: "error"
-                    }]);
-                }
+           if (result.success) {
+               if(!!result.data.length) {
+                   console.log(result.data)
+                 setFolders(prev => [...result.data, ...prev])
+                 setMessage([{show: true, message: `${result.data.length} images uploaded successfully`, status: "success"}])
+               }
+               else {
+                   setMessage([{show: true, message: "No image was uploaded", status: "error"}])
+               }
            }
+           else {
+               setMessage([{
+                    show: true,
+                    message: result.error,
+                    status: "error"
+                }]);
+           }
+
+           // if (!result.canceled && result.filePaths.length > 0) {
+           //      const filePath = result.filePaths[0]
+           //      const stats = await dbApi.fs.stat(filePath);
+           //
+           //      // Calculate file size in MB with 2 decimal places
+           //      const fileSizeInBytes = stats.size;
+           //      const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
+           //      const size = `${fileSizeInMB} MB`
+           //
+           //
+           //      const path = localStorage.getItem("path")
+           //      if (path) {
+           //          const data = {
+           //              filePath,
+           //              parentId: "",
+           //              folderPath: path,
+           //              size
+           //          }
+           //          setLoader(true)
+           //          try {
+           //              const response = await axioss.post('file', data)
+           //              setFolders(prev => [response.data, ...prev])
+           //              setMessage([{show: true, message: "Folder uploaded successfully", status: "success"}])
+           //          }catch (err) {
+           //              setMessage([{
+           //                  show: true,
+           //                  message: `Error loading an image file ${err}`,
+           //                  status: "error"
+           //              }]);
+           //          }finally {
+           //              setLoader(false)
+           //          }
+           //      }else {
+           //          setMessage([{
+           //              show: true,
+           //              message: "Primary folder not configured",
+           //              status: "error"
+           //          }]);
+           //      }
+           // }
        }catch (err) {
            setMessage([{
                 show: true,
                 message: `Error loading an image file ${err}`,
                 status: "error"
            }]);
-       }
+       }finally
+        {
+            setLoader(false)
+        }
     }
 
     const [count, setCount] = useState(0)
@@ -119,7 +137,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
             {
                 !folderId && checkedIds.length === 0 && (
                     <div className={styles.main} onClick={handleFileChange}>
-                        Load Image
+                        Load Image(s)
                     </div>
                 )
             }

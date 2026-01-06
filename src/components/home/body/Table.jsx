@@ -33,10 +33,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                      setError(response.error);
                      return
                 }
-                console.log("folders response:", response.data, Array.isArray(response.data))
-                setFolders(response.data)
-                console.log(response.data)
-                // setLinks(response.data.path)
+                console.log(response)
             }
             else {
                 response = await axiosInstance.get('folders', {
@@ -44,9 +41,10 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                         parentId: folderId || "" // Will be undefined for root folders
                     }
                 })
-                setFolders(response.data.folders)
-                setLinks(response.data.path)
             }
+
+            setFolders(response.data.folders)
+            setLinks(response.data.path)
 
         }catch (err) {
             // console.log(err.response)

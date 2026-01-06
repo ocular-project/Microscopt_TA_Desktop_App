@@ -1,5 +1,7 @@
 import { writeFile, readFile, access, mkdir } from 'fs/promises'
+import fs from 'fs/promises'
 import path from "path";
+import { loadPath } from './storage.js'
 
 export async function createPhysicalFolder(baseDir, folderName) {
     // Create the full absolute path
@@ -73,7 +75,10 @@ export async function getDataJson(filePath, parentId) {
 
         // 3. Handle empty files or invalid JSON
         if (!content.trim()) {
-            return { success: true, data: [], message: "File is empty" };
+            return { success: true, data: {
+                folders: [],
+                path: []
+            }, message: "File is empty" };
         }
 
         const data = JSON.parse(content);
@@ -83,7 +88,10 @@ export async function getDataJson(filePath, parentId) {
 
         return {
             success: true,
-            data: dataArray,
+            data: {
+                folders: dataArray,
+                path: []
+            },
             message: "Data retrieved successfully"
         };
 
@@ -96,8 +104,52 @@ export async function getDataJson(filePath, parentId) {
         // Handle other errors (permissions, corrupted JSON, etc.)
         return {
             success: false,
-            data: [],
+            data: {
+                folders: [],
+                path: []
+            },
             error: `Error reading data: ${error.message}`
         };
     }
+}
+
+export async function handleImagesUpload(filePaths, parentId) {
+  try {
+      const results = [];
+
+      for (const file of filePaths) {
+        const stats = await fs.stat(file);
+
+        const fileData = {
+          _id: Date.now(),
+          name: path.basename(file),
+          type: "file",
+          mineType: "",
+          parent: parentId || "",
+          path: [],
+          size: stats.size,
+          isAnnotated: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        const dir = loadPath();
+        const resp = await addDataJson(dir, fileData);
+
+        if (resp?.success) {
+          results.push(resp.data);
+        }
+      }
+
+      return {
+        success: true,
+        data: results
+      };
+  }
+  catch (error) {
+      return {
+        success: false,
+        error: `Error loading images: ${error.message}`
+      };
+  }
 }
