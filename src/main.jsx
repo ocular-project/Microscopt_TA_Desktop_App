@@ -11,9 +11,9 @@ const isElectron = window.navigator.userAgent.toLowerCase().includes('electron')
 const Router = isElectron ? HashRouter : BrowserRouter;
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
       <Router>
           <App />
       </Router>
-  </StrictMode>,
+  // </StrictMode>,
 )

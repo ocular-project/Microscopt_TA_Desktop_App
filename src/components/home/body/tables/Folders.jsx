@@ -6,6 +6,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEllipsisVertical, faXmark} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router-dom";
 import {handleMessage} from "../../../utils/repeating.js";
+import { config } from "../../../utils/files/config.js"
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
                                     setIsView, setRename }){
@@ -214,7 +215,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                 </div>
                                             </li>
                                             {
-                                                folder.owner.email === "me" && (
+                                                config() || folder?.owner.email === "me" && (
                                                     <>
                                                         <li>
                                                             <div onClick={(e) => handleRename(folder)} >

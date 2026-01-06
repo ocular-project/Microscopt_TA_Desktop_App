@@ -9,6 +9,7 @@ import {useLocation, useParams} from "react-router-dom";
 import Folders from "./tables/Folders.jsx";
 import Teams from "./tables/Teams.jsx";
 import { fetchTeamsData } from "../../utils/files/RepeatingFiles.jsx";
+import {config} from "../../utils/files/config";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
                                   setFile, setMessage, setIsView, isView, setRename }){
@@ -16,22 +17,36 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
     const [error, setError] = useState(null)
     const location = useLocation()
     const { folderId } = useParams();
-    const files = ["folder", "shared"]
+    const files = ["folder", "shared", "computer"]
 
     const isNullOrEmpty = !folders || folders.length === 0
     const isNullOrEmptyTeam = !teams || teams.length === 0
 
     const fetchData = async () => {
+        // console.log("currentPath")
         setLoader(true)
         try{
-            const response = await axiosInstance.get('folders', {
-                params: {
-                    parentId: folderId // Will be undefined for root folders
+            let response;
+            if (config()) {
+                response = await window.electronAPI.getFoldersAndFiles(folderId || "");
+                if (!response.success) {
+                     setError(response.error);
+                     return
                 }
-            })
-            // console.log(response.data.folders)
-            setFolders(response.data.folders)
-            setLinks(response.data.path)
+                console.log("folders response:", response.data, Array.isArray(response.data))
+                setFolders(response.data)
+                console.log(response.data)
+                // setLinks(response.data.path)
+            }
+            else {
+                response = await axiosInstance.get('folders', {
+                    params: {
+                        parentId: folderId || "" // Will be undefined for root folders
+                    }
+                })
+                setFolders(response.data.folders)
+                setLinks(response.data.path)
+            }
 
         }catch (err) {
             // console.log(err.response)
@@ -48,7 +63,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
         const isExcludedPath = excludedPaths.some(excludedPath =>
             currentPath.startsWith(excludedPath)
         );
-
+        // console.log(currentPath)
         if (!isExcludedPath) {
             if (isView.view === false) {
                 fetchData()
@@ -115,7 +130,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                              error ? (
                                 <div className={css.error}></div>
                             ) : isNullOrEmptyTeam ? (
-                                <div className={css.error}>There are no folders or files</div>
+                                <div className={css.error}>There are no teams</div>
                             ) : (
                                 <Teams teams={teams} setLoader={setLoader} setMessage={setMessage} setTeams={setTeams} setScreen={setScreen} setIsPop={setIsPop}/>
                              )

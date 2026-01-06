@@ -17,7 +17,7 @@ export default function CreateFolder({ setIsPop, setLoader, folder, setFolder, s
     const { folderId } = useParams();
 
     useEffect(() => {
-        setFolder({...folder, parentId: folderId})
+        setFolder({...folder, parentId: folderId || ""})
     }, [folderId]);
 
     const handleCancel = () => {
@@ -35,20 +35,15 @@ export default function CreateFolder({ setIsPop, setLoader, folder, setFolder, s
             try {
                 let response
                 if (cat === "computer") {
-
-                    const path = await getPath();
-                    if (path) {
-                         // const data = {
-                         //     name: folder.name,
-                         //     parentId: folder.parentId,
-                         //     folderPath: path
-                         // }
-                         // response = await axioss.post('folders', folder)
+                    response = await window.electronAPI.createFolder(folder);
+                    if (!response.success) {
+                        setError(response.error);
+                        return
                     }
-
                 }else {
                     response = await axiosInstance.post('folders', folder)
                 }
+                console.log(response.data)
                 setFolders(prev => [response.data, ...prev])
                 setFolder({name: "", parentId: ""})
                 setIsPop(false)
