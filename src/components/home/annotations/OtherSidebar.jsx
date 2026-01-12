@@ -19,6 +19,7 @@ import {handleBack, handleMessage} from "../../utils/repeating.js";
 import axiosInstance from "../../utils/files/axiosInstance.js";
 import Annotators from "./Annotators.jsx";
 import {RiFeedbackLine} from "react-icons/ri";
+import { config } from "../../utils/files/config.js";
 
 export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, setAnnotations, annotations, setLoader,
                                      setMessage, file, msg, annotators, cred, setMsg, setShare, setAccess, other, setOther,
@@ -52,6 +53,40 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
            }catch (err) {
                console.log(err.response)
                const error = err.response.data.error
+               handleMessage(error, "error", setMessage)
+           }finally {
+               setLoader(false)
+           }
+       }
+       else if (!fileId) {
+           handleMessage("Image has no ID.", "warning", setMessage)
+       }
+       else {
+           handleMessage("Add some annotations to the image before you can save.", "warning", setMessage)
+       }
+    }
+
+    async function handleOfflineSave() {
+        // console.log(annotations)
+       if (!!annotations.length && fileId) {
+           setLoader(true)
+           const obj = {
+               annotations,
+               imageId: fileId,
+           }
+           try {
+               // await axiosInstance.post('/save-annotations', obj)
+               const response = await window.electronAPI.saveAnnotation(obj)
+               // console.log(response)
+               if (response.success){
+                   handleBack(navigate)
+               }
+               else {
+                   handleMessage(response.error, "error", setMessage)
+               }
+           }catch (err) {
+               console.log(err.response)
+               const error = err.response.error
                handleMessage(error, "error", setMessage)
            }finally {
                setLoader(false)
@@ -247,10 +282,14 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                                 </div>
                                            ) : (
                                                <>
+                                                   <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleOfflineSave}>
+                                                        <IoSaveOutline />
+                                                        <span>Save Annotations Locally</span>
+                                                   </div>
                                                    <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
-                                            <IoSaveOutline />
-                                            <span>Save Annotations</span>
-                                        </div>
+                                                        <IoSaveOutline />
+                                                        <span>Save Annotations Online</span>
+                                                   </div>
                                                    <div className={`${styles.buttons} ${button.edit ? "" : styles.disabledOutline}`} onClick={handleShare}>
                                                         <IoSettingsOutline />
                                                         <span>Edit Access</span>

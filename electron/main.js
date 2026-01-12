@@ -7,7 +7,7 @@ import {
   createPhysicalFolder, getDataFile,
   getDataJson,
   handleImagesUpload,
-  handleImageUpload
+  handleImageUpload, saveAnnotations
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -124,4 +124,8 @@ ipcMain.handle('fileManagement:getFile', (event, fileId) => {
   const dir = loadPath()
   return  getDataFile(`${dir}/Microscopy_TA/database/database.json`, fileId)
 
+})
+
+ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {
+  return  saveAnnotations(body)
 })

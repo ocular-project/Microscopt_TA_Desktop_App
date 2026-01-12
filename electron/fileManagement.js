@@ -77,15 +77,26 @@ export async function addDataJson(dir, newObject) {
     }
 }
 
+async function accessAnnotationFile(filePath) {
+    try {
+        await access(filePath)
+        const content = await readFile(filePath, 'utf8')
+        let data = content ? JSON.parse(content) : []
+        if(!Array.isArray(data)) data = [data]
+
+        return data
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+          return [];
+        }
+        // other errors: rethrow
+        throw err;
+    }
+}
+
 export async function getDataFile(filePath, fileId) {
     try {
-        await access(filePath);
-        const content = await readFile(filePath, 'utf8');
-        if (!content.trim()) {
-            return { success: false, error: "Database file is empty"};
-        }
-        const data = JSON.parse(content);
-        const dataArray = Array.isArray(data) ? data : [data];
+        const dataArray = await accessFolderFile(filePath)
 
         const item = dataArray.find(obj => obj._id === fileId)
         if (!item){
@@ -234,4 +245,75 @@ export async function handleImageUpload(filePath) {
         error: `Error loading images: ${error.message}`
       };
     }
+}
+
+export async function saveAnnotations(body){
+    try {
+        const { imageId, annotations } = body
+        if (!body || !imageId || !annotations || annotations.length === 0){
+            return {
+                success: false,
+                error: "The image ID and annotations are required"
+              };
+        }
+
+        console.log(body)
+        const annObj = {
+             _id: String(Date.now()),
+            imageId,
+            annotator: "me",
+            annotations
+        }
+
+        const dir = loadPath()
+        if (!dir) {
+            return {success: false, error: "Failed to load primary directory"}
+        }
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+
+        const dataArray = await accessFolderFile(filePath)
+        console.log(dataArray)
+        const annoArray = await accessAnnotationFile(annoFilePath)
+        console.log(annoArray)
+        console.log("done1")
+
+        annoArray.push(annObj)
+        await writeFile(annoFilePath, JSON.stringify(annoArray, null, 2), 'utf8');
+        console.log("done2")
+
+        // dataArray.forEach(obj => {
+        //     if (obj._id === imageId){
+        //         obj.isAnnotated = true
+        //         obj.updatedAt = Date.now()
+        //     }
+        // })
+
+        const newDataArray = dataArray.map(obj =>
+            obj._id === imageId ? { ...obj, isAnnotated: true, updatedAt: Date.now() } : obj
+        )
+        await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
+        console.log("done3")
+        return {
+            success: true
+        }
+
+    }catch (error) {
+      return {
+        success: false,
+        error: `Error saving image annotations: ${error.message}`
+      };
+    }
+}
+
+async function accessFolderFile(filePath) {
+
+    await access(filePath);
+    const content = await readFile(filePath, 'utf8');
+    if (!content.trim()) {
+        throw new Error("Database file is empty");
+    }
+    const data = JSON.parse(content);
+    return  Array.isArray(data) ? data : [data];
+
 }

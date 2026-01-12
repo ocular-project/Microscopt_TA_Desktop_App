@@ -13,4 +13,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createFolder: (folder) => ipcRenderer.invoke("fileManagement:createFolder", folder),
     getFoldersAndFiles: (parentId) => ipcRenderer.invoke('fileManagement:getFoldersAndFiles', parentId),
     getFile: (fileId) => ipcRenderer.invoke('fileManagement:getFile', fileId),
+
+    saveAnnotation: (body) => ipcRenderer.invoke("imageAnnotation:saveAnnotation", body),
 })
