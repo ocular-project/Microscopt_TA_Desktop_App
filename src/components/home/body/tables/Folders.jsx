@@ -149,6 +149,13 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
             <thead>
                 <tr>
                     <th>Name</th>
+                    {
+                        currentPath === "/" && (
+                            <th>
+                                File Location
+                            </th>
+                        )
+                    }
                     <th>Type</th>
                     <th>Size</th>
                     <th>Created At</th>
@@ -171,6 +178,19 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                    {getFileName(folder.name)}
                                </div>
                            </td>
+                           {
+                                currentPath === "/" && (
+                                    <td style={{
+                                        width: '20%',
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        whiteSpace: 'normal'
+                                        }}
+                                    >
+                                        {folder.url}
+                                    </td>
+                                )
+                            }
                            <td>
                                {
                                    folder.type === "folder" ? "Folder" : getFileExtension(folder.name)

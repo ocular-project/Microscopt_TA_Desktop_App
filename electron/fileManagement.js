@@ -1,5 +1,6 @@
 import { writeFile, readFile, access, mkdir } from 'fs/promises'
 import fs from 'fs/promises'
+import { constants } from 'fs';
 import path from "path";
 import { loadPath } from './storage.js'
 
@@ -94,6 +95,15 @@ async function accessAnnotationFile(filePath) {
     }
 }
 
+async function imageExists(filePath) {
+  try {
+    await access(filePath, constants.F_OK);
+    return true;   // exists
+  } catch {
+    return false;  // does not exist
+  }
+}
+
 export async function getDataFile(filePath, fileId) {
     try {
         const dataArray = await accessFolderFile(filePath)
@@ -103,6 +113,14 @@ export async function getDataFile(filePath, fileId) {
             return {
                 success: false,
                 error: "File doesn't exist"
+            }
+        }
+
+        const exists = await  imageExists(item.url)
+        if(!exists){
+            return {
+                success: false,
+                error: "Image no longer exists on your pc"
             }
         }
 
@@ -147,11 +165,16 @@ export async function getDataJson(filePath, parentId) {
 
         // Ensure we always return an array for consistency in your React components
         const dataArray = Array.isArray(data) ? data : [data];
+        const updatedList = dataArray.map(obj =>
+            obj.type === 'file'
+            ? { ...obj, size: `${(obj.size / (1024 * 1024)).toFixed(1)} MB` }
+            : obj
+        )
 
         return {
             success: true,
             data: {
-                folders: dataArray,
+                folders: updatedList,
                 path: []
             },
             message: "Data retrieved successfully"
