@@ -120,7 +120,7 @@ export async function getDataFile(filePath, fileId) {
         if(!exists){
             return {
                 success: false,
-                error: "Image no longer exists on your pc"
+                error: "Image no longer exists on your machine"
             }
         }
 
