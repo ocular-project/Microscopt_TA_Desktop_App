@@ -5,7 +5,7 @@ import { savePath, loadPath } from './storage.js'
 import {
   addDataJson,
   createPhysicalFolder, getDataFile,
-  getDataJson,
+  getDataJson, getMyImageAnnotations,
   handleImagesUpload,
   handleImageUpload, saveAnnotations
 } from './fileManagement.js'
@@ -128,4 +128,8 @@ ipcMain.handle('fileManagement:getFile', (event, fileId) => {
 
 ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {
   return  saveAnnotations(body)
+})
+
+ipcMain.handle('imageAnnotation:getMyAnnotation', (event, imageId) => {
+  return getMyImageAnnotations(imageId)
 })

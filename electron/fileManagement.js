@@ -257,7 +257,6 @@ export async function saveAnnotations(body){
               };
         }
 
-        console.log(body)
         const annObj = {
              _id: String(Date.now()),
             imageId,
@@ -273,14 +272,10 @@ export async function saveAnnotations(body){
         const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
 
         const dataArray = await accessFolderFile(filePath)
-        console.log(dataArray)
         const annoArray = await accessAnnotationFile(annoFilePath)
-        console.log(annoArray)
-        console.log("done1")
 
         annoArray.push(annObj)
         await writeFile(annoFilePath, JSON.stringify(annoArray, null, 2), 'utf8');
-        console.log("done2")
 
         // dataArray.forEach(obj => {
         //     if (obj._id === imageId){
@@ -293,7 +288,6 @@ export async function saveAnnotations(body){
             obj._id === imageId ? { ...obj, isAnnotated: true, updatedAt: Date.now() } : obj
         )
         await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
-        console.log("done3")
         return {
             success: true
         }
@@ -315,5 +309,34 @@ async function accessFolderFile(filePath) {
     }
     const data = JSON.parse(content);
     return  Array.isArray(data) ? data : [data];
+
+}
+
+export async function getMyImageAnnotations(imageId) {
+    try {
+        const dir = loadPath()
+        if (!dir) {
+            return {success: false, error: "Failed to load primary directory"}
+        }
+
+        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const annoArray = await accessAnnotationFile(annoFilePath)
+        const anno = annoArray.find(an => an.imageId === imageId)
+        if (!anno) {
+            return {success: false, error: "There are no annotations for this image file"}
+        }
+        return {
+            success: true,
+            data: {
+                file: anno
+            }
+        }
+
+    }catch (error) {
+      return {
+        success: false,
+        error: `Error loading image annotations: ${error.message}`
+      };
+    }
 
 }

@@ -74,7 +74,7 @@ export default function ImageView(){
        setLoader(true)
        try{
            const response = await window.electronAPI.getFile(fileId)
-           console.log(response)
+           // console.log(response)
            if (response.success){
                const data = response.data
                setFile(data.file)

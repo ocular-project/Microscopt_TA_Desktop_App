@@ -15,4 +15,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getFile: (fileId) => ipcRenderer.invoke('fileManagement:getFile', fileId),
 
     saveAnnotation: (body) => ipcRenderer.invoke("imageAnnotation:saveAnnotation", body),
+    getMyAnnotations: (imageId) => ipcRenderer.invoke("imageAnnotation:getMyAnnotation", imageId),
 })

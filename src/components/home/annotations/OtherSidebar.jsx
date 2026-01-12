@@ -7,7 +7,7 @@ import {
     IoSettingsOutline,
     IoShareSocialOutline
 } from "react-icons/io5";
-import {LuRectangleHorizontal} from "react-icons/lu";
+import {LuRectangleHorizontal, LuUser} from "react-icons/lu";
 import {PiCursor} from "react-icons/pi";
 import {FaRegUser} from "react-icons/fa6";
 import {useEffect, useState} from "react";
@@ -184,6 +184,51 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         });
     };
 
+    const handleLoad = async (bool) => {
+        setLoader(true)
+        try {
+            const response = await window.electronAPI.getMyAnnotations(fileId)
+            if (response.success) {
+                const dat = response.data
+                const data = dat.file
+                setAnnotations(data.annotations)
+                setMsg("Loaded my annotations")
+            }else {
+                handleMessage(response.error, "error", setMessage)
+            }
+            // const dat = response.data
+            // const data = dat.file
+            // // console.log(data)
+            // setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
+            // setAnnotations(data.annotations)
+            // // console.log(response.data.annotations)
+            // if (item.annotator.email === cred.email){
+            //     setMsg("Loaded my annotations")
+            // }
+            // else {
+            //     setAnnotator({ owner: item.annotator._id, annoId: item._id})
+            //     setMsg(`Loaded ${item.annotator.firstName}'s annotations`)
+            // }
+            //
+            // // console.log(dat.feedback)
+            // const feed = dat.feedback
+            // if (feed && !!feed.length) {
+            //     setFeedback(feed)
+            // }
+            //
+            setOther(bool)
+            setFeed(false)
+            setBack(false)
+            // setSelected(item._id)
+        }catch (err) {
+           console.log(err)
+           const error = err.response.error
+           handleMessage(error, "error", setMessage)
+       }finally {
+           setLoader(false)
+       }
+    }
+
     return (
         <div className={style.container}>
              <div className={style.header}>
@@ -236,6 +281,29 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                        </div>
 
                    </div>
+
+                    {
+                        !!annotators?.length && (
+                            <Annotators annotators={annotators} setAnnotations={setAnnotations} cred={cred} setLoader={setLoader}
+                                        setMessage={setMessage} setMsg={setMsg} setAccess={setAccess} setOther={setOther}
+                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack}
+                            />
+                        )
+                    }
+
+                    {
+                        (msg && !file.url.startsWith("http")) && (
+                            <div className={styles.imgInfo}>
+                                <h1>Annotations</h1>
+                                <div>
+                                    <div className={`${styles.buttons} ${styles.active}`} onClick={() => handleLoad(false)}>
+                                        <LuUser />
+                                        <span>Load My Annotations</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                    <div className={styles.imgInfo}>
                        <h1>Annotation Tools</h1>
@@ -307,15 +375,6 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                        }
 
                    </div>
-
-                    {
-                        !!annotators?.length && (
-                            <Annotators annotators={annotators} setAnnotations={setAnnotations} cred={cred} setLoader={setLoader}
-                                        setMessage={setMessage} setMsg={setMsg} setAccess={setAccess} setOther={setOther}
-                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack}
-                            />
-                        )
-                    }
 
                </div>
             </div>
