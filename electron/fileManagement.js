@@ -45,15 +45,27 @@ export async function addDataJson(dir, newObject) {
             if (error.code !== 'ENOENT') throw error;
         }
 
-        data.push(newObject)
+        const exists = data.some(item => item.name === newObject.name)
+        if (!exists){
+            data.push(newObject)
 
-        await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+            await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
 
-        await createPhysicalFolder(folderPath, newObject.name)
+            if (newObject.type === "folder") {
+                await createPhysicalFolder(folderPath, newObject.name)
+            }
 
-        return {
-            success: true,
-            data: newObject
+            return {
+                success: true,
+                data: newObject
+            }
+        }
+        else {
+           return {
+                success: false,
+                data: newObject,
+                error: `${newObject.type} already exists`
+            }
         }
 
     } catch (error) {
@@ -62,6 +74,45 @@ export async function addDataJson(dir, newObject) {
             success: false,
             error: `Error creating a folder: ${error.message}`
         }
+    }
+}
+
+export async function getDataFile(filePath, fileId) {
+    try {
+        await access(filePath);
+        const content = await readFile(filePath, 'utf8');
+        if (!content.trim()) {
+            return { success: false, error: "Database file is empty"};
+        }
+        const data = JSON.parse(content);
+        const dataArray = Array.isArray(data) ? data : [data];
+
+        const item = dataArray.find(obj => obj._id === fileId)
+        if (!item){
+            return {
+                success: false,
+                error: "File doesn't exist"
+            }
+        }
+
+        item.size = `${(item.size / (1024 * 1024)).toFixed(1)} MB`
+        const buffer = await readFile(item.url);
+        item.url =`data:image/png;base64,${buffer.toString('base64')}`
+
+        return {
+            success: true,
+            data: {
+                file: item,
+                message: item.isAnnotated ? "This image has annotations" : "",
+            }
+        }
+
+
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error reading data: ${error.message}`
+        };
     }
 }
 
@@ -121,7 +172,7 @@ export async function handleImagesUpload(filePaths, parentId) {
         const stats = await fs.stat(file);
 
         const fileData = {
-          _id: Date.now(),
+          _id: String(Date.now()),
           name: path.basename(file),
           type: "file",
           mineType: "",
@@ -152,4 +203,35 @@ export async function handleImagesUpload(filePaths, parentId) {
         error: `Error loading images: ${error.message}`
       };
   }
+}
+
+export async function handleImageUpload(filePath) {
+    try {
+
+        const stats = await fs.stat(filePath);
+
+        const fileData = {
+            _id: String(Date.now()),
+            name: path.basename(filePath),
+            type: "file",
+            mineType: "",
+            parent: "",
+            path: [],
+            url: filePath,
+            size: stats.size,
+            isAnnotated: false,
+            category: "From PC",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        };
+
+        const dir = loadPath();
+        return await addDataJson(dir, fileData);
+    }
+    catch (error) {
+      return {
+        success: false,
+        error: `Error loading images: ${error.message}`
+      };
+    }
 }

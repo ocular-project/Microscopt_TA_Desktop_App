@@ -13,6 +13,7 @@ import {faCheck} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Users from "./body/autoComplete/Users.jsx";
 import Share from "./annotations/Share.jsx";
+import { config } from "../utils/files/config.js"
 
 const SIDEBAR_WIDTH = 300;
 const ZOOM_STEP = 0.1;
@@ -36,6 +37,19 @@ export default function ImageView(){
     const [feed, setFeed] = useState(false)
     const [visual, setVisual] = useState("box")
 
+    useEffect(() => {
+        if (config()) {
+            fetchData2()
+        } else {
+            setCred(getUserData("credentials"));
+           // console.log(getUserData("credentials"))
+           if (fileId) {
+               fetchData()
+           }
+        }
+
+   }, []);
+
     async function fetchData() {
        setLoader(true)
        try{
@@ -56,13 +70,28 @@ export default function ImageView(){
        }
    }
 
-    useEffect(() => {
-       setCred(getUserData("credentials"));
-       // console.log(getUserData("credentials"))
-       if (fileId) {
-           fetchData()
+   async function fetchData2() {
+       setLoader(true)
+       try{
+           const response = await window.electronAPI.getFile(fileId)
+           console.log(response)
+           if (response.success){
+               const data = response.data
+               setFile(data.file)
+               setMsg(data.message)
+           }
+           else {
+               handleMessage(response.error, "error", setMessage)
+           }
+
+       }catch (err) {
+           // console.log(err.response)
+           const error = err.response.error
+           handleMessage(error, "error", setMessage)
+       }finally {
+           setLoader(false)
        }
-   }, []);
+   }
 
     const fitImageToViewport = useCallback(() => {
         if (!imageRef.current) return;

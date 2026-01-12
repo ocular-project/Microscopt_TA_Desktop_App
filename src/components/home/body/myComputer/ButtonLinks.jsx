@@ -3,13 +3,15 @@ import styles from "../../../css/buttons.module.css"
 import {useRef, useState} from "react";
 import dbApi from "../../../utils/files/dbApi";
 import axioss from "../../../utils/files/axios";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {getPath, handleMessage} from "../../../utils/repeating";
 
 export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, setCheckedIds, checkedIds }){
 
     const fileInputRef = useRef(null);
     const { folderId } = useParams();
+    const currentPath = location.pathname;
+    const navigate = useNavigate();
 
     async function handleAppClick () {
         const path = await getPath();
@@ -132,12 +134,67 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
 
     }
 
+    async function loadImage() {
+        const path = await getPath();
+        if (path){
+            try {
+                const response = await window.electronAPI.selectImage()
+                setLoader(true)
+                let data;
+                if (response.success){
+                    data = response.data
+                    // console.log(response.data)
+                    // setFolders(prev => [response.data, ...prev])
+                    setFolders(prev => [
+                      data,
+                      ...(Array.isArray(prev) ? prev : [])
+                    ]);
+                    openImage(data)
+                }
+                else {
+                   // console.log(response)
+                   setMessage([{
+                        show: true,
+                        message: response.error,
+                        status: "error"
+                    }]);
+                   if (response.data){
+                       data = response.data
+                       openImage(data)
+                   }
+               }
+            }
+            catch (err) {
+                setMessage([{
+            show: true,
+            message: `Error loading an image file ${err}`,
+            status: "error"
+            }]);
+            }
+            finally {
+                setLoader(false)
+            }
+        }
+        else {
+            setScreen(prev => ({...prev, pathCreate: true}))
+            setIsPop(true)
+        }
+    }
+
+    function openImage(folder){
+        localStorage.setItem("folder", currentPath)
+        navigate(`/annotation/${folder._id}`)
+    }
+
     return (
         <>
             {
                 !folderId && checkedIds.length === 0 && (
-                    <div className={styles.main} onClick={handleFileChange}>
-                        Load Image(s)
+                    // <div className={styles.main} onClick={handleFileChange}>
+                    //     Load Image
+                    // </div>
+                    <div className={styles.main} onClick={loadImage}>
+                        Load Image
                     </div>
                 )
             }

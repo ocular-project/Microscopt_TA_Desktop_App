@@ -33,7 +33,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                      setError(response.error);
                      return
                 }
-                console.log(response)
+                // console.log(response)
             }
             else {
                 response = await axiosInstance.get('folders', {

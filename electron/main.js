@@ -2,7 +2,13 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import { savePath, loadPath } from './storage.js'
-import {addDataJson, createPhysicalFolder, getDataJson, handleImagesUpload} from './fileManagement.js'
+import {
+  addDataJson,
+  createPhysicalFolder, getDataFile,
+  getDataJson,
+  handleImagesUpload,
+  handleImageUpload
+} from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +67,25 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
   return handleImagesUpload(result.filePaths, parentId)
 })
 
+
+ipcMain.handle('dialog:openOneImagePicker', async () => {
+
+  const result = await  dialog.showOpenDialog({
+    title: "Select images",
+    properties: ["openFile"],
+    filters: [
+      {
+        name: "Images",
+        extensions: ["jpg", "jpeg", "png", "gif", "bmp", "webp"]
+      }
+    ]
+  })
+
+  if (result.canceled || result.filePaths.length === 0) return null;
+  // console.log(parentId)
+  return handleImageUpload(result.filePaths[0])
+})
+
 ipcMain.handle('electron:savePath', (event, folderPath) => {
   savePath(folderPath);
   return true;
@@ -73,7 +98,7 @@ ipcMain.handle('electron:getPath', () => {
 ipcMain.handle('fileManagement:createFolder', (event, folder) => {
   const dir = loadPath()
   const data = {
-    _id: Date.now(),
+    _id: String(Date.now()),
     name: folder.name,
     type: "folder",
     mineType: "",
@@ -92,5 +117,11 @@ ipcMain.handle('fileManagement:createFolder', (event, folder) => {
 ipcMain.handle('fileManagement:getFoldersAndFiles', (event, parentId) => {
   const dir = loadPath()
   return  getDataJson(`${dir}/Microscopy_TA/database/database.json`, parentId)
+
+})
+
+ipcMain.handle('fileManagement:getFile', (event, fileId) => {
+  const dir = loadPath()
+  return  getDataFile(`${dir}/Microscopy_TA/database/database.json`, fileId)
 
 })
