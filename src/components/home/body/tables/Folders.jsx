@@ -184,10 +184,11 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                         width: '20%',
                                         wordBreak: 'break-word',
                                         overflowWrap: 'break-word',
-                                        whiteSpace: 'normal'
+                                        whiteSpace: 'normal',
+                                        // textAlign: `${folder.url ? 'left' : 'center'}`
                                         }}
                                     >
-                                        {folder.url}
+                                        {folder.url || "-"}
                                     </td>
                                 )
                             }

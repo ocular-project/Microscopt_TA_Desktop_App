@@ -47,13 +47,41 @@ export async function addDataJson(dir, newObject) {
         }
 
         const exists = data.some(item => item.name === newObject.name)
+
+        let newPath = folderPath
+
         if (!exists){
+            if (newObject.type === "folder") {
+                const parentId = newObject.parent
+                let parentPath = []
+                if (newObject.parent){
+                    const parentFolder = data.find(item => item._id === parentId)
+                    if (parentFolder) {
+                        const pathList = parentFolder.path
+                        parentPath = [...pathList, parentId]
+                        newObject.path = parentPath
+                        if (!pathList.length){
+                            newPath = `${folderPath}/${parentFolder.name}`
+                        }
+                        else {
+                            newPath = `${folderPath}/`
+                            for (const object of parentPath){
+                                const item = data.find(item => item._id === object)
+                                if(item) {
+                                    newPath += `${item.name}/`
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             data.push(newObject)
 
             await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
 
             if (newObject.type === "folder") {
-                await createPhysicalFolder(folderPath, newObject.name)
+                await createPhysicalFolder(newPath, newObject.name)
             }
 
             return {
@@ -164,11 +192,18 @@ export async function getDataJson(filePath, parentId) {
         const data = JSON.parse(content);
 
         // Ensure we always return an array for consistency in your React components
-        const dataArray = Array.isArray(data) ? data : [data];
+        let dataArray = Array.isArray(data) ? data : [data];
+        dataArray = dataArray.filter(obj => obj.parent === parentId)
+        // if (parentId) {
+        //     console.log(parentId)
+        //     dataArray = dataArray.filter(obj => obj.parent === parentId)
+        //     console.log(dataArray)
+        // }
+
         const updatedList = dataArray.map(obj =>
             obj.type === 'file'
             ? { ...obj, size: `${(obj.size / (1024 * 1024)).toFixed(1)} MB` }
-            : obj
+            : { ...obj, size: "" }
         )
 
         return {
@@ -180,7 +215,8 @@ export async function getDataJson(filePath, parentId) {
             message: "Data retrieved successfully"
         };
 
-    } catch (error) {
+    }
+    catch (error) {
         // Handle "File Not Found" as a soft error (return empty list)
         if (error.code === 'ENOENT') {
             return { success: true, data: [], message: "No database file found yet" };

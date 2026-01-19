@@ -22,7 +22,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
         }
         else {
              setScreen(prev => ({...prev, pathCreate: true}))
-            setIsPop(true)
+             setIsPop(true)
         }
     }
 
@@ -105,23 +105,27 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
     const [count, setCount] = useState(0)
 
     async function handleRefresh () {
-        const path = localStorage.getItem("path")
-        setLoader(true)
-        try {
-            const response = await axioss.get('folders', {
-                params: {
-                    parentId: folderId,
-                    folderPath: path
+        const path = await getPath();
+        if (path) {
+            setLoader(true)
+            try {
+                const response = await window.electronAPI.getFoldersAndFiles(folderId || "");
+                if (!response.success) {
+                     handleMessage(response.error, "error", setMessage)
+                     return
                 }
-            })
-            // console.log(response.data.folders)
-            setFolders(response.data.folders)
-        }catch (err) {
+                setFolders(response.data.folders)
+            }catch (err) {
             // console.log(err.response)
             const error = err.response?.data?.error || 'An error occurred'
             handleMessage(error, "error", setMessage)
         }finally {
             setLoader(false)
+        }
+        }
+        else {
+           setScreen(prev => ({...prev, pathCreate: true}))
+           setIsPop(true)
         }
     }
 
