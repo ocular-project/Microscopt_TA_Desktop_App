@@ -10,15 +10,18 @@ export default function Folder(){
 
     const [isView, setIsView] = useState({view: false, files: [], fileId: ""})
     const [message, setMessage] = useState([])
+    const [config, setConfig] = useState(false)
+
+    console.log(location.pathname)
 
     return (
         <div className={styles.container}>
             <div className={styles.innerContainer1}>
-                <Sidebar cat="folder" />
+                <Sidebar cat="folder" config={config}/>
             </div>
             <div className={styles.innerContainer2}>
                 <div className={styles.content}>
-                    <Container cat="folder" setIsView={setIsView} isView={isView} message={message} setMessage={setMessage}/>
+                    <Container cat="folder" setIsView={setIsView} isView={isView} message={message} setMessage={setMessage} config={config}/>
                 </div>
             </div>
             {/*{*/}

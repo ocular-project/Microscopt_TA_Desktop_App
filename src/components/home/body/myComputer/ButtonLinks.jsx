@@ -6,7 +6,7 @@ import axioss from "../../../utils/files/axios";
 import {useNavigate, useParams} from "react-router-dom";
 import {getPath, handleMessage} from "../../../utils/repeating";
 
-export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, setCheckedIds, checkedIds }){
+export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, setCheckedIds, checkedIds, config }){
 
     const fileInputRef = useRef(null);
     const { folderId } = useParams();

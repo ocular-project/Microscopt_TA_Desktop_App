@@ -20,7 +20,7 @@ import Rename from "./popUps/Rename";
 import {handleMessage} from "../../utils/repeating";
 import Move from "./popUps/Move";
 
-export default function Container({ cat, setIsView, isView, message, setMessage }){
+export default function Container({ cat, setIsView, isView, message, setMessage, config }){
 
     const [isPop, setIsPop] = useState(false)
     const [screen, setScreen] = useState({folderCreate: false, teamCreate: false, share: false,
@@ -56,14 +56,14 @@ export default function Container({ cat, setIsView, isView, message, setMessage 
             <Header cat={cat} />
             <Links setScreen={setScreen} setIsPop={setIsPop} cat={cat} setLoader={setLoader2}
                    loader={loader2} links={links} setFolders={setFolders} setMessage={setMessage}
-                   setCheckedIds={setCheckedIds} checkedIds={checkedIds}
+                   setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config}
             />
-            <TableInfo cat={cat} systemStatus={systemStatus} />
+            <TableInfo cat={cat} systemStatus={systemStatus} config={config}/>
 
             <Table cat={cat} setLoader={setLoader2} folders={folders} setFolders={setFolders}
                         setTeams={setTeams} teams={teams} setLinks={setLinks}
                         setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setMessage={setMessage}
-                        setIsView={setIsView} isView={isView} setRename={setRename}
+                        setIsView={setIsView} isView={isView} setRename={setRename} config={config}
             />
 
             <div className={`${styles.popup} ${isPop ? styles.active : ""}`}>
@@ -71,9 +71,9 @@ export default function Container({ cat, setIsView, isView, message, setMessage 
                      <div className={`${css.loader} ${loader ? css.active : ""}`}></div>
                     {
                         screen.pathCreate ? (
-                           <Path setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} />
+                           <Path setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} config={config} />
                         ) : screen.folderCreate ? (
-                           <CreateFolder setIsPop={setIsPop} setLoader={setLoader} folder={folder} setFolder={setFolder} setFolders={setFolders} setMessage={setMessage} cat={cat} />
+                           <CreateFolder setIsPop={setIsPop} setLoader={setLoader} folder={folder} setFolder={setFolder} setFolders={setFolders} setMessage={setMessage} cat={cat} config={config} />
                         ) : screen.teamCreate ? (
                             <TeamCreate setIsPop={setIsPop} setLoader={setLoader} setTeams={setTeams} setMessage={setMessage} setScreen={setScreen}/>
                         ) : screen.teamInfo ? (
@@ -83,9 +83,9 @@ export default function Container({ cat, setIsView, isView, message, setMessage 
                         ) : screen.delete ? (
                             <Delete setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} setScreen={setScreen}
                                     screen={screen} file={file} setFolders={setFolders} folders={folders} setFile={setFile}
-                                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} />
+                                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} />
                         ) : screen.rename ? (
-                           <Rename setIsPop={setIsPop} setLoader={setLoader} rename={rename} setRename={setRename} setFolders={setFolders} setMessage={setMessage} cat={cat} />
+                           <Rename setIsPop={setIsPop} setLoader={setLoader} rename={rename} setRename={setRename} setFolders={setFolders} setMessage={setMessage} cat={cat} config={config} />
                         ) : screen.share ? (
                             <Share setIsPop={setIsPop} setLoader={setLoader} file={file} screen={screen} setFolders={setFolders} setScreen={setScreen}/>
                         ) : screen.move ? (

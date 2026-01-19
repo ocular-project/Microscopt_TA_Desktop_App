@@ -9,10 +9,9 @@ import {useLocation, useParams} from "react-router-dom";
 import Folders from "./tables/Folders.jsx";
 import Teams from "./tables/Teams.jsx";
 import { fetchTeamsData } from "../../utils/files/RepeatingFiles.jsx";
-import {config} from "../../utils/files/config";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
-                                  setFile, setMessage, setIsView, isView, setRename }){
+                                  setFile, setMessage, setIsView, isView, setRename, config }){
 
     const [error, setError] = useState(null)
     const location = useLocation()
@@ -27,7 +26,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
         setLoader(true)
         try{
             let response;
-            if (config()) {
+            if (config) {
                 response = await window.electronAPI.getFoldersAndFiles(folderId || "");
                 if (!response.success) {
                      setError(response.error);
@@ -116,7 +115,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                             ) : (
                                 <Folders folders={folders} setLoader={setLoader} setMessage={setMessage} setFolders={setFolders}
                                          setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setIsView={setIsView}
-                                         setRename={setRename}
+                                         setRename={setRename} config={config}
                                 />
                             )
                         }

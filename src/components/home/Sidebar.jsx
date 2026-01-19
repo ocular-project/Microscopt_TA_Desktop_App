@@ -2,12 +2,12 @@ import styles from "./css/sidebar.module.css"
 import {NavLink, useNavigate} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDesktop, faHouse, faLink, faUserGroup, faUsers} from "@fortawesome/free-solid-svg-icons";
-import {config} from "../utils/files/config";
 import {faFolder} from "@fortawesome/free-regular-svg-icons/faFolder";
 import {useEffect} from "react";
 import {faMobileScreen} from "@fortawesome/free-solid-svg-icons/faMobileScreen";
+import { configg } from "../utils/files/config.js";
 
-export default function Sidebar({ cat }){
+export default function Sidebar({ cat, config }){
 
     const navigate = useNavigate()
     const getClassName = (category) => {
@@ -60,7 +60,7 @@ export default function Sidebar({ cat }){
             <div className={styles.list}>
                 <ul>
                     {
-                        config() ? (
+                        configg() ? (
                             <>
                                 <li>
                                     <NavLink to="/" className={getClassName("computer")}>
@@ -70,14 +70,6 @@ export default function Sidebar({ cat }){
                                         </div>
                                     </NavLink>
                                 </li>
-                                {/*<li>*/}
-                                {/*    <NavLink to="/devices" className={getClassName("device")}>*/}
-                                {/*        <div className={styles.linkDiv}>*/}
-                                {/*            <FontAwesomeIcon icon={faMobileScreen} />*/}
-                                {/*            <span>Mobile Devices</span>*/}
-                                {/*        </div>*/}
-                                {/*    </NavLink>*/}
-                                {/*</li>*/}
                                 <li>
                                     <div className={styles.divider}>
 

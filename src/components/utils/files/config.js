@@ -11,7 +11,7 @@ export const getBaseUrl = () => {
     }
 }
 
-export const config = () => {
+export const configg = () => {
     const isElectron = navigator.userAgent.toLowerCase().includes('electron');
     return isElectron;
 }

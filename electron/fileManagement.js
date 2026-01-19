@@ -193,24 +193,35 @@ export async function getDataJson(filePath, parentId) {
 
         // Ensure we always return an array for consistency in your React components
         let dataArray = Array.isArray(data) ? data : [data];
-        dataArray = dataArray.filter(obj => obj.parent === parentId)
-        // if (parentId) {
-        //     console.log(parentId)
-        //     dataArray = dataArray.filter(obj => obj.parent === parentId)
-        //     console.log(dataArray)
-        // }
+        const result = dataArray
+            .filter(obj => obj.parent === parentId)
+            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
 
-        const updatedList = dataArray.map(obj =>
+        const updatedList = result.map(obj =>
             obj.type === 'file'
             ? { ...obj, size: `${(obj.size / (1024 * 1024)).toFixed(1)} MB` }
             : { ...obj, size: "" }
         )
 
+        let currentPath = []
+        if (parentId){
+            const parentFolder = dataArray.find(item => item._id === parentId)
+            if (parentFolder) {
+                for (const obj of parentFolder.path){
+                    const pf = dataArray.find(item => item._id === obj)
+                    currentPath.push({ _id: pf._id, name: pf.name })
+                }
+                currentPath.push({ _id: parentFolder._id, name: parentFolder.name })
+            }
+        }
+
+        console.log(currentPath)
+
         return {
             success: true,
             data: {
                 folders: updatedList,
-                path: []
+                path: currentPath
             },
             message: "Data retrieved successfully"
         };

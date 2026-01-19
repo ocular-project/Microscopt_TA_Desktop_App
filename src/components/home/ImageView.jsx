@@ -13,7 +13,7 @@ import {faCheck} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Users from "./body/autoComplete/Users.jsx";
 import Share from "./annotations/Share.jsx";
-import { config } from "../utils/files/config.js"
+import { configg } from "../utils/files/config.js"
 
 const SIDEBAR_WIDTH = 300;
 const ZOOM_STEP = 0.1;
@@ -38,7 +38,7 @@ export default function ImageView(){
     const [visual, setVisual] = useState("box")
 
     useEffect(() => {
-        if (config()) {
+        if (configg()) {
             fetchData2()
         } else {
             setCred(getUserData("credentials"));

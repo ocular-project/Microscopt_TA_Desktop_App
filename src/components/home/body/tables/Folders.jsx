@@ -6,10 +6,9 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEllipsisVertical, faXmark} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router-dom";
 import {handleMessage} from "../../../utils/repeating.js";
-import { config } from "../../../utils/files/config.js"
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
-                                    setIsView, setRename }){
+                                    setIsView, setRename, config }){
 
     const [selectedId, setSelectedId] = useState(null);
     const [selectedIconId, setSelectedIconId] = useState(null);
@@ -18,6 +17,9 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     const popRef = useRef(null);
     const currentPath = location.pathname;
 
+    // useEffect(() => {
+    //     console.log(folders)
+    // }, []);
 
    const getPopupPosition = (index) => {
         // Adjust these numbers based on your needs
@@ -49,11 +51,15 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
             navigate(`/annotation/${folder._id}`)
         }
         else {
-
-            if (!currentPath.startsWith("/sharedFiles")){
+            console.log(currentPath)
+            if (config) {
                 navigate(`/${folder._id}`);
             }else {
-                navigate(`/sharedFiles/${folder._id}`);
+                if (currentPath.startsWith("/collaboration")){
+                    navigate(`/collaboration/${folder._id}`);
+                }else {
+                    navigate(`/sharedFiles/${folder._id}`);
+                }
             }
         }
 
@@ -150,7 +156,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                 <tr>
                     <th>Name</th>
                     {
-                        currentPath === "/" && (
+                        (config && currentPath === "/") && (
                             <th>
                                 File Location
                             </th>
@@ -179,7 +185,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                </div>
                            </td>
                            {
-                                currentPath === "/" && (
+                                (config && currentPath === "/") && (
                                     <td style={{
                                         width: '20%',
                                         wordBreak: 'break-word',
@@ -223,26 +229,23 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                         ${styles[getPopupPosition(index)]}
                                     `}>
                                         <ul>
-                                            {/* <li>*/}
-                                            {/*    <div onClick={() => handleInfo(folder)}>*/}
-                                            {/*        {*/}
-                                            {/*            folder.type === "folder" ? "Folder information" : "File information"*/}
-                                            {/*        }*/}
-                                            {/*    </div>*/}
-                                            {/*</li>li*/}
                                             <li>
                                                 <div onClick={(e) => handleShare(folder)} >
                                                     Share / File Information
                                                 </div>
                                             </li>
                                             {
-                                                config() || folder?.owner.email === "me" && (
+                                                (config || folder?.owner?.email === "me") && (
                                                     <>
-                                                        <li>
-                                                            <div onClick={(e) => handleRename(folder)} >
-                                                                Rename
-                                                            </div>
-                                                        </li>
+                                                        {
+                                                            (config && currentPath === "/" && folder.type === "folder") && (
+                                                               <li>
+                                                                    <div onClick={(e) => handleRename(folder)} >
+                                                                        Rename
+                                                                    </div>
+                                                               </li>
+                                                            )
+                                                        }
                                                         <li>
                                                             <div onClick={(e) => {
                                                                 e.stopPropagation()

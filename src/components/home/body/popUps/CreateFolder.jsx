@@ -9,9 +9,8 @@ import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {useParams} from "react-router-dom";
 import axioss from "../../../utils/files/axios";
 import {getPath, handleMessage} from "../../../utils/repeating";
-import {config} from "../../../utils/files/config";
 
-export default function CreateFolder({ setIsPop, setLoader, folder, setFolder, setFolders, setMessage, cat }) {
+export default function CreateFolder({ setIsPop, setLoader, folder, setFolder, setFolders, setMessage, cat, config }) {
 
     const [error, setError] = useState(null)
     const { folderId } = useParams();

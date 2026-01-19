@@ -7,10 +7,9 @@ import axiosInstance from "../../utils/files/axiosInstance.js";
 import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import ButtonLinks from "./myComputer/ButtonLinks";
-import {config} from "../../utils/files/config";
 import {handleMessage} from "../../utils/repeating";
 
-export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds }){
+export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config }){
 
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -201,7 +200,15 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                             {
                                                 cat === "folder" || cat === "computer" ? (
                                                     <>
-                                                        Home
+                                                        {
+                                                            config ? (
+                                                                <>My Computer</>
+                                                            ) : (
+                                                                <>
+                                                                    Home
+                                                                </>
+                                                            )
+                                                        }
                                                     </>
                                                 ) : cat === "shared" ? (
                                                      <>
@@ -240,7 +247,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                    <div className={styles.linkDiv}>
                                         <div>
                                             {
-                                                !config() ? (
+                                                !config ? (
                                                     <>
                                                         {
                                                             currentPath.startsWith("/team") ? (
@@ -340,7 +347,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                         ) : cat === "computer" ? (
                             <ButtonLinks setLoader={setLoader} setScreen={setScreen} setIsPop={setIsPop}
                                          setMessage={setMessage} setFolders={setFolders} setCheckedIds={setCheckedIds}
-                                         checkedIds={checkedIds}
+                                         checkedIds={checkedIds} config={config}
                             />
                         // ) : cat === "device" ? (
                         //     <Button text="Refresh" status="active" onClick={handleRefresh} />

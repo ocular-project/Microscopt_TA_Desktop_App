@@ -19,7 +19,7 @@ import {handleBack, handleMessage} from "../../utils/repeating.js";
 import axiosInstance from "../../utils/files/axiosInstance.js";
 import Annotators from "./Annotators.jsx";
 import {RiFeedbackLine} from "react-icons/ri";
-import { config } from "../../utils/files/config.js";
+import { configg } from "../../utils/files/config.js";
 
 export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, setAnnotations, annotations, setLoader,
                                      setMessage, file, msg, annotators, cred, setMsg, setShare, setAccess, other, setOther,

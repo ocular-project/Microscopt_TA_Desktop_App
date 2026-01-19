@@ -6,7 +6,7 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import { validateEmail } from "../utils/functions.jsx"
 import axiosInstance from "../utils/files/axiosInstance.js";
-import {config} from "../utils/files/config";
+import {configg} from "../utils/files/config";
 
 export default function Login(){
 
@@ -86,7 +86,7 @@ export default function Login(){
 
                 <div className={styles.lower}>
                     {
-                        config() ? (
+                        configg() ? (
                             <div onClick={handleClick}>
                                 My Computer
                             </div>

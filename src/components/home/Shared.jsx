@@ -9,15 +9,16 @@ export default function Shared(){
 
     const [isView, setIsView] = useState({view: false, files: [], fileId: ""})
     const [message, setMessage] = useState([])
+    const [config, setConfig] = useState(false)
 
     return (
         <div className={styles.container}>
             <div className={styles.innerContainer1}>
-                <Sidebar cat="shared" />
+                <Sidebar cat="shared" config={config} />
             </div>
             <div className={styles.innerContainer2}>
                 <div className={styles.content}>
-                    <Container cat="shared" message={message} setMessage={setMessage} setIsView={setIsView} isView={isView} />
+                    <Container cat="shared" message={message} setMessage={setMessage} setIsView={setIsView} isView={isView} config={config} />
                 </div>
             </div>
             {/*{*/}

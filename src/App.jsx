@@ -13,7 +13,7 @@ import ImageAnnotator from "./components/home/ImageAnnotator.jsx";
 import ImageView from "./components/home/ImageView.jsx";
 import Forgot from "./components/account/Forgot.jsx";
 import Reset from "./components/account/Reset.jsx";
-import {config} from "./components/utils/files/config.js";
+import {configg} from "./components/utils/files/config.js";
 import MyComputer from "./components/home/MyComputer.jsx";
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
   return (
     <Routes>
         {
-            config() ? (
+            configg() ? (
                 <>
                     <Route path="/:folderId?"
                            element={
