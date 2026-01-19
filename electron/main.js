@@ -7,7 +7,7 @@ import {
   createPhysicalFolder, getDataFile,
   getDataJson, getMyImageAnnotations,
   handleImagesUpload,
-  handleImageUpload, saveAnnotations
+  handleImageUpload, renameFolder, saveAnnotations
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -91,6 +91,7 @@ ipcMain.handle('electron:savePath', (event, folderPath) => {
   return true;
 });
 
+
 ipcMain.handle('electron:getPath', () => {
   return loadPath();
 });
@@ -111,6 +112,12 @@ ipcMain.handle('fileManagement:createFolder', (event, folder) => {
   }
 
   return  addDataJson(dir, data)
+
+})
+
+ipcMain.handle('fileManagement:renameFolder', (event, object) => {
+  const dir = loadPath()
+  return  renameFolder(dir, object)
 
 })
 

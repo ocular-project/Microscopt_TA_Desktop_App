@@ -22,27 +22,27 @@ export default function Rename({ setIsPop, setLoader, rename, setRename, setFold
         setError(null)
         setLoader(true)
         try {
+            const obj = {
+                name: rename.name,
+                folderId: rename.folderId
+            }
+
             let response
             if (cat === "computer") {
-
-                const path = localStorage.getItem("path")
-                if (path) {
-                     await axioss.post('folder/rename', rename)
+                response = await window.electronAPI.renameFolder(obj)
+                if (!response.success){
+                    setError(response.error);
+                    return
                 }
                 setFolders(prev =>
                     prev.map(folder =>
                         folder._id === rename.folderId
-                            ? { ...folder, name: rename.name }
+                            ? { ...folder, name: response.data }
                             : folder
                     )
                 )
-                handleCancel()
             }
             else {
-                const obj = {
-                    name: rename.name,
-                    folderId: rename.folderId
-                }
                 await axiosInstance.put('folder/rename', obj)
                 setFolders(prev =>
                     prev.map(folder =>
@@ -51,8 +51,9 @@ export default function Rename({ setIsPop, setLoader, rename, setRename, setFold
                             : folder
                     )
                 )
-                handleCancel()
             }
+
+            handleCancel()
         }catch (err) {
             console.log(err.response)
             const error = err.response

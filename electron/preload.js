@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getPath: () => ipcRenderer.invoke("electron:getPath"),
 
     createFolder: (folder) => ipcRenderer.invoke("fileManagement:createFolder", folder),
+    renameFolder: (object) => ipcRenderer.invoke("fileManagement:renameFolder", object),
     getFoldersAndFiles: (parentId) => ipcRenderer.invoke('fileManagement:getFoldersAndFiles', parentId),
     getFile: (fileId) => ipcRenderer.invoke('fileManagement:getFile', fileId),
 

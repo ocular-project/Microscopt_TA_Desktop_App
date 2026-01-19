@@ -1,4 +1,4 @@
-import { writeFile, readFile, access, mkdir } from 'fs/promises'
+import { writeFile, readFile, access, mkdir, rename } from 'fs/promises'
 import fs from 'fs/promises'
 import { constants } from 'fs';
 import path from "path";
@@ -27,6 +27,20 @@ export async function createPhysicalFolder(baseDir, folderName) {
     }
 }
 
+async function renameFile(oldPath, newName) {
+    try {
+        await access(oldPath, constants.F_OK)
+    }catch {
+        throw new Error(`Folder does not exist: ${oldPath}`);
+    }
+
+    const parentDir = path.dirname(oldPath)
+    const newPath = path.join(parentDir, newName)
+
+    await rename(oldPath, newPath)
+    return newPath
+}
+
 export async function addDataJson(dir, newObject) {
     let data = []
 
@@ -46,56 +60,72 @@ export async function addDataJson(dir, newObject) {
             if (error.code !== 'ENOENT') throw error;
         }
 
-        const exists = data.some(item => item.name === newObject.name)
+        const regex = new RegExp(`^${newObject.name}(?:_\\d+)?$`);
+
+        const count = data.filter(
+            item => item.parent === newObject.parent && regex.test(item.name)
+        ).length
+
+        // const exists = data.some(item => item.name === newObject.name)
 
         let newPath = folderPath
 
-        if (!exists){
-            if (newObject.type === "folder") {
-                const parentId = newObject.parent
-                let parentPath = []
-                if (newObject.parent){
-                    const parentFolder = data.find(item => item._id === parentId)
-                    if (parentFolder) {
-                        const pathList = parentFolder.path
-                        parentPath = [...pathList, parentId]
-                        newObject.path = parentPath
-                        if (!pathList.length){
-                            newPath = `${folderPath}/${parentFolder.name}`
-                        }
-                        else {
-                            newPath = `${folderPath}/`
-                            for (const object of parentPath){
-                                const item = data.find(item => item._id === object)
-                                if(item) {
-                                    newPath += `${item.name}/`
-                                }
+        // if (!exists){
+        if (newObject.type === "folder") {
+            const parentId = newObject.parent
+            let parentPath = []
+            if (newObject.parent){
+                const parentFolder = data.find(item => item._id === parentId)
+                if (parentFolder) {
+                    const pathList = parentFolder.path
+                    parentPath = [...pathList, parentId]
+                    newObject.path = parentPath
+                    if (!pathList.length){
+                        newPath = `${folderPath}/${parentFolder.name}`
+                    }
+                    else {
+                        newPath = `${folderPath}/`
+                        for (const object of parentPath){
+                            const item = data.find(item => item._id === object)
+                            if(item) {
+                                newPath += `${item.name}/`
                             }
                         }
                     }
                 }
             }
-
-            data.push(newObject)
-
-            await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-
-            if (newObject.type === "folder") {
-                await createPhysicalFolder(newPath, newObject.name)
+            newObject.name = count > 0 ? `${newObject.name}_${count+1}` : newObject.name
+        }
+        else {
+            if (count > 0){
+                return {
+                    success: false,
+                    data: newObject,
+                    error: `${newObject.type} already exists`
+                }
             }
+        }
 
-            return {
+        data.push(newObject)
+
+        await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+
+        if (newObject.type === "folder") {
+            await createPhysicalFolder(newPath, newObject.name)
+        }
+
+        return {
                 success: true,
                 data: newObject
             }
-        }
-        else {
-           return {
-                success: false,
-                data: newObject,
-                error: `${newObject.type} already exists`
-            }
-        }
+        // }
+        // else {
+        //    return {
+        //         success: false,
+        //         data: newObject,
+        //         error: `${newObject.type} already exists`
+        //     }
+        // }
 
     } catch (error) {
         console.log(error.message)
@@ -103,6 +133,57 @@ export async function addDataJson(dir, newObject) {
             success: false,
             error: `Error creating a folder: ${error.message}`
         }
+    }
+}
+
+export async function renameFolder(dir, object){
+
+    try {
+        const { name, folderId } = object
+
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+        const dataArray = await accessFolderFile(filePath)
+
+        const folder = dataArray.find(item => item._id === folderId)
+        if (!folder){
+            return { success: false, error: "Folder doesn't exist"}
+        }
+
+        const regex = new RegExp(`^${name}(?:_\\d+)?$`);
+
+        const count = dataArray.filter(
+            item => item.parent === folder.parent && regex.test(item.name)
+        ).length
+
+        let folderPath = `${dir}/Microscopy_TA/folders_and_images`
+        if (folder.parent){
+            for(const pf of folder.path){
+                const fd = dataArray.find(item => item._id === pf)
+                if (fd){
+                    folderPath += `/${fd.name}`
+                }
+            }
+        }
+
+        folderPath = `${folderPath}/${folder.name}`
+
+        const newName = count > 0 ? `${name}_${count+1}` : name
+        await renameFile(folderPath, newName)
+        const newDataArray = dataArray.map(obj =>
+            obj._id === folderId ? { ...obj, name: newName, updatedAt: Date.now() } : obj
+        )
+        await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
+
+        return {
+            success: true,
+            data: newName
+        }
+    }
+    catch (error) {
+        return {
+            success: false,
+            error: `Error reading data: ${error.message}`
+        };
     }
 }
 
@@ -214,8 +295,6 @@ export async function getDataJson(filePath, parentId) {
                 currentPath.push({ _id: parentFolder._id, name: parentFolder.name })
             }
         }
-
-        console.log(currentPath)
 
         return {
             success: true,
