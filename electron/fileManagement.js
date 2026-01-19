@@ -1,4 +1,4 @@
-import { writeFile, readFile, access, mkdir, rename } from 'fs/promises'
+import { writeFile, readFile, access, mkdir, rename, rm } from 'fs/promises'
 import fs from 'fs/promises'
 import { constants } from 'fs';
 import path from "path";
@@ -39,6 +39,19 @@ async function renameFile(oldPath, newName) {
 
     await rename(oldPath, newPath)
     return newPath
+}
+
+async function deleteFilePath(filePath, type) {
+  try {
+      if (type === "folder") {
+          await rm(filePath, { recursive: true, force: true });
+      }
+      else {
+          await rm(filePath)
+      }
+  } catch (err) {
+    throw err; // re-throw so caller can handle it
+  }
 }
 
 export async function addDataJson(dir, newObject) {
@@ -112,6 +125,7 @@ export async function addDataJson(dir, newObject) {
 
         if (newObject.type === "folder") {
             await createPhysicalFolder(newPath, newObject.name)
+            newObject.size = ""
         }
 
         return {
@@ -183,6 +197,28 @@ export async function renameFolder(dir, object){
         return {
             success: false,
             error: `Error reading data: ${error.message}`
+        };
+    }
+}
+
+export async function deleteFile(fileId) {
+    try {
+        const dir = loadPath()
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+        const dataArray = await accessFolderFile(filePath)
+
+        const folder = dataArray.find(item => item._id === fileId)
+        if (!folder){
+            return { success: false, error: "Folder doesn't exist"}
+        }
+
+        await deleteFilePath("" , folder.type)
+
+    }
+    catch (error) {
+        return {
+            success: false,
+            error: `Failed to delete file/ folder: ${error.message}`
         };
     }
 }
