@@ -12,8 +12,6 @@ export default function Folder(){
     const [message, setMessage] = useState([])
     const [config, setConfig] = useState(false)
 
-    console.log(location.pathname)
-
     return (
         <div className={styles.container}>
             <div className={styles.innerContainer1}>

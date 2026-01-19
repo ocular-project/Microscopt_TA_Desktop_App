@@ -8,7 +8,7 @@ import {useNavigate} from "react-router-dom";
 import {handleMessage} from "../../../utils/repeating.js";
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
-                                    setIsView, setRename, config }){
+                                    setIsView, setRename, config, cat }){
 
     const [selectedId, setSelectedId] = useState(null);
     const [selectedIconId, setSelectedIconId] = useState(null);
@@ -51,18 +51,17 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
             navigate(`/annotation/${folder._id}`)
         }
         else {
-            console.log(currentPath)
-            if (config) {
+            console.log(cat)
+            if (cat === "computer") {
                 navigate(`/${folder._id}`);
-            }else {
-                if (currentPath.startsWith("/collaboration")){
-                    navigate(`/collaboration/${folder._id}`);
-                }else {
-                    navigate(`/sharedFiles/${folder._id}`);
-                }
+            }
+            else if (cat === "folder") {
+                navigate(`/collaboration/${folder._id}`);
+            }
+            else {
+                navigate(`/sharedFiles/${folder._id}`);
             }
         }
-
     };
 
     const handleIconClick = (folder) => {

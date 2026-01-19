@@ -115,7 +115,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                             ) : (
                                 <Folders folders={folders} setLoader={setLoader} setMessage={setMessage} setFolders={setFolders}
                                          setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setIsView={setIsView}
-                                         setRename={setRename} config={config}
+                                         setRename={setRename} config={config} cat={cat}
                                 />
                             )
                         }

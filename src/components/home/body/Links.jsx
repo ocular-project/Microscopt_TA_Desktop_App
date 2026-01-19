@@ -35,20 +35,28 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
 
     const handleLinkClick = (link, index) => {
         if (index < links.length - 1) {
-             if (!currentPath.startsWith("/sharedFiles")){
+            if (cat === "computer") {
                 navigate(`/${link._id}`);
-            }else {
-                 navigate(`/sharedFiles/${link._id}`);
+            }
+            else if (cat === "folder") {
+                navigate(`/collaboration/${link._id}`);
+            }
+            else {
+                navigate(`/sharedFiles/${link._id}`);
             }
 
         }
     }
 
     const handleHomeClick = () => {
-        if (!currentPath.startsWith("/sharedFiles")){
+        if (cat === "computer") {
             navigate('/', { replace: true });
-        }else {
-             navigate('/sharedFiles', { replace: true });
+        }
+        else if (cat === "folder") {
+            navigate('/collaboration', { replace: true });
+        }
+        else {
+            navigate('/sharedFiles', { replace: true });
         }
     }
 
@@ -198,18 +206,10 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                     <div className={styles.linkDiv}>
                                         <div onClick={handleHomeClick}>
                                             {
-                                                cat === "folder" || cat === "computer" ? (
-                                                    <>
-                                                        {
-                                                            config ? (
-                                                                <>My Computer</>
-                                                            ) : (
-                                                                <>
-                                                                    Home
-                                                                </>
-                                                            )
-                                                        }
-                                                    </>
+                                                cat === "computer" ? (
+                                                    <>My Computer</>
+                                                ) : cat === "folder" ? (
+                                                    <>My Drive</>
                                                 ) : cat === "shared" ? (
                                                      <>
                                                         Shared files
@@ -247,49 +247,25 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                    <div className={styles.linkDiv}>
                                         <div>
                                             {
-                                                !config ? (
+                                                path.startsWith("/team") ? (
                                                     <>
-                                                        {
-                                                            currentPath.startsWith("/team") ? (
-                                                                <>
-                                                                    Teams
-                                                                </>
-                                                            ) : currentPath.startsWith("/shared") ? (
-                                                                 <>
-                                                                    Shared files
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    Home
-                                                                </>
-                                                            )
-                                                        }
+                                                        Teams
+                                                    </>
+                                                ) : path.startsWith("/shared") ? (
+                                                     <>
+                                                        Shared files
+                                                    </>
+                                                ) : path.startsWith("/collaboration") ? (
+                                                     <>
+                                                        My drive
+                                                     </>
+                                                ) : path.startsWith("/device") ? (
+                                                     <>
+                                                        Devices
                                                     </>
                                                 ) : (
                                                     <>
-                                                        {
-                                                            path.startsWith("/team") ? (
-                                                                <>
-                                                                    Teams
-                                                                </>
-                                                            ) : path.startsWith("/shared") ? (
-                                                                 <>
-                                                                    Shared files
-                                                                </>
-                                                            ) : path.startsWith("/collaboration") ? (
-                                                                 <>
-                                                                    My drive
-                                                                 </>
-                                                            ) : path.startsWith("/device") ? (
-                                                                 <>
-                                                                    Devices
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    My Computer
-                                                                </>
-                                                            )
-                                                        }
+                                                        My Computer
                                                     </>
                                                 )
                                             }
