@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     renameFolder: (object) => ipcRenderer.invoke("fileManagement:renameFolder", object),
     getFoldersAndFiles: (parentId) => ipcRenderer.invoke('fileManagement:getFoldersAndFiles', parentId),
     getFile: (fileId) => ipcRenderer.invoke('fileManagement:getFile', fileId),
+    deleteFile: (fileId) => ipcRenderer.invoke('fileManagement:deleteFile', fileId),
 
     saveAnnotation: (body) => ipcRenderer.invoke("imageAnnotation:saveAnnotation", body),
     getMyAnnotations: (imageId) => ipcRenderer.invoke("imageAnnotation:getMyAnnotation", imageId),

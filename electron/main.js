@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { savePath, loadPath } from './storage.js'
 import {
   addDataJson,
-  createPhysicalFolder, getDataFile,
+  createPhysicalFolder, deleteFile, getDataFile,
   getDataJson, getMyImageAnnotations,
   handleImagesUpload,
   handleImageUpload, renameFolder, saveAnnotations
@@ -131,6 +131,10 @@ ipcMain.handle('fileManagement:getFile', (event, fileId) => {
   const dir = loadPath()
   return  getDataFile(`${dir}/Microscopy_TA/database/database.json`, fileId)
 
+})
+
+ipcMain.handle('fileManagement:deleteFile', (event, fileId) => {
+  return  deleteFile(fileId)
 })
 
 ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {

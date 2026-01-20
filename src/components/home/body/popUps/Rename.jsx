@@ -72,7 +72,7 @@ export default function Rename({ setIsPop, setLoader, rename, setRename, setFold
         <div className={styles.main}>
             <div className={styles.header}>
                 <div className={styles.headerDiv1}>
-                    <h1>Rename</h1>
+                    <h1>Rename File/ Folder</h1>
                     {/*<p>Organise your files by creating a new folder.</p>*/}
                 </div>
                 <div className={styles.mainSpan} onClick={handleCancel}>

@@ -85,22 +85,25 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     }
 
     const handleDelete = async (folder) => {
-        setLoader(true)
-        try {
-            await axiosInstance.delete(`folders/${folder._id}`)
-            const updatedList = folders.filter(folderItem => folderItem !== folder)
-            setFolders(updatedList)
-            // setMessage({show: true, message: "Folder/ File delete successfully", status: "success"})
-            handleMessage("Folder/ File delete successfully", "success", setMessage)
-        }catch (err) {
-            const error = err.response?.data?.error || 'An error occurred'
-            // setMessage({show: true, message:  error, status: "error"})
-            handleMessage(error, "error", setMessage)
-        }finally {
-            setLoader(false)
-            setSelectedId(null)
-            setSelectedIconId(null)
-        }
+        setFile(folder)
+        setIsPop(true)
+        setScreen(prev => ({...prev, deleteFile: true}))
+        // setLoader(true)
+        // try {
+        //     await axiosInstance.delete(`folders/${folder._id}`)
+        //     const updatedList = folders.filter(folderItem => folderItem !== folder)
+        //     setFolders(updatedList)
+        //     // setMessage({show: true, message: "Folder/ File delete successfully", status: "success"})
+        //     handleMessage("Folder/ File delete successfully", "success", setMessage)
+        // }catch (err) {
+        //     const error = err.response?.data?.error || 'An error occurred'
+        //     // setMessage({show: true, message:  error, status: "error"})
+        //     handleMessage(error, "error", setMessage)
+        // }finally {
+        //     setLoader(false)
+        //     setSelectedId(null)
+        //     setSelectedIconId(null)
+        // }
     }
 
    const getFileName = (name) => {
@@ -116,7 +119,6 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
    const handleShare= async (folder) => {
-
        setFile(folder)
        setIsPop(true)
        setScreen(prev => ({...prev, share: true}))
@@ -146,7 +148,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     function handleRename(folder) {
         setRename(prev => ({...prev, folderId: folder._id, name: folder.name}))
         setIsPop(true)
-       setScreen(prev => ({...prev, rename: true}))
+        setScreen(prev => ({...prev, rename: true}))
     }
 
     return (
@@ -247,7 +249,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                         }
                                                         <li>
                                                             <div onClick={(e) => {
-                                                                e.stopPropagation()
+                                                                // e.stopPropagation()
                                                                 handleDelete(folder)
                                                             }}>
                                                                 Delete

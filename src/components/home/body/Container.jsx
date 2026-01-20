@@ -19,12 +19,13 @@ import Delete from "./popUps/Delete";
 import Rename from "./popUps/Rename";
 import {handleMessage} from "../../utils/repeating";
 import Move from "./popUps/Move";
+import DeleteFile from "./popUps/DeleteFile.jsx";
 
 export default function Container({ cat, setIsView, isView, message, setMessage, config }){
 
     const [isPop, setIsPop] = useState(false)
     const [screen, setScreen] = useState({folderCreate: false, teamCreate: false, share: false,
-        teamInfo: false, fileInfo: false, id: "", pathCreate: false, delete: false, rename: false, move: false})
+        teamInfo: false, fileInfo: false, id: "", pathCreate: false, delete: false, rename: false, move: false, deleteFile: false})
     const [loader, setLoader] = useState(false)
     const [loader2, setLoader2] = useState(false)
     const [folder, setFolder] = useState({name: "", parentId: ""})
@@ -46,7 +47,8 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
     useEffect(() => {
         if (!isPop) {
             setScreen({folderCreate: false, teamCreate: false, share: false, teamInfo: false, fileInfo: false,
-                id: "", pathCreate: false, delete: false, rename: false, move: false});
+                id: "", pathCreate: false, delete: false, rename: false, move: false, deleteFile: false});
+            setFile({})
         }
     }, [isPop]);
 
@@ -90,6 +92,8 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                             <Share setIsPop={setIsPop} setLoader={setLoader} file={file} screen={screen} setFolders={setFolders} setScreen={setScreen}/>
                         ) : screen.move ? (
                            <Move setIsPop={setIsPop} setLoader={setLoader} rename={rename} setRename={setRename} setFolders={setFolders} setMessage={setMessage} cat={cat} />
+                        ) : screen.deleteFile ? (
+                            <DeleteFile setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} setScreen={setScreen} setFolders={setFolders} cat={cat} file={file}/>
                         ) : null
                     }
 

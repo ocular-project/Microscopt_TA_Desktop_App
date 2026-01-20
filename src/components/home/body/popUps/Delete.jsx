@@ -23,6 +23,7 @@ export default function Delete({ file, setFolders, setLoader, setMessage, folder
 
         if (path) {
             setLoader(true)
+            setError(null)
             try {
                 await axioss.delete('folder', {
                     params: {
@@ -152,32 +153,32 @@ export default function Delete({ file, setFolders, setLoader, setMessage, folder
 
     return (
         <div className={styles.main}>
-                <div className={styles.header}>
-                    <div className={styles.headerDiv1}>
-                        <h1>Deleting Folders/ Files</h1>
-                        <p>All images, annotations and sub folders will be deleted</p>
-                    </div>
-                    <div className={styles.mainSpan} onClick={handleCancel}>
-                        <FontAwesomeIcon icon={faXmark} />
-                    </div>
+            <div className={styles.header}>
+                <div className={styles.headerDiv1}>
+                    <h1>Deleting Folders/ Files</h1>
+                    <p>All images, annotations and sub folders will be deleted</p>
                 </div>
-
-                <hr/>
-
-                 <p style={{ fontSize: '12px' }}>Are you sure you want to delete all the selected folders?</p>
-
-                 {
-                    error && <div className={css.error}>{error}</div>
-                 }
-
-                <hr/>
-
-                <div className={styles.buttons}>
-                    <Button text="No" status="cancel" onClick={handleCancel}/>
-                    <Button text="Yes" status="active" onClick={handleNewDelete} />
+                <div className={styles.mainSpan} onClick={handleCancel}>
+                    <FontAwesomeIcon icon={faXmark} />
                 </div>
-
-
             </div>
+
+            <hr/>
+
+             <p style={{ fontSize: '12px' }}>Are you sure you want to delete all the selected folders?</p>
+
+             {
+                error && <div className={css.error}>{error}</div>
+             }
+
+            <hr/>
+
+            <div className={styles.buttons}>
+                <Button text="No" status="cancel" onClick={handleCancel}/>
+                <Button text="Yes" status="active" onClick={handleNewDelete} />
+            </div>
+
+
+        </div>
     )
 }

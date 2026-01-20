@@ -169,17 +169,7 @@ export async function renameFolder(dir, object){
             item => item.parent === folder.parent && regex.test(item.name)
         ).length
 
-        let folderPath = `${dir}/Microscopy_TA/folders_and_images`
-        if (folder.parent){
-            for(const pf of folder.path){
-                const fd = dataArray.find(item => item._id === pf)
-                if (fd){
-                    folderPath += `/${fd.name}`
-                }
-            }
-        }
-
-        folderPath = `${folderPath}/${folder.name}`
+        const { folderPath, imageList } = getFolderPath(folder, dir)
 
         const newName = count > 0 ? `${name}_${count+1}` : name
         await renameFile(folderPath, newName)
@@ -201,6 +191,26 @@ export async function renameFolder(dir, object){
     }
 }
 
+function getFolderPath(folder, dir){
+    let folderPath = `${dir}/Microscopy_TA/folders_and_images`
+    let imageList = []
+
+    if (folder.parent){
+        for(const pf of folder.path){
+            const fd = dataArray.find(item => item._id === pf)
+            if (fd){
+                if (fd.type === "file"){
+                    imageList.push(fd._id)
+                }
+                folderPath += `/${fd.name}`
+            }
+        }
+    }
+
+    folderPath = `${folderPath}/${folder.name}`
+    return { folderPath, imageList }
+}
+
 export async function deleteFile(fileId) {
     try {
         const dir = loadPath()
@@ -209,10 +219,34 @@ export async function deleteFile(fileId) {
 
         const folder = dataArray.find(item => item._id === fileId)
         if (!folder){
-            return { success: false, error: "Folder doesn't exist"}
+            return { success: false, error: "Folder/ File doesn't exist"}
         }
 
-        await deleteFilePath("" , folder.type)
+        let msg
+        let imageList = []
+        if (folder.type === "file" && !folder.parent){
+            msg = "The file record has been deleted but the image still exists on your computer"
+            imageList.push(folder._id)
+        }
+        else {
+            const { folderPath, imageList: images } = getFolderPath(folder, dir)
+            imageList = images
+            await deleteFilePath(folderPath , folder.type)
+            msg = "The File/ Folder has been deleted successfully"
+        }
+
+        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const annoArray = await accessAnnotationFile(annoFilePath)
+        const updatedAnno = annoArray.filter(an => !imageList.includes(an.imageId))
+        await writeFile(annoFilePath, JSON.stringify(updatedAnno, null, 2), 'utf8');
+
+        const newData = dataArray.filter(item => item._id !== fileId && !item.path.includes(fileId))
+        await writeFile(filePath, JSON.stringify(newData, null, 2), 'utf8');
+
+        return {
+            success: true,
+            message: msg
+        }
 
     }
     catch (error) {
