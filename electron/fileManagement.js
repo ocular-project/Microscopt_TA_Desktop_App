@@ -3,7 +3,9 @@ import fs from 'fs/promises'
 import { constants } from 'fs';
 import path from "path";
 import { loadPath } from './storage.js'
+import dns from "dns"
 
+// creating a physical folder on computer
 export async function createPhysicalFolder(baseDir, folderName) {
     // Create the full absolute path
     const fullPath = path.join(baseDir, folderName);
@@ -27,6 +29,7 @@ export async function createPhysicalFolder(baseDir, folderName) {
     }
 }
 
+// renaming a file or folder on the computer
 async function renameFile(oldPath, newName) {
     try {
         await access(oldPath, constants.F_OK)
@@ -41,6 +44,7 @@ async function renameFile(oldPath, newName) {
     return newPath
 }
 
+// deleting a file or folder from the computer
 async function deleteFilePath(filePath, type) {
   try {
       if (type === "folder") {
@@ -54,6 +58,7 @@ async function deleteFilePath(filePath, type) {
   }
 }
 
+// creating an object in the database json file
 export async function addDataJson(dir, newObject) {
     let data = []
 
@@ -150,6 +155,7 @@ export async function addDataJson(dir, newObject) {
     }
 }
 
+// renaming an object in the database json file
 export async function renameFolder(dir, object){
 
     try {
@@ -191,6 +197,7 @@ export async function renameFolder(dir, object){
     }
 }
 
+// getting the path of a folder/ file based on its object PATH
 function getFolderPath(folder, dir){
     let folderPath = `${dir}/Microscopy_TA/folders_and_images`
     let imageList = []
@@ -211,6 +218,7 @@ function getFolderPath(folder, dir){
     return { folderPath, imageList }
 }
 
+// deleting an object from the database json file
 export async function deleteFile(fileId) {
     try {
         const dir = loadPath()
@@ -257,6 +265,7 @@ export async function deleteFile(fileId) {
     }
 }
 
+// get the annotation array from annotations.json file
 async function accessAnnotationFile(filePath) {
     try {
         await access(filePath)
@@ -274,6 +283,7 @@ async function accessAnnotationFile(filePath) {
     }
 }
 
+// checks if the image exists on the computer
 async function imageExists(filePath) {
   try {
     await access(filePath, constants.F_OK);
@@ -283,6 +293,7 @@ async function imageExists(filePath) {
   }
 }
 
+// Loading an image for annotation
 export async function getDataFile(filePath, fileId) {
     try {
         const dataArray = await accessFolderFile(filePath)
@@ -324,6 +335,7 @@ export async function getDataFile(filePath, fileId) {
     }
 }
 
+// get root files or folder files or sub folders
 export async function getDataJson(filePath, parentId) {
     try {
         // 1. Check if the file exists
@@ -394,6 +406,7 @@ export async function getDataJson(filePath, parentId) {
     }
 }
 
+// saving the images' objects of the image on the computer
 export async function handleImagesUpload(filePaths, parentId) {
   try {
       const results = [];
@@ -435,6 +448,7 @@ export async function handleImagesUpload(filePaths, parentId) {
   }
 }
 
+// saving the image object of the image on the computer
 export async function handleImageUpload(filePath) {
     try {
 
@@ -466,6 +480,7 @@ export async function handleImageUpload(filePath) {
     }
 }
 
+// saving image annotations
 export async function saveAnnotations(body){
     try {
         const { imageId, annotations } = body
@@ -519,6 +534,7 @@ export async function saveAnnotations(body){
     }
 }
 
+// get the data array from database.json file
 async function accessFolderFile(filePath) {
 
     await access(filePath);
@@ -531,6 +547,7 @@ async function accessFolderFile(filePath) {
 
 }
 
+// get image annotations
 export async function getMyImageAnnotations(imageId) {
     try {
         const dir = loadPath()
@@ -558,4 +575,160 @@ export async function getMyImageAnnotations(imageId) {
       };
     }
 
+}
+
+// transfer image to the online drive
+export async function transferFile(fileId, type) {
+    try {
+        const dir = loadPath()
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+        const dataArray = await accessFolderFile(filePath)
+
+        const folder = dataArray.find(item => item._id === fileId)
+        if (!folder){
+            return { success: false, error: "Folder/ File doesn't exist"}
+        }
+
+        if (folder.type === "file") {
+            const filePathX = folder.url
+            const result = await validateImageExists(filePathX);
+            if (!result.success) {
+                return result;
+            }
+            // console.log(filePathX)
+            const buffer = await readFile(filePathX)
+            const extension = filePathX.split('.').pop().toLowerCase();
+            // console.log(extension)
+            const mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
+            // console.log(mimeType)
+
+            return {
+                success: true,
+                data: {
+                    buffer,
+                    name: folder.name,
+                    mimeType
+                }
+            }
+        }
+
+        return {
+                success: false
+            }
+    }
+    catch (error) {
+      return {
+        success: false,
+        error: `Error: ${error.message}`
+      };
+    }
+}
+
+async function validateImageExists(filePath) {
+    const exists = await imageExists(filePath);
+
+    if (!exists) {
+        return {
+            success: false,
+            error: "Image no longer exists on your machine"
+        };
+    }
+
+    return { success: true };
+}
+
+export async function transferFiles(fileList, type) {
+    try {
+        const dir = loadPath()
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+        const dataArray = await accessFolderFile(filePath)
+
+        const fileType = fileList.some(file => file.type === "file")
+
+        if (fileType) {
+            const newList = fileList.map(file => file.id)
+            let msg = ""
+            let data = []
+            for (const [index, id] of newList.entries()) {
+                const folder = dataArray.find(item => item._id === id)
+                if (!folder) {
+                    const value = index+1
+                    msg = `Image recorde for Image number ${value} doesn't exist`
+                    break
+                }
+                const url = folder.url
+                const exists = await imageExists(url);
+                if (!exists) {
+                     msg = `This image: ${folder.name} no longer exist on your machine`
+                    break
+                }
+                const buffer = await readFile(url)
+                const extension = url.split('.').pop().toLowerCase();
+                const obj = {
+                    buffer,
+                    name: folder.name,
+                    extension
+                }
+                data.push(obj)
+            }
+
+            if (msg) {
+                return {
+                    success: false,
+                    error: msg
+                }
+            }
+
+            return {
+                success: true,
+                data
+            }
+
+        }
+        // const folder = dataArray.find(item => item._id === fileId)
+        // if (!folder){
+        //     return { success: false, error: "Folder/ File doesn't exist"}
+        // }
+
+        // if (folder.type === "file") {
+        //     const filePath = folder.url
+        //     console.log(filePath)
+        //     const buffer = await readFile(filePath)
+        //     const extension = filePath.split('.').pop().toLowerCase();
+        //     console.log(extension)
+        //     const mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
+        //     console.log(mimeType)
+        //
+        //     return {
+        //         success: true,
+        //         data: {
+        //             buffer,
+        //             name: folder.name,
+        //             mimeType
+        //         }
+        //     }
+        // }
+
+        return {
+            success: false
+        }
+    }
+    catch (error) {
+      return {
+        success: false,
+        error: `Error: ${error.message}`
+      };
+    }
+}
+
+// check for an internet connection
+function hasInternet(){
+    const domain = "http://localhost:3001"
+    // const domain = "https://expressbackend.ocular-project.com"
+
+    return new Promise((resolve) => {
+        dns.lookup(domain, (err) => {
+            resolve(!err);
+        });
+    });
 }

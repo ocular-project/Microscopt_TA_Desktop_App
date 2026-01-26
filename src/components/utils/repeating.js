@@ -1,4 +1,5 @@
 import axioss from "./files/axios";
+import axiosInstance from "./files/axiosInstance.js";
 
 export function checkElectron (isElectron) {
      if (!isElectron) {
@@ -86,4 +87,43 @@ export function handleBack(navigate) {
 
 export async function getPath() {
      return await window.electronAPI.getPath();
+}
+
+export async function sendToDrive(folder, setMessage, setLoader){
+   setLoader(true)
+   try {
+       const response = await window.electronAPI.transferFile(folder._id, "copy")
+       if (!response.success){
+           handleMessage(`Error: ${response.error}`, "error", setMessage)
+           return
+       }
+       // handleMessage("Folder/ File delete successfully", "success", setMessage)
+       const data = response.data
+       const buffer = data.buffer
+       // console.log(data)
+       const blob = new Blob([buffer], { type: data.mineType })
+
+       // console.log(blob)
+
+       const formData = new FormData();
+       formData.append('file', blob, data.name);
+       // console.log(formData.get('file'))
+
+       const resp = await axiosInstance.post("desktop/files", formData)
+       handleMessage(resp.data.message, "success", setMessage)
+
+   }
+   catch (err) {
+        console.log(err)
+        if (err.response?.data?.error) {
+            handleMessage(err.response.data.error, "error", setMessage);
+            return;
+        }
+
+        handleMessage(`Error: ${err.message || err}`, "error", setMessage);
+    }
+   finally
+   {
+        setLoader(false)
+   }
 }

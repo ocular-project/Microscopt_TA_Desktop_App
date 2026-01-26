@@ -11,7 +11,7 @@ import Teams from "./tables/Teams.jsx";
 import { fetchTeamsData } from "../../utils/files/RepeatingFiles.jsx";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
-                                  setFile, setMessage, setIsView, isView, setRename, config }){
+                                  setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds }){
 
     const [error, setError] = useState(null)
     const location = useLocation()
@@ -115,7 +115,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                             ) : (
                                 <Folders folders={folders} setLoader={setLoader} setMessage={setMessage} setFolders={setFolders}
                                          setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setIsView={setIsView}
-                                         setRename={setRename} config={config} cat={cat}
+                                         setRename={setRename} config={config} cat={cat} setCheckedIds={setCheckedIds} checkedIds={checkedIds}
                                 />
                             )
                         }

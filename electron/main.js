@@ -7,7 +7,7 @@ import {
   createPhysicalFolder, deleteFile, getDataFile,
   getDataJson, getMyImageAnnotations,
   handleImagesUpload,
-  handleImageUpload, renameFolder, saveAnnotations
+  handleImageUpload, renameFolder, saveAnnotations, transferFile, transferFiles
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -131,6 +131,14 @@ ipcMain.handle('fileManagement:getFile', (event, fileId) => {
   const dir = loadPath()
   return  getDataFile(`${dir}/Microscopy_TA/database/database.json`, fileId)
 
+})
+
+ipcMain.handle('fileManagement:transferFile', (event, fileId, type) => {
+  return  transferFile(fileId, type)
+})
+
+ipcMain.handle('fileManagement:transferFiles', (event, fileList, type) => {
+  return  transferFiles(fileList, type)
 })
 
 ipcMain.handle('fileManagement:deleteFile', (event, fileId) => {

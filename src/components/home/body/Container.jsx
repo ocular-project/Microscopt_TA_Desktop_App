@@ -65,7 +65,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
             <Table cat={cat} setLoader={setLoader2} folders={folders} setFolders={setFolders}
                         setTeams={setTeams} teams={teams} setLinks={setLinks}
                         setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setMessage={setMessage}
-                        setIsView={setIsView} isView={isView} setRename={setRename} config={config}
+                        setIsView={setIsView} isView={isView} setRename={setRename} config={config} setCheckedIds={setCheckedIds} checkedIds={checkedIds}
             />
 
             <div className={`${styles.popup} ${isPop ? styles.active : ""}`}>

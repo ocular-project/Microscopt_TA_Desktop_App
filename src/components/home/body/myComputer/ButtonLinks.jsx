@@ -5,6 +5,7 @@ import dbApi from "../../../utils/files/dbApi";
 import axioss from "../../../utils/files/axios";
 import {useNavigate, useParams} from "react-router-dom";
 import {getPath, handleMessage} from "../../../utils/repeating";
+import axiosInstance from "../../../utils/files/axiosInstance.js";
 
 export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, setCheckedIds, checkedIds, config }){
 
@@ -130,12 +131,64 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
     }
 
     async function handleDelete () {
-        setScreen(prev => ({...prev, delete: true}))
-        setIsPop(true)
+        // setScreen(prev => ({...prev, delete: true}))
+        // setIsPop(true)
     }
 
     async function handleMove () {
 
+    }
+
+    async function handleCopy () {
+        setLoader(true)
+       try {
+           const response = await window.electronAPI.transferFiles(checkedIds, "copy")
+           if (!response.success){
+               handleMessage(`Error: ${response.error}`, "error", setMessage)
+               return
+           }
+           const data = response.data
+           const formData = new FormData();
+           for (const da of data) {
+               const buffer = da.buffer
+               const blob = new Blob([buffer], { type: da.extension })
+               formData.append('files', blob, da.name);
+           }
+
+           const resp = await axiosInstance.post("desktop/files", formData)
+           // console.log(resp.data)
+           handleMessage(resp.data.message, "success", setMessage)
+
+           // handleMessage("Folder/ File delete successfully", "success", setMessage)
+           // const data = response.data
+           // const buffer = data.buffer
+           // // console.log(data)
+           // const blob = new Blob([buffer], { type: data.mineType })
+           //
+           // // console.log(blob)
+           //
+           // const formData = new FormData();
+           // formData.append('file', blob, data.name);
+           // // console.log(formData.get('file'))
+           //
+           // const resp = await axiosInstance.post("desktop/files", formData)
+           // handleMessage(resp.data.message, "success", setMessage)
+
+       }
+       catch (err) {
+            console.log(err)
+            if (err.response?.data?.error) {
+                handleMessage(err.response.data.error, "error", setMessage);
+                return;
+            }
+
+            handleMessage(`Error: ${err.message || err}`, "error", setMessage);
+        }
+       finally
+       {
+            setLoader(false)
+           setCheckedIds([])
+       }
     }
 
     async function loadImage() {
@@ -205,10 +258,11 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
             {
                 checkedIds.length > 0 ? (
                     <>
-                        <Button text="Move Selected" status="active" onClick={handleMove} />
-                        <div className={styles.main} onClick={handleDelete}>
-                            Delete Selected
-                        </div>
+                        <Button text="Copy to My Drive" status="active" onClick={handleCopy} />
+                        <Button text="Move to My Drive" status="active" onClick={handleMove} />
+                        {/*<div className={styles.main} onClick={handleDelete}>*/}
+                        {/*    Delete Selected*/}
+                        {/*</div>*/}
                     </>
                 ) : (
                     <>

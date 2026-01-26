@@ -5,10 +5,11 @@ import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEllipsisVertical, faXmark} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router-dom";
-import {handleMessage} from "../../../utils/repeating.js";
+import {handleMessage, sendToDrive} from "../../../utils/repeating.js";
+import {IoMdCheckmark} from "react-icons/io";
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
-                                    setIsView, setRename, config, cat }){
+                                    setIsView, setRename, config, cat, setCheckedIds, checkedIds }){
 
     const [selectedId, setSelectedId] = useState(null);
     const [selectedIconId, setSelectedIconId] = useState(null);
@@ -151,6 +152,65 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
         setScreen(prev => ({...prev, rename: true}))
     }
 
+    function handleMoveToDrive(folder){
+
+    }
+
+    async function handleCopyToDrive(folder){
+            setLoader(true)
+           try {
+               const response = await window.electronAPI.transferFile(folder._id, "copy")
+               if (!response.success){
+                   handleMessage(`Error: ${response.error}`, "error", setMessage)
+                   return
+               }
+               // handleMessage("Folder/ File delete successfully", "success", setMessage)
+               const data = response.data
+               const buffer = data.buffer
+               // console.log(data)
+               const blob = new Blob([buffer], { type: data.mineType })
+
+               // console.log(blob)
+
+               const formData = new FormData();
+               formData.append('file', blob, data.name);
+               // console.log(formData.get('file'))
+
+               const resp = await axiosInstance.post("desktop/files", formData)
+               handleMessage(resp.data.message, "success", setMessage)
+
+           }
+           catch (err) {
+                console.log(err)
+                if (err.response?.data?.error) {
+                    handleMessage(err.response.data.error, "error", setMessage);
+                    return;
+                }
+
+                handleMessage(`Error: ${err.message || err}`, "error", setMessage);
+            }
+           finally
+           {
+                setLoader(false)
+           }
+    }
+
+    function handleSelected(folder) {
+        const typeExists = checkedIds.some(item => item.type === folder.type);
+        if (typeExists || !checkedIds.length) {
+            setCheckedIds(prev => {
+                const exists = prev.some(item => item.id === folder._id);
+                if (exists) {
+                    return prev.filter(item => item.id !== folder._id);
+                }
+                return [...prev, {id: folder._id, type: folder.type}]
+            })
+        }
+        else {
+            handleMessage("You can only select either images or folder but not both", "error", setMessage)
+        }
+    }
+
     return (
         <table>
             <thead>
@@ -181,6 +241,14 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                        >
                            <td>
                                <div className={styles.type}>
+                                   <div className={`${styles.checking2} ${checkedIds.some(item => item.id === folder._id)? styles.active : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleSelected(folder)
+                                        }}
+                                    >
+                                        <IoMdCheckmark style={{ color: 'white' }}/>
+                                   </div>
                                    <img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>
                                    {getFileName(folder.name)}
                                </div>
@@ -253,6 +321,28 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                                 handleDelete(folder)
                                                             }}>
                                                                 Delete
+                                                            </div>
+                                                        </li>
+                                                    </>
+                                                )
+                                            }
+                                            {
+                                                cat === "computer" && (
+                                                    <>
+                                                        <li>
+                                                            <div onClick={(e) => {
+                                                                // e.stopPropagation()
+                                                                handleCopyToDrive(folder)
+                                                            }}>
+                                                                Copy to My Drive
+                                                            </div>
+                                                        </li>
+                                                        <li>
+                                                            <div onClick={(e) => {
+                                                                // e.stopPropagation()
+                                                                handleMoveToDrive(folder)
+                                                            }}>
+                                                                Move to My Drive
                                                             </div>
                                                         </li>
                                                     </>
