@@ -158,25 +158,24 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
 
     async function handleCopyToDrive(folder){
             setLoader(true)
+           const obj = {id: folder._id, type: folder.type}
            try {
-               const response = await window.electronAPI.transferFile(folder._id, "copy")
+                const response = await window.electronAPI.transferFiles([obj], "copy")
                if (!response.success){
                    handleMessage(`Error: ${response.error}`, "error", setMessage)
                    return
                }
                // handleMessage("Folder/ File delete successfully", "success", setMessage)
                const data = response.data
-               const buffer = data.buffer
-               // console.log(data)
-               const blob = new Blob([buffer], { type: data.mineType })
-
-               // console.log(blob)
-
                const formData = new FormData();
-               formData.append('file', blob, data.name);
-               // console.log(formData.get('file'))
+               for (const da of data) {
+                   const buffer = da.buffer
+                   const blob = new Blob([buffer], { type: da.extension })
+                   formData.append('files', blob, da.name);
+               }
 
                const resp = await axiosInstance.post("desktop/files", formData)
+               // console.log(resp.data)
                handleMessage(resp.data.message, "success", setMessage)
 
            }
