@@ -195,8 +195,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     }
 
     function handleSelected(folder) {
-        const typeExists = checkedIds.some(item => item.type === folder.type);
-        if (typeExists || !checkedIds.length) {
+        if (folder.type === 'file') {
             setCheckedIds(prev => {
                 const exists = prev.some(item => item.id === folder._id);
                 if (exists) {
@@ -206,8 +205,21 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
             })
         }
         else {
-            handleMessage("You can only select either images or folder but not both", "error", setMessage)
+            handleMessage("Only images can be uploaded", "error", setMessage)
         }
+        // const typeExists = checkedIds.some(item => item.type === folder.type);
+        // if (typeExists || !checkedIds.length) {
+        //     setCheckedIds(prev => {
+        //         const exists = prev.some(item => item.id === folder._id);
+        //         if (exists) {
+        //             return prev.filter(item => item.id !== folder._id);
+        //         }
+        //         return [...prev, {id: folder._id, type: folder.type}]
+        //     })
+        // }
+        // else {
+        //     handleMessage("You can only select either images or folder but not both", "error", setMessage)
+        // }
     }
 
     return (

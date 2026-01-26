@@ -243,6 +243,10 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
         navigate(`/annotation/${folder._id}`)
     }
 
+    function handleDeselect () {
+        setCheckedIds([])
+    }
+
     return (
         <>
             {
@@ -260,9 +264,9 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                     <>
                         <Button text="Copy to My Drive" status="active" onClick={handleCopy} />
                         <Button text="Move to My Drive" status="active" onClick={handleMove} />
-                        {/*<div className={styles.main} onClick={handleDelete}>*/}
-                        {/*    Delete Selected*/}
-                        {/*</div>*/}
+                        <div className={styles.main} onClick={handleDeselect}>
+                            Deselect All
+                        </div>
                     </>
                 ) : (
                     <>
