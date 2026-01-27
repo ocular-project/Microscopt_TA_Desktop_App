@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, session } from "electron";
 import path from "path";
+import fs from 'fs'
 import { fileURLToPath } from "url";
 import { savePath, loadPath } from './storage.js'
 import {
@@ -152,3 +153,50 @@ ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {
 ipcMain.handle('imageAnnotation:getMyAnnotation', (event, imageId) => {
   return getMyImageAnnotations(imageId)
 })
+
+ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
+    const win = BrowserWindow.getFocusedWindow();
+
+    return new Promise((resolve, reject) => {
+        win.webContents.downloadURL(url);
+
+        session.defaultSession.once('will-download', (event, item) => {
+            const filename = item.getFilename();
+            const dir = loadPath()
+            const customDir = path.join(dir, 'Microscopy_TA', 'folders_and_images');
+            fs.mkdirSync(customDir, { recursive: true });
+
+            const savePath = path.join(customDir, filename);
+
+            // ✅ Check if file already exists
+            if (fs.existsSync(savePath)) {
+                console.log('File already exists, canceling download:', savePath);
+                item.cancel(); // cancel the download
+                return resolve({
+                    success: false,
+                    error: 'File already exists, check in My Computer',
+                    path: savePath,
+                });
+            }
+
+            item.setSavePath(savePath);
+
+            item.once('done', (_, state) => {
+                if (state === 'completed') {
+                    console.log(savePath)
+                    handleImageUpload(savePath)
+                    resolve({
+                        success: true,
+                        filename,
+                        path: savePath,
+                    });
+                } else {
+                    reject({
+                        success: false,
+                        error: state,
+                    });
+                }
+            });
+        });
+    });
+});

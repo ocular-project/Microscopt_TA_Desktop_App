@@ -114,7 +114,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
 
    const getFileExtension = (name) => {
         const parts = name.split('.');
-        return parts.length > 1 ? parts[1].toUpperCase() : ''; // Get extension or empty string
+        return parts.length > 1 ? parts[parts.length -1].toUpperCase() : ''; // Get extension or empty string
    };
 
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -195,6 +195,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     }
 
     function handleSelected(folder) {
+        // console.log(folder)
         if (folder.type === 'file') {
             setCheckedIds(prev => {
                 const exists = prev.some(item => item.id === folder._id);

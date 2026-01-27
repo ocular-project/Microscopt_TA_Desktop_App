@@ -8,6 +8,7 @@ import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import ButtonLinks from "./myComputer/ButtonLinks";
 import {handleMessage} from "../../utils/repeating";
+import DriveButtons from "./myComputer/DriveButtons.jsx";
 
 export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config }){
 
@@ -280,7 +281,12 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                     {
                         cat === "folder" ? (
                             <>
-                                <div className={styles.dropDown} ref={uploadRef}>
+                                {
+                                    !!checkedIds.length ? (
+                                        <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds} setMessage={setMessage} setLoader={setLoader}/>
+                                    ) : (
+                                        <>
+                                            <div className={styles.dropDown} ref={uploadRef}>
                                     <div className={styles.dropText} onClick={(e) => handleVis(e)}>
                                         <span className={styles.text}>Upload</span>
                                         <span className={`${styles.icon} ${vis? styles.rotate : ""}`}><FontAwesomeIcon icon={faChevronDown} /></span>
@@ -316,7 +322,11 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                         </ul>
                                     </div>
                                 </div>
-                                <Button text="Create Folder" status="active" onClick={handleClick} />
+                                            <Button text="Create Folder" status="active" onClick={handleClick} />
+                                        </>
+                                    )
+                                }
+
                             </>
                         ) : cat === "team" ? (
                             <Button text="Create Team" status="active" onClick={handleTeamClick} />

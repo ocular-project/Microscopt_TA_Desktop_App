@@ -263,7 +263,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                 checkedIds.length > 0 ? (
                     <>
                         <Button text="Copy to My Drive" status="active" onClick={handleCopy} />
-                        <Button text="Move to My Drive" status="active" onClick={handleMove} />
+                        {/*<Button text="Move to My Drive" status="active" onClick={handleMove} />*/}
                         <div className={styles.main} onClick={handleDeselect}>
                             Deselect All
                         </div>
