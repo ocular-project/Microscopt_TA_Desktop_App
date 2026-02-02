@@ -2,8 +2,11 @@ import Button from "../../../utils/Button.jsx";
 import styles from "../../../css/buttons.module.css";
 import {handleMessage} from "../../../utils/repeating.js";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
+import {useNavigate} from "react-router-dom";
 
 export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage }){
+
+    const navigate = useNavigate();
 
     async function handleDownload() {
         const files= checkedIds.map(check => check.id)
@@ -30,6 +33,7 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
             const result = await window.electronAPI.saveZip(buffer)
             if (result.success) {
                 handleMessage(result.message, "success", setMessage);
+                navigate('/')
             }else {
                 console.log(result.error)
                 handleMessage(result.error, "error", setMessage);

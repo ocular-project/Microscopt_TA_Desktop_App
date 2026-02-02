@@ -98,23 +98,25 @@ ipcMain.handle('electron:getPath', () => {
   return loadPath();
 });
 
-ipcMain.handle('fileManagement:createFolder', (event, folder) => {
-  const dir = loadPath()
-  const data = {
-    _id: String(Date.now()),
-    name: folder.name,
-    type: "folder",
-    mineType: "",
-    parent: folder.parentId || "",
-    path: [],
-    size: 0,
-    isAnnotated: false,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
+async function createFolder(name, parentId) {
+    const dir = loadPath()
+    const data = {
+        _id: String(Date.now()),
+        name,
+        type: "folder",
+        mineType: "",
+        parent: parentId || "",
+        path: [],
+        size: 0,
+        isAnnotated: false,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    }
+    return  await addDataJson(dir, data)
+}
 
-  return  addDataJson(dir, data)
-
+ipcMain.handle('fileManagement:createFolder', async (event, folder) => {
+  return await createFolder(folder.name, folder.parentId)
 })
 
 ipcMain.handle('fileManagement:renameFolder', (event, object) => {
@@ -249,6 +251,18 @@ ipcMain.handle('fileDownload:downloadZippedFile', async (event, url) => {
     });
 });
 
+function getDateTime() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}_${hours}:${minutes}`;
+}
+
 ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
     try {
         const dir = loadPath();
@@ -263,15 +277,38 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
 
         fs.writeFileSync(filePath, Buffer.from(buffer));
 
+        let saveFiles = []
         const directory = await unzipper.Open.buffer(Buffer.from(buffer))
-        for (const entry of directory.files){
-           const fullPath = path.join(customDir, entry.path)
+        const hasFiles = directory.files.some(item => item.type === 'File')
+        if (hasFiles) {
+            const name = `my_drive_${getDateTime()}`
+            console.log(name)
+            const folder = await createFolder(name, "")
+            console.log(folder)
+            if (folder.success) {
+                for (const entry of directory.files){
+                   const fullPath = path.join(customDir, name, entry.path)
 
-           if (entry.type === 'File') {
-               const content = await entry.buffer()
-               fs.writeFileSync(fullPath, content)
-               await  handleImageUpload(fullPath)
-           }
+                   if (entry.type === 'File') {
+                       const content = await entry.buffer()
+                       fs.writeFileSync(fullPath, content)
+                       saveFiles.push(fullPath)
+                   }
+                }
+                await handleImagesUpload(saveFiles, folder.data._id)
+            }
+            else {
+                return {
+                    success: false,
+                    error: folder.error
+                }
+            }
+        }
+        else {
+            return {
+                success: false,
+                error: "Zipped file has no files to extract"
+            }
         }
 
         // 3️⃣ Remove ZIP after extraction
