@@ -3,6 +3,7 @@ import path from "path";
 import fs from 'fs'
 import { fileURLToPath } from "url";
 import { savePath, loadPath } from './storage.js'
+import unzipper from "unzipper"
 import {
   addDataJson,
   createPhysicalFolder, deleteFile, getDataFile,
@@ -199,4 +200,93 @@ ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
             });
         });
     });
+});
+
+ipcMain.handle('fileDownload:downloadZippedFile', async (event, url) => {
+    const win = BrowserWindow.getFocusedWindow();
+
+    return new Promise((resolve, reject) => {
+        win.webContents.downloadURL(url);
+
+        session.defaultSession.once('will-download', (event, item) => {
+            const filename = item.getFilename();
+            const dir = loadPath()
+            const customDir = path.join(dir, 'Microscopy_TA', 'folders_and_images');
+            fs.mkdirSync(customDir, { recursive: true });
+
+            const savePath = path.join(customDir, filename);
+
+            // ✅ Check if file already exists
+            if (fs.existsSync(savePath)) {
+                console.log('Zipped File already exists, canceling download:', savePath);
+                item.cancel(); // cancel the download
+                return resolve({
+                    success: false,
+                    error: 'Zipped File already exists, check in My Computer',
+                    path: savePath,
+                });
+            }
+
+            item.setSavePath(savePath);
+
+            item.once('done', (_, state) => {
+                if (state === 'completed') {
+                    console.log(savePath)
+                    // handleImageUpload(savePath)
+                    resolve({
+                        success: true,
+                        filename,
+                        path: savePath,
+                    });
+                } else {
+                    reject({
+                        success: false,
+                        error: state,
+                    });
+                }
+            });
+        });
+    });
+});
+
+ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
+    try {
+        const dir = loadPath();
+        const customDir = path.join(dir, "Microscopy_TA", "folders_and_images");
+
+        fs.mkdirSync(customDir, { recursive: true });
+
+        const filePath = path.join(customDir, "temp.zip");
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+
+        fs.writeFileSync(filePath, Buffer.from(buffer));
+
+        const directory = await unzipper.Open.buffer(Buffer.from(buffer))
+        for (const entry of directory.files){
+           const fullPath = path.join(customDir, entry.path)
+
+           if (entry.type === 'File') {
+               const content = await entry.buffer()
+               fs.writeFileSync(fullPath, content)
+               await  handleImageUpload(fullPath)
+           }
+        }
+
+        // 3️⃣ Remove ZIP after extraction
+        fs.unlinkSync(filePath);
+
+        return {
+          success: true,
+          message: "Files extracted successfully",
+        };
+    }
+    catch (error) {
+        console.error(error);
+        return {
+            success: false,
+            error: error.message || "Failed to extract ZIP",
+        };
+  }
 });

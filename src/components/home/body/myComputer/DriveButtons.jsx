@@ -12,30 +12,41 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
             await handleDownloadSingle(files[0])
             return
         }
+        setLoader(true)
         try {
             const response = await axiosInstance.post('desktop/download_multiple', { files }, { responseType: 'blob' })
-            const blob = new Blob([response.data], { type: 'application/zip' })
-            const url = window.URL.createObjectURL(blob)
-
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', 'ocular_MTA_files.zip')
-            document.body.appendChild(link)
-            link.click()
-            link.remove()
-
-            window.URL.revokeObjectURL(url)
+            // const blob = new Blob([response.data], { type: 'application/zip' })
+            // const url = window.URL.createObjectURL(blob)
+            //
+            // const link = document.createElement('a')
+            // link.href = url
+            // link.setAttribute('download', 'ocular_MTA_files.zip')
+            // document.body.appendChild(link)
+            // link.click()
+            // link.remove()
+            //
+            // window.URL.revokeObjectURL(url)
+            const buffer = await response.data.arrayBuffer()
+            const result = await window.electronAPI.saveZip(buffer)
+            if (result.success) {
+                handleMessage(result.message, "success", setMessage);
+            }else {
+                console.log(result.error)
+                handleMessage(result.error, "error", setMessage);
+            }
         }
         catch (error) {
+            console.log(error)
             handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
         }
         finally {
             setCheckedIds([])
+            setLoader(false)
         }
     }
 
     async function handleDownloadSingle (fileId) {
-        setLoader(true)
+
         try {
             // const response = await axiosInstance.get(
             // `/desktop/download_single/${fileId}`,
@@ -79,11 +90,7 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
         catch (error) {
             // console.log(error)
             console.error('Download failed:', error.message);
-            // if (error.response?.data?.error) {
-            //     handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
-            //     return
-            // }
-            // handleMessage(error, "error", setMessage);
+            handleMessage(error.message, "error", setMessage);
         }
         finally {
             setCheckedIds([])
