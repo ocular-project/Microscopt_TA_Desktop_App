@@ -282,9 +282,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
         const hasFiles = directory.files.some(item => item.type === 'File')
         if (hasFiles) {
             const name = `my_drive_${getDateTime()}`
-            console.log(name)
             const folder = await createFolder(name, "")
-            console.log(folder)
             if (folder.success) {
                 for (const entry of directory.files){
                    const fullPath = path.join(customDir, name, entry.path)
