@@ -279,35 +279,60 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
 
         let saveFiles = []
         const directory = await unzipper.Open.buffer(Buffer.from(buffer))
-        const hasFiles = directory.files.some(item => item.type === 'File')
-        if (hasFiles) {
-            const name = `my_drive_${getDateTime()}`
-            const folder = await createFolder(name, "")
-            if (folder.success) {
-                for (const entry of directory.files){
-                   const fullPath = path.join(customDir, name, entry.path)
+         for (const entry of directory.files){
+           const fullPath = path.join(customDir, entry.path)
 
-                   if (entry.type === 'File') {
-                       const content = await entry.buffer()
-                       fs.writeFileSync(fullPath, content)
-                       saveFiles.push(fullPath)
-                   }
+           if (entry.type === 'File') {
+               const content = await entry.buffer()
+               fs.writeFileSync(fullPath, content)
+               saveFiles.push(fullPath)
+
+               if (fullPath.endsWith('folders.json')) {
+                    try {
+                        // Read the file we just wrote
+                        const fileData = fs.readFileSync(fullPath, 'utf8');
+                        const jsonContent = JSON.parse(fileData);
+
+
+                        console.log("--- Contents of folders.json ---");
+                        console.log(JSON.stringify(jsonContent, null, 2));
+                        console.log("-------------------------------");
+                    } catch (err) {
+                        console.error("Error reading or parsing folders.json:", err.message);
+                    }
                 }
-                await handleImagesUpload(saveFiles, folder.data._id)
-            }
-            else {
-                return {
-                    success: false,
-                    error: folder.error
-                }
-            }
-        }
-        else {
-            return {
-                success: false,
-                error: "Zipped file has no files to extract"
-            }
-        }
+           }
+         }
+          console.log(saveFiles)
+        // const hasFiles = directory.files.some(item => item.type === 'File')
+        // if (hasFiles) {
+        //     const name = `my_drive_${getDateTime()}`
+        //     const folder = await createFolder(name, "")
+        //     if (folder.success) {
+        //         for (const entry of directory.files){
+        //            const fullPath = path.join(customDir, name, entry.path)
+        //
+        //            if (entry.type === 'File') {
+        //                const content = await entry.buffer()
+        //                fs.writeFileSync(fullPath, content)
+        //                saveFiles.push(fullPath)
+        //            }
+        //         }
+        //         await handleImagesUpload(saveFiles, folder.data._id)
+        //     }
+        //     else {
+        //         return {
+        //             success: false,
+        //             error: folder.error
+        //         }
+        //     }
+        // }
+        // else {
+        //     return {
+        //         success: false,
+        //         error: "Zipped file has no files to extract"
+        //     }
+        // }
 
         // 3️⃣ Remove ZIP after extraction
         fs.unlinkSync(filePath);
