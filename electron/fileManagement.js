@@ -360,11 +360,23 @@ export async function getDataJson(filePath, parentId) {
             .filter(obj => obj.parent === parentId)
             .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
 
-        const updatedList = result.map(obj =>
-            obj.type === 'file'
-            ? { ...obj, size: `${(obj.size / (1024 * 1024)).toFixed(1)} MB` }
-            : { ...obj, size: "" }
-        )
+        // const updatedList = result.map(obj =>
+        //     obj.type === 'file'
+        //     ? { ...obj, size: `${(obj.size / (1024 * 1024)).toFixed(2)} MB` }
+        //     : { ...obj, size: "" }
+        // )
+
+        const updatedList = result.map(obj => {
+            if (obj.type  !== 'file' || typeof  obj.size !== 'number') {
+                return { ...obj, size: ""}
+            }
+            const sizeMB = obj.size / (1024 * 1024)
+            const size =
+                sizeMB >= 0.01
+                    ? `${sizeMB.toFixed(2)} MB`
+                    : `${(obj.size / 1024).toFixed(2)} KB`;
+            return { ...obj, size };
+        })
 
         let currentPath = []
         if (parentId){
@@ -731,4 +743,44 @@ function hasInternet(){
             resolve(!err);
         });
     });
+}
+
+// saving images from zipped file
+export async function handleImagesSave(folder, saveFiles, folders) {
+    try {
+
+        const dir = loadPath();
+        let count = 0
+        for (const file of saveFiles) {
+            const fileName = path.basename(file)
+             const fileObject = folders.find(item => item.name === fileName)
+            if (!fileObject) {
+                throw new Error(`Image ${fileName} doesn't have metadata`)
+            }
+            fileObject.url = file
+            fileObject.parent = folder._id
+            fileObject.createdAt = Date.now()
+            fileObject.updatedAt = Date.now()
+
+            const resp = await addDataJson(dir, fileObject);
+            if (!resp.success) {
+              throw new Error(`Failed to save image ${fileName} metadata`)
+            }
+            count += 1
+        }
+
+        if (count === 0){
+            throw new Error(`Failed to save all images' metadata`)
+        }
+
+        return {
+            success: true,
+        }
+
+    }catch (error){
+        return {
+            success: false,
+            error: error.message
+        }
+    }
 }

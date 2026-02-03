@@ -5,11 +5,11 @@ import { fileURLToPath } from "url";
 import { savePath, loadPath } from './storage.js'
 import unzipper from "unzipper"
 import {
-  addDataJson,
-  createPhysicalFolder, deleteFile, getDataFile,
-  getDataJson, getMyImageAnnotations,
-  handleImagesUpload,
-  handleImageUpload, renameFolder, saveAnnotations, transferFile, transferFiles
+    addDataJson,
+    createPhysicalFolder, deleteFile, getDataFile,
+    getDataJson, getMyImageAnnotations, handleImagesSave,
+    handleImagesUpload,
+    handleImageUpload, renameFolder, saveAnnotations, transferFile, transferFiles
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -260,7 +260,7 @@ function getDateTime() {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
 
-    return `${year}-${month}-${day}_${hours}:${minutes}`;
+    return `${year}-${month}-${day}_${hours}-${minutes}`;
 }
 
 ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
@@ -279,60 +279,50 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
 
         let saveFiles = []
         const directory = await unzipper.Open.buffer(Buffer.from(buffer))
+
+        const foldersEntry = directory.files.find(entry =>
+            entry.type === 'File' && entry.path.endsWith('folders.json')
+        )
+        let folders = []
+        if (foldersEntry) {
+            try {
+                const content = await foldersEntry.buffer();
+                const jsonContent = JSON.parse(content.toString('utf8'));
+                folders = jsonContent.folders
+                // console.log(JSON.stringify(folders, null, 2));
+            } catch (err) {
+                console.error('Error reading or parsing folders.json:', err.message);
+            }
+        }
+
+        const name = `my_drive_${getDateTime()}`
+        let folder = await createFolder(name, null)
+        if (!folder?.success) {
+          throw new Error('Folder creation failed');
+        }
+
+        folder = folder.data
          for (const entry of directory.files){
-           const fullPath = path.join(customDir, entry.path)
+            if (entry.type !== 'File') continue;
+            if (!entry.path) continue;
+            if (entry.path.endsWith('folders.json')) continue;
 
-           if (entry.type === 'File') {
-               const content = await entry.buffer()
-               fs.writeFileSync(fullPath, content)
-               saveFiles.push(fullPath)
+           const fullPath = path.join(customDir, folder.name, entry.path)
+           const content = await entry.buffer()
+           fs.writeFileSync(fullPath, content)
+           saveFiles.push(fullPath)
 
-               if (fullPath.endsWith('folders.json')) {
-                    try {
-                        // Read the file we just wrote
-                        const fileData = fs.readFileSync(fullPath, 'utf8');
-                        const jsonContent = JSON.parse(fileData);
-
-
-                        console.log("--- Contents of folders.json ---");
-                        console.log(JSON.stringify(jsonContent, null, 2));
-                        console.log("-------------------------------");
-                    } catch (err) {
-                        console.error("Error reading or parsing folders.json:", err.message);
-                    }
-                }
-           }
          }
-          console.log(saveFiles)
-        // const hasFiles = directory.files.some(item => item.type === 'File')
-        // if (hasFiles) {
-        //     const name = `my_drive_${getDateTime()}`
-        //     const folder = await createFolder(name, "")
-        //     if (folder.success) {
-        //         for (const entry of directory.files){
-        //            const fullPath = path.join(customDir, name, entry.path)
-        //
-        //            if (entry.type === 'File') {
-        //                const content = await entry.buffer()
-        //                fs.writeFileSync(fullPath, content)
-        //                saveFiles.push(fullPath)
-        //            }
-        //         }
-        //         await handleImagesUpload(saveFiles, folder.data._id)
-        //     }
-        //     else {
-        //         return {
-        //             success: false,
-        //             error: folder.error
-        //         }
-        //     }
-        // }
-        // else {
-        //     return {
-        //         success: false,
-        //         error: "Zipped file has no files to extract"
-        //     }
-        // }
+
+         if (!saveFiles.length) {
+             // delete folder
+              throw new Error('Filed to save the images locally');
+         }
+
+         const response = await handleImagesSave(folder, saveFiles, folders)
+        if (!response.success) {
+            throw new Error(response.error);
+        }
 
         // 3️⃣ Remove ZIP after extraction
         fs.unlinkSync(filePath);
