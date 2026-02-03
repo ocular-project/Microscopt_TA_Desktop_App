@@ -26,7 +26,7 @@ export default function ImageView(){
     const [msg, setMsg] = useState("")
     const [file, setFile] = useState(null)
     const [cred, setCred] = useState({});
-    const { fileId } = useParams();
+    // const { fileId } = useParams();
     const [zoom, setZoom] = useState(1);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const imageRef = useRef(null);
@@ -37,15 +37,16 @@ export default function ImageView(){
     const [feed, setFeed] = useState(false)
     const [visual, setVisual] = useState("box")
 
+    const { cat, fileId } = useParams();
+
     useEffect(() => {
-        if (configg()) {
+        setCred(getUserData("credentials"));
+        // console.log(getUserData("credentials"))
+        console.log(cat)
+        if (cat === "computer") {
             fetchData2()
         } else {
-            setCred(getUserData("credentials"));
-           // console.log(getUserData("credentials"))
-           if (fileId) {
-               fetchData()
-           }
+           fetchData()
         }
 
    }, []);
@@ -119,7 +120,7 @@ export default function ImageView(){
                       setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader}
                               setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg}
                               setShare={setShare} setAccess={setAccess} setOther={setOther} other={other}
-                              setFeed={setFeed} setVisual={setVisual} visual={visual} file={file}
+                              setFeed={setFeed} setVisual={setVisual} visual={visual} file={file} cat={cat}
                 />
             </div>
             <Image loader={loader} file={file} SIDEBAR_WIDTH={SIDEBAR_WIDTH} zoom={zoom} setZoom={setZoom} imageRef={imageRef}

@@ -7,11 +7,12 @@
     <!-- dist/index.html -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      img-src 'self' data: file:;
+      img-src 'self' data: file: http://localhost:3001 https://*.ocular-project.com;
       script-src 'self';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
-      connect-src 'self' http://localhost:3001 http://localhost:3000 https://expressbackend.ocular-project.com https://fonts.googleapis.com https://fonts.gstatic.com;">
+      connect-src 'self' http://localhost:3001 http://localhost:3000 https://expressbackend.ocular-project.com https://fonts.googleapis.com https://fonts.gstatic.com;"
+    >
 
     <title>Microscopy Teaching Aid</title>
   </head>

@@ -759,6 +759,7 @@ export async function handleImagesSave(folder, saveFiles, folders) {
             }
             fileObject.url = file
             fileObject.parent = folder._id
+            fileObject.path = [folder._id]
             fileObject.createdAt = Date.now()
             fileObject.updatedAt = Date.now()
 

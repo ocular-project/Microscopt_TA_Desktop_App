@@ -23,7 +23,7 @@ import { configg } from "../../utils/files/config.js";
 
 export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, setAnnotations, annotations, setLoader,
                                      setMessage, file, msg, annotators, cred, setMsg, setShare, setAccess, other, setOther,
-                                     setFeed, setVisual, visual }) {
+                                     setFeed, setVisual, visual, cat }) {
 
     const [tool, setTool] = useState("box")
     const [back, setBack] = useState(false)
@@ -138,19 +138,24 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         setShare(true)
     }
 
-   // function handleBack() {
-   //      let folder = localStorage.getItem("folder")
-   //     // console.log(folder)
-   //     if (folder) {
-   //         folder = JSON.parse(folder)
-   //         localStorage.removeItem("folder");
-   //         navigate(`${folder.path}/${folder.folderId}`)
-   //     }
-   //     else {
-   //         localStorage.removeItem("folder");
-   //         navigate("/")
-   //     }
-   // }
+   function handleBack() {
+        let folder = localStorage.getItem("folder")
+       console.log(folder)
+       if (folder) {
+           folder = JSON.parse(folder)
+           localStorage.removeItem("folder");
+           if (folder.folderId) {
+               navigate(`${folder.path}/${folder.folderId}`)
+           }
+           else {
+              navigate(folder.path)
+           }
+       }
+       else {
+           localStorage.removeItem("folder");
+           navigate("/")
+       }
+   }
 
      const zoomIn = () => setZoom((z) => Math.min(z + ZOOM_STEP, 5));
      const zoomOut = () => setZoom((z) => Math.max(z - ZOOM_STEP, 0.1));
@@ -245,7 +250,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                 <div className={styles.info}>
                     <div className={styles.backDiv}>
                         <p>{msg}</p>
-                        <div className={styles.back} onClick={() => handleBack(navigate)}>
+                        <div className={styles.back} onClick={() => handleBack()}>
                            <IoArrowBackOutline />
                            <span>Back</span>
                         </div>

@@ -44,12 +44,29 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
              // const files = folders.filter(folder => folder.type === 'file')
              // setIsView({view: true, files: files, fileId:folder._id})
 
-            // const obj = {
-            //     folderId: currentPath === "/sharedFiles" ? "" : folder.parent,
-            //     path: currentPath
-            // }
-            localStorage.setItem("folder", currentPath)
-            navigate(`/annotation/${folder._id}`)
+            const parent = folder.parent || ""
+            let obj = {}
+            if (cat === "computer") {
+                obj = {
+                    folderId: parent,
+                    path: "/"
+                }
+            }
+            else if (cat === "shared") {
+                obj = {
+                    folderId: parent,
+                    path: "/sharedFiles"
+                }
+            }
+            else {
+                obj = {
+                    folderId: parent,
+                    path: "/collaboration"
+                }
+            }
+
+            localStorage.setItem("folder", JSON.stringify(obj))
+            navigate(`/annotation/${cat}/${folder._id}`)
         }
         else {
             console.log(cat)

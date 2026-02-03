@@ -73,7 +73,7 @@ function App() {
         />
 
         <Route path="/image" element={<ImageAnnotator />} />
-        <Route path="/annotation/:fileId?" element={<ImageView />} />
+        <Route path="/annotation/:cat/:fileId" element={<ImageView />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/sign_up" element={<SignUp />} />
