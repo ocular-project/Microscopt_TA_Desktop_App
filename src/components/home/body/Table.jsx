@@ -41,7 +41,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                     }
                 })
             }
-
+            // console.log(response.data.folders)
             setFolders(response.data.folders)
             setLinks(response.data.path)
 

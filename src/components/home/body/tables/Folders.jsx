@@ -327,11 +327,15 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                         ${styles[getPopupPosition(index)]}
                                     `}>
                                         <ul>
-                                            <li>
-                                                <div onClick={(e) => handleShare(folder)} >
-                                                    Share / File Information
-                                                </div>
-                                            </li>
+                                            {
+                                                cat !== "computer" && (
+                                                    <li>
+                                                        <div onClick={(e) => handleShare(folder)} >
+                                                            Share / File Information
+                                                        </div>
+                                                    </li>
+                                                )
+                                            }
                                             {
                                                 (config || folder?.owner?.email === "me") && (
                                                     <>
@@ -356,7 +360,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                 )
                                             }
                                             {
-                                                cat === "computer" && (
+                                                (cat === "computer" && !folder.owner) && (
                                                     <>
                                                         <li>
                                                             <div onClick={(e) => {
@@ -366,14 +370,14 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                                 Copy to My Drive
                                                             </div>
                                                         </li>
-                                                        <li>
-                                                            <div onClick={(e) => {
-                                                                // e.stopPropagation()
-                                                                handleMoveToDrive(folder)
-                                                            }}>
-                                                                Move to My Drive
-                                                            </div>
-                                                        </li>
+                                                        {/*<li>*/}
+                                                        {/*    <div onClick={(e) => {*/}
+                                                        {/*        // e.stopPropagation()*/}
+                                                        {/*        handleMoveToDrive(folder)*/}
+                                                        {/*    }}>*/}
+                                                        {/*        Move to My Drive*/}
+                                                        {/*    </div>*/}
+                                                        {/*</li>*/}
                                                     </>
                                                 )
                                             }

@@ -42,7 +42,7 @@ export default function ImageView(){
     useEffect(() => {
         setCred(getUserData("credentials"));
         // console.log(getUserData("credentials"))
-        console.log(cat)
+        // console.log(cat)
         if (cat === "computer") {
             fetchData2()
         } else {
@@ -56,7 +56,7 @@ export default function ImageView(){
        try{
            const response = await axiosInstance.get(`/file/${fileId}`)
            const data = response.data
-           console.log(data.file)
+           console.log(data)
            setFile(data.file)
            setMsg(data.message)
            !!data.annotators.length && setAnnotators(data.annotators)
