@@ -13,7 +13,7 @@ function clamp(val, min, max) {
 }
 
 export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setImageSize, imageRef, imageSize,
-                                fitImageToViewport, setAnnotations, annotations, cred, feed, visual }){
+                                fitImageToViewport, setAnnotations, annotations, cred, feed, visual, cat }){
 
      const [selectedIndex, setSelectedIndex] = useState(null);
      const [action, setAction] = useState(null); // 'draw', 'move', 'resize'
@@ -470,7 +470,16 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
      }, [zoom, imageSize, redrawCanvas]);
 
     return (
-        <div className={styles.innerContainer2} ref={containerRef}>
+        <div className={styles.container2}>
+            {
+                cat === 'computer' && (
+                    <div className={styles.strip}>
+                        <p>All your annotations will be saved on your machine</p>
+                    </div>
+                )
+            }
+
+            <div className={styles.innerContainer2} ref={containerRef}>
               <div className={`${css.loader} ${loader ? css.active : ""}`}></div>
               <div style={{ position: "relative" }}>
                <img
@@ -578,5 +587,7 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
                })()}
              </div>
             </div>
+        </div>
+
     )
 }

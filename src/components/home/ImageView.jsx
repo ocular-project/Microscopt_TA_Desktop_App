@@ -125,7 +125,7 @@ export default function ImageView(){
             </div>
             <Image loader={loader} file={file} SIDEBAR_WIDTH={SIDEBAR_WIDTH} zoom={zoom} setZoom={setZoom} imageRef={imageRef}
                    imageSize={imageSize} setImageSize={setImageSize} fitImageToViewport={fitImageToViewport}
-                   setAnnotations={setAnnotations} annotations={annotations} cred={cred} feed={feed} visual={visual}
+                   setAnnotations={setAnnotations} annotations={annotations} cred={cred} feed={feed} visual={visual} cat={cat}
             />
             {
                 share && (

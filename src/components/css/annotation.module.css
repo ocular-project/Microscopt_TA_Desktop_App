@@ -8,18 +8,30 @@
     box-sizing: border-box;
 }
 
+.container2 {
+    display: block;
+    width: 100%;
+    /*height: 97.6vh;*/
+    /*position: sticky;*/
+    /*top: 0;*/
+    position: relative;
+}
+
 .innerContainer1 {
     background-color: transparent;
     flex-shrink: 0;
     overflow-y: auto;
     box-sizing: border-box;
+    /*border-right: 1px solid #cccccc;*/
 }
 
 .innerContainer2 {
     position: relative;
     flex-grow: 1;
     overflow: auto;
-    padding: 10px 0 0 10px;
+    height: 100%;
+    /*padding: 10px 0 0 20px;*/
+    /*background-color: #F69220;*/
 }
 
 .input {
@@ -29,4 +41,15 @@
     padding: 10px;
     font-size: 12px;
     font-weight: 400;
+}
+
+.strip {
+    padding: 10px;
+    background-color: black;
+    text-align: center;
+}
+
+.strip p {
+    color: #F69220;
+    font-size: 14px;
 }
