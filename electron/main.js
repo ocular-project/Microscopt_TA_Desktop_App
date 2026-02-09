@@ -7,7 +7,7 @@ import unzipper from "unzipper"
 import {
     addDataJson,
     createPhysicalFolder, deleteFile, getDataFile,
-    getDataJson, getMyImageAnnotations, handleImagesSave,
+    getDataJson, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
     handleImagesUpload,
     handleImageUpload, renameFolder, saveAnnotations, transferFile, transferFiles
 } from './fileManagement.js'
@@ -16,6 +16,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow
+
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  // rest of your main.js code goes here
+  app.whenReady().then(createWindow)
+}
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -36,7 +45,9 @@ async function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+      app.quit()
+  }
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
@@ -131,9 +142,9 @@ ipcMain.handle('fileManagement:getFoldersAndFiles', (event, parentId) => {
 
 })
 
-ipcMain.handle('fileManagement:getFile', (event, fileId) => {
+ipcMain.handle('fileManagement:getFile', async (event, fileId, credentials) => {
   const dir = loadPath()
-  return  getDataFile(`${dir}/Microscopy_TA/database/database.json`, fileId)
+  return  await getDataFile(`${dir}/Microscopy_TA/database/database.json`, fileId, credentials)
 
 })
 
@@ -153,8 +164,8 @@ ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {
   return  saveAnnotations(body)
 })
 
-ipcMain.handle('imageAnnotation:getMyAnnotation', (event, imageId) => {
-  return getMyImageAnnotations(imageId)
+ipcMain.handle('imageAnnotation:getMyAnnotations', (event, imageId, cred) => {
+  return getMyImageAnnotations(imageId, cred)
 })
 
 ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
@@ -340,3 +351,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
         };
   }
 });
+
+ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, object, fileId) => {
+    return await handleAnnotationsDownload(object, fileId)
+})

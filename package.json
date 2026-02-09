@@ -5,8 +5,8 @@
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
+    "electron": "nodemon --watch main.js --watch storage.js --watch fileManagement.js --exec \"electron .\"",
     "dev": "vite",
-    "electron": "nodemon --watch main.js --watch storage.js --watch fileManagement.js --exec electron .",
     "start": "concurrently \"npm run dev\" \"npm run electron\""
   },
   "dependencies": {

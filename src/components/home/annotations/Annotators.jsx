@@ -5,7 +5,7 @@ import axiosInstance from "../../utils/files/axiosInstance.js";
 import {LuUser} from "react-icons/lu";
 import {useState} from "react";
 
-export default function Annotators({ annotators, setAnnotations, cred, setLoader, setMessage, setMsg, setAccess, setOther, setAnnotator, setFeed, setBack }){
+export default function Annotators({ annotators, setAnnotations, cred, setLoader, setMessage, setMsg, setAccess, setOther, setAnnotator, setFeed, setBack, cat }){
 
     const [feedback, setFeedback] = useState(null)
     const [selected, setSelected] = useState(null)
@@ -13,7 +13,18 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
     async function handleLoad(item, bool) {
         setLoader(true)
         try {
-            const response = await axiosInstance.get(`/annotations/${item._id}`)
+            let response
+            if (cat === "computer"){
+                response = await window.electronAPI.getMyAnnotations(item._id, cred)
+                if (!response.success) {
+                     handleMessage(response.error, "error", setMessage)
+                    return
+                }
+                console.log(response)
+            }
+            else {
+                response = await axiosInstance.get(`/annotations/${item._id}`)
+            }
             const dat = response.data
             const data = dat.file
             // console.log(data)
@@ -146,6 +157,7 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
             }
             
            <div>
+               <p style={{ paddingLeft: '10px' }}>Another Annotators</p>
                <ul>
                    {
                         annotators

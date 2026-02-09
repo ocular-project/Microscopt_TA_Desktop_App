@@ -102,8 +102,33 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
         }
     }
 
-    function handleMove() {
-
+    async function handleMove() {
+        const files= checkedIds.map(check => check.id)
+        // if (files.length === 1) {
+        //     console.log(files[0])
+        //     await handleDownloadSingle(files[0])
+        //     return
+        // }
+        setLoader(true)
+        try {
+            const response = await axiosInstance.get(`desktop/download_annotations/${files[0]}`)
+            const resp = await window.electronAPI.downloadImageAnnotations(response.data)
+            // console.log(response.data)
+            if (resp.success) {
+                handleMessage(resp.message, "success", setMessage);
+            }
+            else {
+                handleMessage(resp.error, "error", setMessage);
+            }
+        }
+        catch (error) {
+            console.log(error)
+            handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
+        }
+        finally {
+            setCheckedIds([])
+            setLoader(false)
+        }
     }
 
     function handleDeselect() {
@@ -113,7 +138,7 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
     return (
         <>
             <Button text="Download to My Computer" status="active" onClick={handleDownload} />
-            {/*<Button text="Move to My Computer" status="active" onClick={handleMove} />*/}
+            {/*<Button text="Download Annotations" status="active" onClick={handleMove} />*/}
             <div className={styles.main} onClick={handleDeselect}>
                 Deselect All
             </div>

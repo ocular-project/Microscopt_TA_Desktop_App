@@ -2,7 +2,7 @@ import style from "../css/sidebar.module.css";
 import styles from "./css/image.module.css";
 import {
     IoArrowBackOutline,
-    IoCloseCircleOutline,
+    IoCloseCircleOutline, IoCloudDownloadOutline,
     IoSaveOutline,
     IoSettingsOutline,
     IoShareSocialOutline
@@ -234,6 +234,28 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
        }
     }
 
+    async function handleDownload() {
+        setLoader(true)
+        try {
+            const response = await axiosInstance.get(`desktop/download_annotations/${file._id}`)
+            const resp = await window.electronAPI.downloadImageAnnotations(response.data, file._id)
+            // console.log(response.data)
+            if (resp.success) {
+                handleMessage(resp.message, "success", setMessage);
+            }
+            else {
+                handleMessage(resp.error, "error", setMessage);
+            }
+        }
+        catch (error) {
+            console.log(error)
+            handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
+        }
+        finally {
+            setLoader(false)
+        }
+    }
+
     return (
         <div className={style.container}>
              <div className={style.header}>
@@ -287,28 +309,33 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
 
                    </div>
 
+                    <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
+                        <IoCloudDownloadOutline />
+                        <span>Download Latest Annotations</span>
+                    </div>
+
                     {
                         !!annotators?.length && (
                             <Annotators annotators={annotators} setAnnotations={setAnnotations} cred={cred} setLoader={setLoader}
                                         setMessage={setMessage} setMsg={setMsg} setAccess={setAccess} setOther={setOther}
-                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack}
+                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack} cat={cat}
                             />
                         )
                     }
 
-                    {
-                        (msg && !file.url.startsWith("http")) && (
-                            <div className={styles.imgInfo}>
-                                <h1>Annotations</h1>
-                                <div>
-                                    <div className={`${styles.buttons} ${styles.active}`} onClick={() => handleLoad(false)}>
-                                        <LuUser />
-                                        <span>Load My Annotations</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    }
+                    {/*{*/}
+                    {/*    (msg && !file.url.startsWith("http")) && (*/}
+                    {/*        <div className={styles.imgInfo}>*/}
+                    {/*            <h1>Annotations</h1>*/}
+                    {/*            <div>*/}
+                    {/*                <div className={`${styles.buttons} ${styles.active}`} onClick={() => handleLoad(false)}>*/}
+                    {/*                    <LuUser />*/}
+                    {/*                    <span>Load My Annotations</span>*/}
+                    {/*                </div>*/}
+                    {/*            </div>*/}
+                    {/*        </div>*/}
+                    {/*    )*/}
+                    {/*}*/}
 
                    <div className={styles.imgInfo}>
                        <h1>Annotation Tools</h1>

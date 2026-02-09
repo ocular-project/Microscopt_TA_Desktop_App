@@ -41,8 +41,8 @@ export default function ImageView(){
 
     useEffect(() => {
         setCred(getUserData("credentials"));
-        // console.log(getUserData("credentials"))
-        // console.log(cat)
+        console.log(getUserData("credentials"))
+        console.log(cat)
         if (cat === "computer") {
             fetchData2()
         } else {
@@ -74,11 +74,14 @@ export default function ImageView(){
    async function fetchData2() {
        setLoader(true)
        try{
-           const response = await window.electronAPI.getFile(fileId)
+           const credentials = getUserData("credentials")
+           const response = await window.electronAPI.getFile(fileId, credentials)
            // console.log(response)
            if (response.success){
                const data = response.data
                setFile(data.file)
+               !!data.annotators.length && setAnnotators(data.annotators)
+               console.log(data.annotators)
                setMsg(data.message)
            }
            else {

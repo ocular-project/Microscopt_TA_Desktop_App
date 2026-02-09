@@ -13,16 +13,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createFolder: (folder) => ipcRenderer.invoke("fileManagement:createFolder", folder),
     renameFolder: (object) => ipcRenderer.invoke("fileManagement:renameFolder", object),
     getFoldersAndFiles: (parentId) => ipcRenderer.invoke('fileManagement:getFoldersAndFiles', parentId),
-    getFile: (fileId) => ipcRenderer.invoke('fileManagement:getFile', fileId),
+    getFile: (fileId, credentials) => ipcRenderer.invoke('fileManagement:getFile', fileId, credentials),
     deleteFile: (fileId) => ipcRenderer.invoke('fileManagement:deleteFile', fileId),
 
     transferFile: (fileId, type) => ipcRenderer.invoke('fileManagement:transferFile', fileId, type),
     transferFiles: (fileList, type) => ipcRenderer.invoke('fileManagement:transferFiles', fileList, type),
 
     saveAnnotation: (body) => ipcRenderer.invoke("imageAnnotation:saveAnnotation", body),
-    getMyAnnotations: (imageId) => ipcRenderer.invoke("imageAnnotation:getMyAnnotation", imageId),
+    getMyAnnotations: (imageId, cred) => ipcRenderer.invoke("imageAnnotation:getMyAnnotations", imageId, cred),
 
     downloadFile: (url) => ipcRenderer.invoke('fileDownload:downloadFile', url),
     downloadZippedFile: (url) => ipcRenderer.invoke('fileDownload:downloadZippedFile', url),
     saveZip: (buffer) => ipcRenderer.invoke("fileDownload:saveZip", buffer),
+
+    downloadImageAnnotations: (object, fileId) => ipcRenderer.invoke('fileDownload:downloadImageAnnotations', object, fileId),
 })

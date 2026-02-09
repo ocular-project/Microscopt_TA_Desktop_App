@@ -294,7 +294,7 @@ async function imageExists(filePath) {
 }
 
 // Loading an image for annotation
-export async function getDataFile(filePath, fileId) {
+export async function getDataFile(filePath, fileId, credentials) {
     try {
         const dataArray = await accessFolderFile(filePath)
 
@@ -318,10 +318,22 @@ export async function getDataFile(filePath, fileId) {
         const buffer = await readFile(item.url);
         item.url =`data:image/png;base64,${buffer.toString('base64')}`
 
+        const annoArray = await getAnnotations()
+        const annotators = annoArray
+            .filter(item => item.imageId === fileId)
+            .map(item => ({
+                _id: item._id,
+                annotator: {...item.annotator},
+                feedbackId: null
+            }))
+
+        // console.log(annotators)
+
         return {
             success: true,
             data: {
                 file: item,
+                annotators,
                 message: item.isAnnotated ? "This image has annotations" : "",
             }
         }
@@ -560,7 +572,7 @@ async function accessFolderFile(filePath) {
 }
 
 // get image annotations
-export async function getMyImageAnnotations(imageId) {
+export async function getMyImageAnnotations(id, cred) {
     try {
         const dir = loadPath()
         if (!dir) {
@@ -568,15 +580,35 @@ export async function getMyImageAnnotations(imageId) {
         }
 
         const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
         const annoArray = await accessAnnotationFile(annoFilePath)
-        const anno = annoArray.find(an => an.imageId === imageId)
+        const feedbackArray = await accessAnnotationFile(feedbackFilePath)
+
+        const anno = annoArray.find(an => an._id === id)
         if (!anno) {
             return {success: false, error: "There are no annotations for this image file"}
         }
+
+        const annotator = anno.annotator
+        let feedback = []
+        console.log(cred?._id)
+        console.log(annotator._id)
+        if(annotator._id === cred?._id){
+            console.log(id)
+            feedback = feedbackArray
+                .filter(item => item.annotator._id === cred?._id)
+                .filter(item => item.annotationId === id)
+                .map(item => ({
+                    _id: item._id,
+                    owner: {...item.owner}
+                }))
+        }
+
         return {
             success: true,
             data: {
-                file: anno
+                file: anno,
+                feedback
             }
         }
 
@@ -782,6 +814,59 @@ export async function handleImagesSave(folder, saveFiles, folders) {
         return {
             success: false,
             error: error.message
+        }
+    }
+}
+
+// Get annotations Array obj
+async function getAnnotations() {
+     const dir = loadPath()
+     if (!dir) {
+        return {success: false, error: "Failed to load primary directory"}
+     }
+     const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+     const annoArray = await accessAnnotationFile(annoFilePath)
+
+     return annoArray
+}
+
+
+// save one image annotations and feedback from download
+export async function handleAnnotationsDownload(object, fileId) {
+    try {
+        const { combined,  feedback} = object
+
+        const dir = loadPath()
+        if (!dir) {
+            return {success: false, error: "Failed to load primary directory"}
+        }
+        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+
+        const annoArray = await accessAnnotationFile(annoFilePath)
+        const feedbackArray = await accessAnnotationFile(feedbackFilePath)
+        const dataArray = await accessFolderFile(filePath)
+
+        annoArray.push(...combined)
+        feedbackArray.push(...feedback)
+        await writeFile(annoFilePath, JSON.stringify(annoArray, null, 2), 'utf8');
+        await writeFile(feedbackFilePath, JSON.stringify(feedbackArray, null, 2), 'utf8');
+
+        const newDataArray = dataArray.map(obj =>
+            obj._id === fileId ? { ...obj, isAnnotated: true, updatedAt: Date.now() } : obj
+        )
+        await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
+
+        return {
+            success: true,
+            message: "Annotations saved successfully"
+        }
+
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
         }
     }
 }
