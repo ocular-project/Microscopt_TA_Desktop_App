@@ -20,7 +20,7 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
                      handleMessage(response.error, "error", setMessage)
                     return
                 }
-                console.log(response)
+                // console.log(response)
             }
             else {
                 response = await axiosInstance.get(`/annotations/${item._id}`)
@@ -85,7 +85,19 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
     async function handleLoadFeedback(fb) {
         setLoader(true)
         try {
-            const response = await axiosInstance.get(`/feedback/${fb._id}`)
+             let response
+            if (cat === "computer"){
+                response = await window.electronAPI.getAnnotatorFeedback(fb._id, cred)
+                if (!response.success) {
+                     handleMessage(response.error, "error", setMessage)
+                    return
+                }
+                // console.log(response)
+            }
+            else {
+                response = await axiosInstance.get(`/feedback/${fb._id}`)
+            }
+
             setAnnotations(response.data.annotations)
             setFeed(true)
             setMsg(`Loaded ${fb.owner.firstName}'s feedback`)

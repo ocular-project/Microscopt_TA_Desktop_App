@@ -318,7 +318,7 @@ export async function getDataFile(filePath, fileId, credentials) {
         const buffer = await readFile(item.url);
         item.url =`data:image/png;base64,${buffer.toString('base64')}`
 
-        const annoArray = await getAnnotations()
+        const annoArray = await getArrayObject("annotations.json")
         const annotators = annoArray
             .filter(item => item.imageId === fileId)
             .map(item => ({
@@ -574,15 +574,9 @@ async function accessFolderFile(filePath) {
 // get image annotations
 export async function getMyImageAnnotations(id, cred) {
     try {
-        const dir = loadPath()
-        if (!dir) {
-            return {success: false, error: "Failed to load primary directory"}
-        }
 
-        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
-        const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
-        const annoArray = await accessAnnotationFile(annoFilePath)
-        const feedbackArray = await accessAnnotationFile(feedbackFilePath)
+        const annoArray = await getArrayObject("annotations.json")
+        const feedbackArray = await getArrayObject("feedback.json")
 
         const anno = annoArray.find(an => an._id === id)
         if (!anno) {
@@ -619,6 +613,34 @@ export async function getMyImageAnnotations(id, cred) {
       };
     }
 
+}
+
+// Get annotator feedback
+export async function getAnnotatorFeedback(id, cred) {
+    try {
+        const feedbackArray = await getArrayObject("feedback.json")
+        const feedbackItem = feedbackArray.find(item => item._id === id)
+        if (!feedbackItem){
+            return {
+                success: false,
+                error: "Annotations' Feedback do not exist"
+            }
+        }
+        const feedback = feedbackItem ? feedbackItem.annotations : []
+
+        return {
+            success: true,
+            data: {
+                annotations: feedback
+            }
+        }
+
+    }catch (error) {
+      return {
+        success: false,
+        error: `Error loading feedabck: ${error.message}`
+      };
+    }
 }
 
 // transfer image to the online drive
@@ -819,12 +841,12 @@ export async function handleImagesSave(folder, saveFiles, folders) {
 }
 
 // Get annotations Array obj
-async function getAnnotations() {
+async function getArrayObject(file) {
      const dir = loadPath()
      if (!dir) {
         return {success: false, error: "Failed to load primary directory"}
      }
-     const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+     const annoFilePath = `${dir}/Microscopy_TA/database/${file}`
      const annoArray = await accessAnnotationFile(annoFilePath)
 
      return annoArray
@@ -844,9 +866,9 @@ export async function handleAnnotationsDownload(object, fileId) {
         const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
         const filePath = `${dir}/Microscopy_TA/database/database.json`
 
-        const annoArray = await accessAnnotationFile(annoFilePath)
-        const feedbackArray = await accessAnnotationFile(feedbackFilePath)
-        const dataArray = await accessFolderFile(filePath)
+        const annoArray = await getArrayObject("annotations.json")
+        const feedbackArray = await getArrayObject("feedback.json")
+        const dataArray = await getArrayObject("database.json")
 
         annoArray.push(...combined)
         feedbackArray.push(...feedback)

@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     saveAnnotation: (body) => ipcRenderer.invoke("imageAnnotation:saveAnnotation", body),
     getMyAnnotations: (imageId, cred) => ipcRenderer.invoke("imageAnnotation:getMyAnnotations", imageId, cred),
+    getAnnotatorFeedback: (id, cred) => ipcRenderer.invoke("imageAnnotation:getAnnotatorFeedback", id, cred),
 
     downloadFile: (url) => ipcRenderer.invoke('fileDownload:downloadFile', url),
     downloadZippedFile: (url) => ipcRenderer.invoke('fileDownload:downloadZippedFile', url),

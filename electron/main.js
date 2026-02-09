@@ -6,7 +6,7 @@ import { savePath, loadPath } from './storage.js'
 import unzipper from "unzipper"
 import {
     addDataJson,
-    createPhysicalFolder, deleteFile, getDataFile,
+    createPhysicalFolder, deleteFile, getAnnotatorFeedback, getDataFile,
     getDataJson, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
     handleImagesUpload,
     handleImageUpload, renameFolder, saveAnnotations, transferFile, transferFiles
@@ -166,6 +166,10 @@ ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {
 
 ipcMain.handle('imageAnnotation:getMyAnnotations', (event, imageId, cred) => {
   return getMyImageAnnotations(imageId, cred)
+})
+
+ipcMain.handle('imageAnnotation:getAnnotatorFeedback', (event, id, cred) => {
+  return getAnnotatorFeedback(id, cred)
 })
 
 ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
