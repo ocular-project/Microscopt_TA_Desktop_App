@@ -110,8 +110,21 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                annotator
            }
            try {
-               await axiosInstance.post(`/save-feedback/`, obj)
-               handleBack(navigate)
+               let response
+               if (cat === "computer") {
+                   response = await window.electronAPI.saveFeedback(obj, cred)
+                   if(!response.success) {
+                       console.log(response.error)
+                       handleMessage(response.error, "error", setMessage)
+                       return
+                   }
+                   handleMessage(response.message, "success", setMessage)
+               }
+               else {
+                   response = await axiosInstance.post(`/save-feedback/`, obj)
+                   handleMessage(response.data.message, "success", setMessage)
+               }
+               handleBack()
            }catch (err) {
                console.log(err)
                const error = err.response.data.error
@@ -120,7 +133,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                setLoader(false)
            }
        }
-       else if (annotator === null) {
+       else if (!annotator) {
            handleMessage("Annotator ID not obtained.", "warning", setMessage)
        }
        else if (!fileId) {
@@ -188,51 +201,6 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
             return hasFeedbackValue || isAnnotationOwner;
         });
     };
-
-    const handleLoad = async (bool) => {
-        setLoader(true)
-        try {
-            const response = await window.electronAPI.getMyAnnotations(fileId)
-            if (response.success) {
-                const dat = response.data
-                const data = dat.file
-                setAnnotations(data.annotations)
-                setMsg("Loaded my annotations")
-            }else {
-                handleMessage(response.error, "error", setMessage)
-            }
-            // const dat = response.data
-            // const data = dat.file
-            // // console.log(data)
-            // setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
-            // setAnnotations(data.annotations)
-            // // console.log(response.data.annotations)
-            // if (item.annotator.email === cred.email){
-            //     setMsg("Loaded my annotations")
-            // }
-            // else {
-            //     setAnnotator({ owner: item.annotator._id, annoId: item._id})
-            //     setMsg(`Loaded ${item.annotator.firstName}'s annotations`)
-            // }
-            //
-            // // console.log(dat.feedback)
-            // const feed = dat.feedback
-            // if (feed && !!feed.length) {
-            //     setFeedback(feed)
-            // }
-            //
-            setOther(bool)
-            setFeed(false)
-            setBack(false)
-            // setSelected(item._id)
-        }catch (err) {
-           console.log(err)
-           const error = err.response.error
-           handleMessage(error, "error", setMessage)
-       }finally {
-           setLoader(false)
-       }
-    }
 
     async function handleDownload() {
         setLoader(true)

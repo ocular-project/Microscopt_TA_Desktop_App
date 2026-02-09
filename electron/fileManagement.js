@@ -4,6 +4,7 @@ import { constants } from 'fs';
 import path from "path";
 import { loadPath } from './storage.js'
 import dns from "dns"
+import { ObjectId } from "mongodb"
 
 // creating a physical folder on computer
 export async function createPhysicalFolder(baseDir, folderName) {
@@ -558,6 +559,8 @@ export async function saveAnnotations(body){
     }
 }
 
+
+
 // get the data array from database.json file
 async function accessFolderFile(filePath) {
 
@@ -641,6 +644,69 @@ export async function getAnnotatorFeedback(id, cred) {
         error: `Error loading feedabck: ${error.message}`
       };
     }
+}
+
+export async function saveFeedback(object, cred){
+    try {
+        if (!cred) {
+            throw new Error("There are no user credentials, Please first login")
+        }
+        const { imageId, annotations, annotator = {} } = object
+        const isAnnotatorValid = annotator.owner?.trim() !== "" && annotator.annoId?.trim() !== "";
+        if (!imageId || !annotations || annotations.length === 0 || !isAnnotatorValid) {
+          throw new Error ('Either the image ID or annotation ID or annotations are missing')
+        }
+
+        const feedbackArray = await getArrayObject("feedback.json")
+        const annoArray = await getArrayObject("annotations.json")
+        // console.log(feedbackArray)
+        const feedbackItem = feedbackArray.find(item => item.owner._id === annotator.owner && item.annotationId === annotator.annoId)
+        if (feedbackItem) {
+            feedbackArray.map(item =>
+                item._id === feedbackItem._id ? { ...item, annotations, updatedAt: Date.now() } : item
+            )
+        }
+        else {
+
+            const annoItem = annoArray.find(item => item._id === annotator.annoId)
+            if (!annoItem) {
+                 throw new Error ("Annotations object doesn't exist")
+            }
+            const newObject = {
+                _id: generateObjectId(),
+                owner: {...cred},
+                annotationId: annotator.annoId,
+                annotations,
+                annotator: {...annoItem.annotator},
+                updatedAt: Date.now(),
+                createdAt: Date.now()
+            }
+
+            feedbackArray.push(newObject)
+        }
+
+        const dir = loadPath()
+        if (!dir) {
+            return {success: false, error: "Failed to load primary directory"}
+        }
+        const filePath = `${dir}/Microscopy_TA/database/feedback.json`
+        await writeFile(filePath, JSON.stringify(feedbackArray, null, 2), 'utf8');
+
+        return {
+            success: true,
+            message: "Annotations' feedback saved successfully!"
+        }
+
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+          };
+    }
+}
+
+export function generateObjectId() {
+  return new ObjectId().toHexString()
 }
 
 // transfer image to the online drive

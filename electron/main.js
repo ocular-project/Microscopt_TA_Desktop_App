@@ -9,7 +9,7 @@ import {
     createPhysicalFolder, deleteFile, getAnnotatorFeedback, getDataFile,
     getDataJson, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
     handleImagesUpload,
-    handleImageUpload, renameFolder, saveAnnotations, transferFile, transferFiles
+    handleImageUpload, renameFolder, saveAnnotations, saveFeedback, transferFile, transferFiles
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -170,6 +170,10 @@ ipcMain.handle('imageAnnotation:getMyAnnotations', (event, imageId, cred) => {
 
 ipcMain.handle('imageAnnotation:getAnnotatorFeedback', (event, id, cred) => {
   return getAnnotatorFeedback(id, cred)
+})
+
+ipcMain.handle('imageAnnotation:saveFeedback', (event, object, cred) => {
+    return saveFeedback(object, cred)
 })
 
 ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
