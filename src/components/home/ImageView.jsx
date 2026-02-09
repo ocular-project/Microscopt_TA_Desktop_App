@@ -41,8 +41,8 @@ export default function ImageView(){
 
     useEffect(() => {
         setCred(getUserData("credentials"));
-        console.log(getUserData("credentials"))
-        console.log(cat)
+        // console.log(getUserData("credentials"))
+        // console.log(cat)
         if (cat === "computer") {
             fetchData2()
         } else {

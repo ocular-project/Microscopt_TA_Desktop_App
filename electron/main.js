@@ -7,7 +7,7 @@ import unzipper from "unzipper"
 import {
     addDataJson,
     createPhysicalFolder, deleteFile, getAnnotatorFeedback, getDataFile,
-    getDataJson, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
+    getDataJson, getMyFeedback, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
     handleImagesUpload,
     handleImageUpload, renameFolder, saveAnnotations, saveFeedback, transferFile, transferFiles
 } from './fileManagement.js'
@@ -172,8 +172,12 @@ ipcMain.handle('imageAnnotation:getAnnotatorFeedback', (event, id, cred) => {
   return getAnnotatorFeedback(id, cred)
 })
 
-ipcMain.handle('imageAnnotation:saveFeedback', (event, object, cred) => {
-    return saveFeedback(object, cred)
+ipcMain.handle('imageAnnotation:saveFeedback', async (event, object, cred) => {
+    return await saveFeedback(object, cred)
+})
+
+ipcMain.handle('imageAnnotation:getMyFeedback', async (event, id) => {
+    return await getMyFeedback(id)
 })
 
 ipcMain.handle('fileDownload:downloadFile', async (event, url) => {

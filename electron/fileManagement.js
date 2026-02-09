@@ -295,7 +295,7 @@ async function imageExists(filePath) {
 }
 
 // Loading an image for annotation
-export async function getDataFile(filePath, fileId, credentials) {
+export async function getDataFile(filePath, fileId, cred) {
     try {
         const dataArray = await accessFolderFile(filePath)
 
@@ -320,22 +320,33 @@ export async function getDataFile(filePath, fileId, credentials) {
         item.url =`data:image/png;base64,${buffer.toString('base64')}`
 
         const annoArray = await getArrayObject("annotations.json")
-        const annotators = annoArray
-            .filter(item => item.imageId === fileId)
+        const feedbackArray = await getArrayObject("feedback.json")
+
+        const annotators = (annoArray ?? []).filter(item => item.imageId === fileId)
+        const annotatorsIds = annotators.map(item => item._id)
+        const feedbacks = (feedbackArray ?? [])
+            .filter(item => annotatorsIds.includes(item.annotationId) && item?.owner._id === cred?._id)
             .map(item => ({
-                _id: item._id,
-                annotator: {...item.annotator},
-                feedbackId: null
+                annotationId: item.annotationId,
+                _id: item._id
             }))
 
-        // console.log(annotators)
+        const feedbackMap = Object.fromEntries(
+            feedbacks.map(fb => [fb.annotationId, fb._id])
+        )
+
+        const annotationsWithFeedback = annotators.map(item => ({
+            _id: item._id,
+            annotator: {...item.annotator},
+            feedbackId: feedbackMap[item._id] || null
+        }))
 
         return {
             success: true,
             data: {
                 file: item,
-                annotators,
-                message: item.isAnnotated ? "This image has annotations" : "",
+                annotators: !annotators.length ? [] : annotationsWithFeedback,
+                message: !!annotators.length ? "This image has annotations" : "No annotations found",
             }
         }
 
@@ -560,7 +571,6 @@ export async function saveAnnotations(body){
 }
 
 
-
 // get the data array from database.json file
 async function accessFolderFile(filePath) {
 
@@ -646,6 +656,7 @@ export async function getAnnotatorFeedback(id, cred) {
     }
 }
 
+// Save feedback
 export async function saveFeedback(object, cred){
     try {
         if (!cred) {
@@ -695,6 +706,30 @@ export async function saveFeedback(object, cred){
         return {
             success: true,
             message: "Annotations' feedback saved successfully!"
+        }
+
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+          };
+    }
+}
+
+export async function getMyFeedback(id) {
+    try{
+        const feedbackArray = await getArrayObject("feedback.json")
+        const feedbackItem = feedbackArray.find(item => item._id === id)
+        let feedback = []
+        if (feedbackItem){
+            feedback = feedbackItem.annotations
+        }
+
+        return {
+            success: true,
+            data: {
+                annotations: feedback
+            }
         }
 
     }catch (error) {

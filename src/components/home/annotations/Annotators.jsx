@@ -61,18 +61,29 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
     async function handleLoad2(item, bool) {
          setLoader(true)
          try {
-            const response = await axiosInstance.get(`/annotations-feedback/${item.feedbackId}`)
-            const dat = response.data
-            const data = dat.file
-            // console.log(data)
-            setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
-            setAnnotations(data.annotations)
-            // console.log(response.data.annotations)
+             let response
+             if (cat === "computer") {
+                 response = await window.electronAPI.getMyFeedback(item.feedbackId)
+                 if(!response.success){
+                     console.log(response.error)
+                     handleMessage(response.error, "error", setMessage)
+                     return
+                 }
+                 setAnnotations(response.data.annotations)
+             }
+             else {
+                 response = await axiosInstance.get(`/annotations-feedback/${item.feedbackId}`)
+                 const dat = response.data
+                const data = dat.file
+                // console.log(data)
+                setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
+                setAnnotations(data.annotations)
+             }
              setMsg("Loaded my feedback")
 
             setOther(bool)
             setFeed(false)
-             setSelected(item._id)
+            setSelected(item._id)
         }catch (err) {
            console.log(err)
            const error = err.response.data.error
