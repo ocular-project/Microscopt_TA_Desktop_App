@@ -451,7 +451,7 @@ export async function handleImagesUpload(filePaths, parentId) {
         const stats = await fs.stat(file);
 
         const fileData = {
-          _id: String(Date.now()),
+          _id: generateObjectId(),
           name: path.basename(file),
           type: "file",
           mineType: "",
@@ -491,7 +491,7 @@ export async function handleImageUpload(filePath) {
         const stats = await fs.stat(filePath);
 
         const fileData = {
-            _id: String(Date.now()),
+            _id: generateObjectId(),
             name: path.basename(filePath),
             type: "file",
             mineType: "",
@@ -517,7 +517,7 @@ export async function handleImageUpload(filePath) {
 }
 
 // saving image annotations
-export async function saveAnnotations(body){
+export async function saveAnnotations(body, cred){
     try {
         const { imageId, annotations } = body
         if (!body || !imageId || !annotations || annotations.length === 0){
@@ -527,39 +527,52 @@ export async function saveAnnotations(body){
               };
         }
 
-        const annObj = {
-             _id: String(Date.now()),
-            imageId,
-            annotator: "me",
-            annotations
+        const dataArray = await getArrayObject("database.json")
+        const annoArray = await getArrayObject("annotations.json")
+        // console.log(feedbackArray)
+        console.log(cred)
+        console.log(imageId)
+        console.log(annoArray)
+        const annoItem = annoArray.find(item => item.imageId === imageId && item.annotator?._id === cred?._id)
+        console.log(annoItem)
+        if (annoItem) {
+            annoItem.annotations = annotations
+            annoItem.updatedAt= Date.now()
+        }
+        else {
+
+            console.log(cred)
+            const newObject = {
+                _id: generateObjectId(),
+                annotator: {...cred},
+                imageId,
+                annotations,
+                shared_with: [],
+                shared_with_team: [],
+                updatedAt: Date.now(),
+                createdAt: Date.now()
+            }
+            console.log(newObject)
+            annoArray.push(newObject)
         }
 
         const dir = loadPath()
         if (!dir) {
             return {success: false, error: "Failed to load primary directory"}
         }
-        const filePath = `${dir}/Microscopy_TA/database/database.json`
-        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const filePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const filePath2 = `${dir}/Microscopy_TA/database/database.json`
 
-        const dataArray = await accessFolderFile(filePath)
-        const annoArray = await accessAnnotationFile(annoFilePath)
-
-        annoArray.push(annObj)
-        await writeFile(annoFilePath, JSON.stringify(annoArray, null, 2), 'utf8');
-
-        // dataArray.forEach(obj => {
-        //     if (obj._id === imageId){
-        //         obj.isAnnotated = true
-        //         obj.updatedAt = Date.now()
-        //     }
-        // })
+        await writeFile(filePath, JSON.stringify(annoArray, null, 2), 'utf8');
 
         const newDataArray = dataArray.map(obj =>
             obj._id === imageId ? { ...obj, isAnnotated: true, updatedAt: Date.now() } : obj
         )
-        await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
+        await writeFile(filePath2, JSON.stringify(newDataArray, null, 2), 'utf8');
+
         return {
-            success: true
+            success: true,
+            message: "Annotations saved successfully!"
         }
 
     }catch (error) {
@@ -569,7 +582,6 @@ export async function saveAnnotations(body){
       };
     }
 }
-
 
 // get the data array from database.json file
 async function accessFolderFile(filePath) {
@@ -598,10 +610,10 @@ export async function getMyImageAnnotations(id, cred) {
 
         const annotator = anno.annotator
         let feedback = []
-        console.log(cred?._id)
-        console.log(annotator._id)
+        // console.log(cred?._id)
+        // console.log(annotator._id)
         if(annotator._id === cred?._id){
-            console.log(id)
+            // console.log(id)
             feedback = feedbackArray
                 .filter(item => item.annotator._id === cred?._id)
                 .filter(item => item.annotationId === id)
@@ -639,12 +651,11 @@ export async function getAnnotatorFeedback(id, cred) {
                 error: "Annotations' Feedback do not exist"
             }
         }
-        const feedback = feedbackItem ? feedbackItem.annotations : []
 
         return {
             success: true,
             data: {
-                annotations: feedback
+                feedback: feedbackItem
             }
         }
 
@@ -673,9 +684,8 @@ export async function saveFeedback(object, cred){
         // console.log(feedbackArray)
         const feedbackItem = feedbackArray.find(item => item.owner._id === annotator.owner && item.annotationId === annotator.annoId)
         if (feedbackItem) {
-            feedbackArray.map(item =>
-                item._id === feedbackItem._id ? { ...item, annotations, updatedAt: Date.now() } : item
-            )
+            feedbackItem.annotations = annotations
+            feedbackItem.updatedAt = Date.now()
         }
         else {
 
@@ -720,15 +730,17 @@ export async function getMyFeedback(id) {
     try{
         const feedbackArray = await getArrayObject("feedback.json")
         const feedbackItem = feedbackArray.find(item => item._id === id)
-        let feedback = []
-        if (feedbackItem){
-            feedback = feedbackItem.annotations
+        if (!feedbackItem){
+            return {
+                success: false,
+                error: "Annotations' Feedback do not exist"
+            }
         }
 
         return {
             success: true,
-            data: {
-                annotations: feedback
+             data: {
+                feedback: feedbackItem
             }
         }
 

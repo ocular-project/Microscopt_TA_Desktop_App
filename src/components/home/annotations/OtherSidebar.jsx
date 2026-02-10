@@ -48,8 +48,18 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                imageId: fileId,
            }
            try {
-               await axiosInstance.post('/save-annotations', obj)
-               handleBack(navigate)
+               if (cat === "computer") {
+                   // console.log(cred)
+                   const response = await window.electronAPI.saveAnnotation(obj, cred)
+                   if(!response.success){
+                       handleMessage(response.error, "error", setMessage)
+                       return
+                   }
+               }
+               else {
+                   await axiosInstance.post('/save-annotations', obj)
+               }
+               handleBack()
            }catch (err) {
                console.log(err.response)
                const error = err.response.data.error
@@ -66,42 +76,14 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
        }
     }
 
-    async function handleOfflineSave() {
-        // console.log(annotations)
-       if (!!annotations.length && fileId) {
-           setLoader(true)
-           const obj = {
-               annotations,
-               imageId: fileId,
-           }
-           try {
-               // await axiosInstance.post('/save-annotations', obj)
-               const response = await window.electronAPI.saveAnnotation(obj)
-               // console.log(response)
-               if (response.success){
-                   handleBack(navigate)
-               }
-               else {
-                   handleMessage(response.error, "error", setMessage)
-               }
-           }catch (err) {
-               console.log(err.response)
-               const error = err.response.error
-               handleMessage(error, "error", setMessage)
-           }finally {
-               setLoader(false)
-           }
-       }
-       else if (!fileId) {
-           handleMessage("Image has no ID.", "warning", setMessage)
-       }
-       else {
-           handleMessage("Add some annotations to the image before you can save.", "warning", setMessage)
-       }
-    }
-
     async function handleSave2() {
+        console.log(annotator.owner)
+        console.log(annotator.annoId)
         const isAnnotatorValid = annotator.owner !== "" && annotator.annoId !== "";
+        console.log(annotations)
+        console.log(fileId)
+        console.log(hasFeedback())
+        console.log(isAnnotatorValid)
         if (!!annotations.length && fileId && hasFeedback() && isAnnotatorValid) {
            setLoader(true)
            const obj = {
@@ -176,7 +158,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
 
     useEffect(() => {
         if (other) {
-            if(!!annotations.length && hasFeedback()) {
+            if(annotations && !!annotations.length && hasFeedback()) {
                 setButton({...button, feed: true})
             }
             else {
@@ -351,7 +333,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                            ) : (
                                                cat === "computer" ? (
                                                   <>
-                                                      <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleOfflineSave}>
+                                                      <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
                                                             <IoSaveOutline />
                                                             <span>Save Annotations Locally</span>
                                                       </div>

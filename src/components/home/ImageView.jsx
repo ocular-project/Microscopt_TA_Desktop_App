@@ -56,7 +56,7 @@ export default function ImageView(){
        try{
            const response = await axiosInstance.get(`/file/${fileId}`)
            const data = response.data
-           console.log(data)
+           // console.log(data)
            setFile(data.file)
            setMsg(data.message)
            !!data.annotators.length && setAnnotators(data.annotators)
@@ -81,7 +81,7 @@ export default function ImageView(){
                const data = response.data
                setFile(data.file)
                !!data.annotators.length && setAnnotators(data.annotators)
-               console.log(data.annotators)
+               // console.log(data.annotators)
                setMsg(data.message)
            }
            else {

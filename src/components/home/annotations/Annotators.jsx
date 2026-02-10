@@ -69,7 +69,10 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
                      handleMessage(response.error, "error", setMessage)
                      return
                  }
-                 setAnnotations(response.data.annotations)
+                 // console.log(response.data.feedback)
+                 const data = response.data.feedback
+                 setAnnotations(data.annotations)
+                 setAnnotator({ owner: data.owner._id, annoId: data.annotationId })
              }
              else {
                  response = await axiosInstance.get(`/annotations-feedback/${item.feedbackId}`)
@@ -103,13 +106,17 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
                      handleMessage(response.error, "error", setMessage)
                     return
                 }
-                // console.log(response)
+                // console.log("asas",response)
+                const data = response.data.feedback
+                setAnnotations(data.annotations)
+                setAnnotator({ owner: data.owner._id, annoId: data.annotationId })
             }
             else {
                 response = await axiosInstance.get(`/feedback/${fb._id}`)
+                setAnnotations(response.data.annotations)
             }
 
-            setAnnotations(response.data.annotations)
+            // setAnnotations(response.data.annotations)
             setFeed(true)
             setMsg(`Loaded ${fb.owner.firstName}'s feedback`)
             setBack(true)

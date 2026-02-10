@@ -6,7 +6,7 @@ import { savePath, loadPath } from './storage.js'
 import unzipper from "unzipper"
 import {
     addDataJson,
-    createPhysicalFolder, deleteFile, getAnnotatorFeedback, getDataFile,
+    createPhysicalFolder, deleteFile, generateObjectId, getAnnotatorFeedback, getDataFile,
     getDataJson, getMyFeedback, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
     handleImagesUpload,
     handleImageUpload, renameFolder, saveAnnotations, saveFeedback, transferFile, transferFiles
@@ -112,7 +112,7 @@ ipcMain.handle('electron:getPath', () => {
 async function createFolder(name, parentId) {
     const dir = loadPath()
     const data = {
-        _id: String(Date.now()),
+        _id: generateObjectId(),
         name,
         type: "folder",
         mineType: "",
@@ -160,8 +160,8 @@ ipcMain.handle('fileManagement:deleteFile', (event, fileId) => {
   return  deleteFile(fileId)
 })
 
-ipcMain.handle('imageAnnotation:saveAnnotation', (event, body) => {
-  return  saveAnnotations(body)
+ipcMain.handle('imageAnnotation:saveAnnotation', (event, body, cred) => {
+  return  saveAnnotations(body, cred)
 })
 
 ipcMain.handle('imageAnnotation:getMyAnnotations', (event, imageId, cred) => {
