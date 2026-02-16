@@ -983,15 +983,55 @@ export async function handleAnnotationsDownload(object, fileId) {
         const feedbackArray = await getArrayObject("feedback.json")
         const dataArray = await getArrayObject("database.json")
 
-        annoArray.push(...combined)
-        feedbackArray.push(...feedback)
+        for(const anno of combined) {
+            const index = annoArray.findIndex(item => item._id === anno._id)
+            if (index !== -1) {
+                if(new Date(anno.updatedAt) > new Date(annoArray[index].updatedAt)){
+                    annoArray[index] = {
+                        ...annoArray[index],
+                        annotations: anno.annotations,
+                        shared_with: anno.shared_with,
+                        shared_with_team: anno.shared_with_team,
+                        updatedAt: anno.updatedAt
+                    }
+                }
+            }
+            else {
+                annoArray.push({
+                  ...anno
+                })
+            }
+        }
+
+        for(const feed of feedback) {
+            const index = feedbackArray.findIndex(item => item._id === feed._id)
+            if (index !== -1) {
+                if(new Date(feed.updatedAt) > new Date(feedbackArray[index].updatedAt)){
+                    feedbackArray[index] = {
+                        ...feedbackArray[index],
+                        annotations: feedback.annotations,
+                        updatedAt: feedback.updatedAt
+                    }
+                }
+            }
+            else {
+                feedbackArray.push({
+                  ...feedback
+                })
+            }
+        }
+
+        // annoArray.push(...combined)
+        // feedbackArray.push(...feedback)
         await writeFile(annoFilePath, JSON.stringify(annoArray, null, 2), 'utf8');
         await writeFile(feedbackFilePath, JSON.stringify(feedbackArray, null, 2), 'utf8');
 
-        const newDataArray = dataArray.map(obj =>
-            obj._id === fileId ? { ...obj, isAnnotated: true, updatedAt: Date.now() } : obj
-        )
-        await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
+        if (!!combined.length){
+             const newDataArray = dataArray.map(obj =>
+                obj._id === fileId ? { ...obj, isAnnotated: true, updatedAt: Date.now() } : obj
+            )
+            await writeFile(filePath, JSON.stringify(newDataArray, null, 2), 'utf8');
+        }
 
         return {
             success: true,

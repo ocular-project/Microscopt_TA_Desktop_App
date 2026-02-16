@@ -224,7 +224,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
             setTimeout(() => {
                 handleBack()
             }, 500)
-        }catch (e) {
+        }catch (error) {
             console.log(error)
             handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
         }finally {
