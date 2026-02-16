@@ -2,7 +2,7 @@ import style from "../css/sidebar.module.css";
 import styles from "./css/image.module.css";
 import {
     IoArrowBackOutline,
-    IoCloseCircleOutline, IoCloudDownloadOutline,
+    IoCloseCircleOutline, IoCloudDownloadOutline, IoCloudUploadOutline,
     IoSaveOutline,
     IoSettingsOutline,
     IoShareSocialOutline
@@ -206,6 +206,32 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         }
     }
 
+    async function handleUpload() {
+        setLoader(true)
+        try {
+            const response = await window.electronAPI.getAllAnnotations(fileId)
+            if (!response.success){
+                console.log(response.error)
+                handleMessage(`Error: ${response.error}`, "error", setMessage);
+            }
+            const obj = {
+                imageId: fileId,
+                annotations: response.annotations,
+                feedback: response.feedbacks
+            }
+            const expressResponse = await axiosInstance.post('desktop/uploadAllAnnotations', obj)
+            handleMessage(expressResponse.data.message, "success", setMessage);
+            setTimeout(() => {
+                handleBack()
+            }, 500)
+        }catch (e) {
+            console.log(error)
+            handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
+        }finally {
+            setLoader(false)
+        }
+    }
+
     return (
         <div className={style.container}>
              <div className={style.header}>
@@ -233,7 +259,6 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                            <h1>Image Information</h1>
                            {/*<IoCloseCircleOutline className={styles.close} onClick={handleClose} />*/}
                        </div>
-
                        <div>
                            <div className={styles.labels}>
                                <p>Name:</p>
@@ -259,10 +284,21 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
 
                    </div>
 
-                    <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
-                        <IoCloudDownloadOutline />
-                        <span>Download Latest Annotations</span>
-                    </div>
+                    {
+                        cat === "computer" && (
+                            <div className={styles.imgInfo}>
+                                <h1>Data Synchronisation</h1>
+                                <div className={`${styles.toolDiv}`}>
+                                    <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
+                                        <span>Download Latest Annotations</span>
+                                    </div>
+                                    <div className={`${styles.buttons}`} onClick={handleUpload}>
+                                        <span>Upload Annotation Changes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
 
                     {
                         !!annotators?.length && (
@@ -272,20 +308,6 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                             />
                         )
                     }
-
-                    {/*{*/}
-                    {/*    (msg && !file.url.startsWith("http")) && (*/}
-                    {/*        <div className={styles.imgInfo}>*/}
-                    {/*            <h1>Annotations</h1>*/}
-                    {/*            <div>*/}
-                    {/*                <div className={`${styles.buttons} ${styles.active}`} onClick={() => handleLoad(false)}>*/}
-                    {/*                    <LuUser />*/}
-                    {/*                    <span>Load My Annotations</span>*/}
-                    {/*                </div>*/}
-                    {/*            </div>*/}
-                    {/*        </div>*/}
-                    {/*    )*/}
-                    {/*}*/}
 
                    <div className={styles.imgInfo}>
                        <h1>Annotation Tools</h1>

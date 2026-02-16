@@ -1005,3 +1005,31 @@ export async function handleAnnotationsDownload(object, fileId) {
         }
     }
 }
+
+//upload annotations and feedback of an image
+export async function getAllAnnotations(imageId) {
+    try {
+         const annoArray = await getArrayObject("annotations.json")
+         const feedbackArray = await getArrayObject("feedback.json")
+
+        const imageAnno = annoArray.filter(item => item.imageId === imageId)
+        if (imageAnno.length === 0) {
+            throw new Error("There are no annotations for this image")
+        }
+
+        const annoIds = imageAnno.map(item => item._id)
+        const feedbacks = feedbackArray.filter(item => annoIds.includes(item.annotationId))
+
+        return {
+            success: true,
+            annotations: imageAnno,
+            feedbacks
+        }
+
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+        }
+    }
+}
