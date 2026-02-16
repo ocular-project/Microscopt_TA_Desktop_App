@@ -322,10 +322,10 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
             }
         }
 
-        const name = `my_drive_${getDateTime()}`
+        const name = "My Drive"
         let folder = await createFolder(name, null)
         if (!folder?.success) {
-          throw new Error('Folder creation failed');
+            throw new Error('Folder creation failed');
         }
 
         folder = folder.data
@@ -356,6 +356,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
 
         return {
           success: true,
+          folderId: folder._id,
           message: "Files extracted successfully",
         };
     }

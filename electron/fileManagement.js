@@ -79,6 +79,25 @@ export async function addDataJson(dir, newObject) {
             if (error.code !== 'ENOENT') throw error;
         }
 
+        if (newObject.name === "My Drive"){
+            const myDrive = data.find(item => item.name === "My Drive")
+            if (myDrive){
+                return {
+                    success: true,
+                    data: myDrive,
+                }
+            }
+        }
+
+        const idCheck = data.find(item => item.type === "file" && item._id === newObject._id)
+        if (idCheck) {
+            await fs.unlink(newObject.url)
+            return {
+                success: true,
+                data: newObject,
+            }
+        }
+
         const regex = new RegExp(`^${newObject.name}(?:_\\d+)?$`);
 
         const count = data.filter(
@@ -920,7 +939,7 @@ export async function handleImagesSave(folder, saveFiles, folders) {
         let count = 0
         for (const file of saveFiles) {
             const fileName = path.basename(file)
-             const fileObject = folders.find(item => item.name === fileName)
+            const fileObject = folders.find(item => item.name === fileName)
             if (!fileObject) {
                 throw new Error(`Image ${fileName} doesn't have metadata`)
             }
@@ -930,9 +949,12 @@ export async function handleImagesSave(folder, saveFiles, folders) {
             fileObject.createdAt = Date.now()
             fileObject.updatedAt = Date.now()
 
+            console.log(fileObject)
             const resp = await addDataJson(dir, fileObject);
-            if (!resp.success) {
-              throw new Error(`Failed to save image ${fileName} metadata`)
+            console.log(resp)
+
+            if (!resp.success && resp.error !== "New file already exists") {
+              throw new Error(resp.error)
             }
             count += 1
         }

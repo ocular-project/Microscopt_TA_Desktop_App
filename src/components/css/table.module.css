@@ -214,8 +214,28 @@ td:nth-child(1) span {
     cursor: pointer;
 }
 
+.checking21 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: none;
+}
+
 
 .checking2.active {
     background-color: #F69220;
     border: none;
+}
+
+.select {
+    margin-bottom: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 100;
+    color: #F69220;
 }

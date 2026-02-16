@@ -6,7 +6,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEllipsisVertical, faXmark} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router-dom";
 import {handleMessage, sendToDrive} from "../../../utils/repeating.js";
-import {IoMdCheckmark} from "react-icons/io";
+import {IoMdCheckmark, IoMdClose} from "react-icons/io";
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
                                     setIsView, setRename, config, cat, setCheckedIds, checkedIds }){
@@ -17,6 +17,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     const tdRef = useRef(null)
     const popRef = useRef(null);
     const currentPath = location.pathname;
+    const [selectedAll, setSelectedAll] = useState(false);
 
     // useEffect(() => {
     //     console.log(folders)
@@ -240,155 +241,197 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
         // }
     }
 
+    function handleSelectAll() {
+        const files = folders.filter(item => item.type === "file").map(item => ({ id: item._id, type: item.type }))
+        if (files.length === checkedIds.length) {
+            // setSelectedAll(false)
+            setCheckedIds([])
+        }
+        else {
+            // setSelectedAll(true)
+            setCheckedIds(files)
+        }
+    }
+
+    useEffect(() => {
+        const files = folders.filter(item => item.type === "file").map(item => ({ id: item._id, type: item.type }))
+        if (files.length === checkedIds.length) {
+            setSelectedAll(true)
+        }else {
+            setSelectedAll(false)
+        }
+    }, [checkedIds]);
+
     return (
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
+        <>
+            {
+                !!checkedIds.length && (
+                    <p className={styles.select} onClick={handleSelectAll}>{selectedAll ? 'Deselect All' : 'Select All'}</p>
+                )
+            }
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        {
+                            (config && currentPath === "/") && (
+                                <th>
+                                    File Location
+                                </th>
+                            )
+                        }
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Created At</th>
+                        <th>Last Modified</th>
+                        <th className={styles.action}>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
                     {
-                        (config && currentPath === "/") && (
-                            <th>
-                                File Location
-                            </th>
-                        )
-                    }
-                    <th>Type</th>
-                    <th>Size</th>
-                    <th>Created At</th>
-                    <th>Last Modified</th>
-                    <th className={styles.action}>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {
-                   folders.map((folder, index) => (
-                       <tr
-                           key={folder._id}
-                           onClick={() => handleClick(folder)}
-                           onDoubleClick={() => handleDoubleClick(folder)}
-                           className={`${selectedId === folder._id ? styles.tr : ""}`}
-                       >
-                           <td>
-                               <div className={styles.type}>
-                                   <div className={`${styles.checking2} ${checkedIds.some(item => item.id === folder._id)? styles.active : ''}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleSelected(folder)
-                                        }}
-                                    >
-                                        <IoMdCheckmark style={{ color: 'white' }}/>
+                       folders.map((folder, index) => (
+                           <tr
+                               key={folder._id}
+                               onClick={() => handleClick(folder)}
+                               onDoubleClick={() => handleDoubleClick(folder)}
+                               className={`${selectedId === folder._id ? styles.tr : ""}`}
+                           >
+                               <td>
+                                   <div className={styles.type}>
+                                       {
+                                           folder.type === "file" ? (
+                                               <div className={`${styles.checking2} ${checkedIds.some(item => item.id === folder._id)? styles.active : ''}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleSelected(folder)
+                                                    }}
+                                                >
+                                                    <IoMdCheckmark style={{ color: 'white' }}/>
+                                               </div>
+                                           ) : (
+                                            <div className={`${styles.checking21}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleSelected(folder)
+                                                    }}
+                                                >
+                                                    <IoMdClose style={{ color: 'white' }}/>
+                                               </div>
+                                           )
+                                       }
+                                       <img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>
+                                       {getFileName(folder.name)}
                                    </div>
-                                   <img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>
-                                   {getFileName(folder.name)}
-                               </div>
-                           </td>
-                           {
-                                (config && currentPath === "/") && (
-                                    <td style={{
-                                        width: '20%',
-                                        wordBreak: 'break-word',
-                                        overflowWrap: 'break-word',
-                                        whiteSpace: 'normal',
-                                        // textAlign: `${folder.url ? 'left' : 'center'}`
-                                        }}
-                                    >
-                                        {folder.url || "-"}
-                                    </td>
-                                )
-                            }
-                           <td>
+                               </td>
                                {
-                                   folder.type === "folder" ? "Folder" : getFileExtension(folder.name)
-                               }
-                           </td>
-                           <td>{folder.size}</td>
-                           <td>{formatDate(folder.createdAt)}</td>
-                           <td>{formatDate(folder.updatedAt)}</td>
-                           <td className={`${styles.tdIcon}`}>
-                                <div className={styles.action}>
-                                    <div className={`${styles.iconDiv} ${selectedIconId === folder._id ? styles.active : ""}`}
-                                         onClick={(e) => {
-                                             e.stopPropagation()
-                                             handleIconClick(folder)
-                                         }}
-                                    >
-                                        {
-                                            selectedIconId === folder._id ? (
-                                                <FontAwesomeIcon icon={faXmark} />
-                                            ) : (
-                                                <FontAwesomeIcon icon={faEllipsisVertical} />
-                                            )
-                                        }
-                                    </div>
-                                    <div
-                                        className={`
-                                        ${styles.popAction} 
-                                        ${selectedIconId === folder._id ? styles.active : ""} 
-                                        ${styles[getPopupPosition(index)]}
-                                    `}>
-                                        <ul>
+                                    (config && currentPath === "/") && (
+                                        <td style={{
+                                            width: '20%',
+                                            wordBreak: 'break-word',
+                                            overflowWrap: 'break-word',
+                                            whiteSpace: 'normal',
+                                            // textAlign: `${folder.url ? 'left' : 'center'}`
+                                            }}
+                                        >
+                                            {folder.url || "-"}
+                                        </td>
+                                    )
+                                }
+                               <td>
+                                   {
+                                       folder.type === "folder" ? "Folder" : getFileExtension(folder.name)
+                                   }
+                               </td>
+                               <td>{folder.size}</td>
+                               <td>{formatDate(folder.createdAt)}</td>
+                               <td>{formatDate(folder.updatedAt)}</td>
+                               <td className={`${styles.tdIcon}`}>
+                                    <div className={styles.action}>
+                                        <div className={`${styles.iconDiv} ${selectedIconId === folder._id ? styles.active : ""}`}
+                                             onClick={(e) => {
+                                                 e.stopPropagation()
+                                                 handleIconClick(folder)
+                                             }}
+                                        >
                                             {
-                                                cat !== "computer" && (
-                                                    <li>
-                                                        <div onClick={(e) => handleShare(folder)} >
-                                                            Share / File Information
-                                                        </div>
-                                                    </li>
+                                                selectedIconId === folder._id ? (
+                                                    <FontAwesomeIcon icon={faXmark} />
+                                                ) : (
+                                                    <FontAwesomeIcon icon={faEllipsisVertical} />
                                                 )
                                             }
-                                            {
-                                                (config || folder?.owner?.email === "me") && (
-                                                    <>
-                                                        {
-                                                            (config && currentPath === "/" && folder.type === "folder") && (
-                                                               <li>
-                                                                    <div onClick={(e) => handleRename(folder)} >
-                                                                        Rename
-                                                                    </div>
-                                                               </li>
-                                                            )
-                                                        }
+                                        </div>
+                                        <div
+                                            className={`
+                                            ${styles.popAction} 
+                                            ${selectedIconId === folder._id ? styles.active : ""} 
+                                            ${styles[getPopupPosition(index)]}
+                                        `}>
+                                            <ul>
+                                                {
+                                                    cat !== "computer" && (
                                                         <li>
-                                                            <div onClick={(e) => {
-                                                                // e.stopPropagation()
-                                                                handleDelete(folder)
-                                                            }}>
-                                                                Delete
+                                                            <div onClick={(e) => handleShare(folder)} >
+                                                                Share / File Information
                                                             </div>
                                                         </li>
-                                                    </>
-                                                )
-                                            }
-                                            {
-                                                (cat === "computer" && !folder.owner) && (
-                                                    <>
-                                                        <li>
-                                                            <div onClick={(e) => {
-                                                                // e.stopPropagation()
-                                                                handleCopyToDrive(folder)
-                                                            }}>
-                                                                Copy to My Drive
-                                                            </div>
-                                                        </li>
-                                                        {/*<li>*/}
-                                                        {/*    <div onClick={(e) => {*/}
-                                                        {/*        // e.stopPropagation()*/}
-                                                        {/*        handleMoveToDrive(folder)*/}
-                                                        {/*    }}>*/}
-                                                        {/*        Move to My Drive*/}
-                                                        {/*    </div>*/}
-                                                        {/*</li>*/}
-                                                    </>
-                                                )
-                                            }
-                                        </ul>
+                                                    )
+                                                }
+                                                {
+                                                    (config || folder?.owner?.email === "me") && (
+                                                        <>
+                                                            {
+                                                                (config && currentPath === "/" && folder.type === "folder") && (
+                                                                   <li>
+                                                                        <div onClick={(e) => handleRename(folder)} >
+                                                                            Rename
+                                                                        </div>
+                                                                   </li>
+                                                                )
+                                                            }
+                                                            <li>
+                                                                <div onClick={(e) => {
+                                                                    // e.stopPropagation()
+                                                                    handleDelete(folder)
+                                                                }}>
+                                                                    Delete
+                                                                </div>
+                                                            </li>
+                                                        </>
+                                                    )
+                                                }
+                                                {
+                                                    (cat === "computer" && !folder.owner) && (
+                                                        <>
+                                                            <li>
+                                                                <div onClick={(e) => {
+                                                                    // e.stopPropagation()
+                                                                    handleCopyToDrive(folder)
+                                                                }}>
+                                                                    Copy to My Drive
+                                                                </div>
+                                                            </li>
+                                                            {/*<li>*/}
+                                                            {/*    <div onClick={(e) => {*/}
+                                                            {/*        // e.stopPropagation()*/}
+                                                            {/*        handleMoveToDrive(folder)*/}
+                                                            {/*    }}>*/}
+                                                            {/*        Move to My Drive*/}
+                                                            {/*    </div>*/}
+                                                            {/*</li>*/}
+                                                        </>
+                                                    )
+                                                }
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                           </td>
-                       </tr>
-                   ))
-                }
-            </tbody>
-        </table>
+                               </td>
+                           </tr>
+                       ))
+                    }
+                </tbody>
+            </table>
+        </>
     )
 }

@@ -10,11 +10,11 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
 
     async function handleDownload() {
         const files= checkedIds.map(check => check.id)
-        if (files.length === 1) {
-            console.log(files[0])
-            await handleDownloadSingle(files[0])
-            return
-        }
+        // if (files.length === 1) {
+        //     console.log(files[0])
+        //     await handleDownloadSingle(files[0])
+        //     return
+        // }
         setLoader(true)
         try {
             const response = await axiosInstance.post('desktop/download_multiple', { files }, { responseType: 'blob' })
@@ -33,7 +33,7 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
             const result = await window.electronAPI.saveZip(buffer)
             if (result.success) {
                 handleMessage(result.message, "success", setMessage);
-                navigate('/')
+                navigate(`/${result.folderId}`)
             }else {
                 console.log(result.error)
                 handleMessage(result.error, "error", setMessage);
@@ -132,16 +132,16 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
     }
 
     function handleDeselect() {
-
+        setCheckedIds([])
     }
 
     return (
         <>
             <Button text="Download to My Computer" status="active" onClick={handleDownload} />
             {/*<Button text="Download Annotations" status="active" onClick={handleMove} />*/}
-            <div className={styles.main} onClick={handleDeselect}>
-                Deselect All
-            </div>
+            {/*<div className={styles.main} onClick={handleDeselect}>*/}
+            {/*    Deselect All*/}
+            {/*</div>*/}
         </>
     )
 }
