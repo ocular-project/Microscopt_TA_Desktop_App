@@ -98,18 +98,15 @@ export async function addDataJson(dir, newObject) {
             }
         }
 
-        const regex = new RegExp(`^${newObject.name}(?:_\\d+)?$`);
-
-        const count = data.filter(
-            item => item.parent === newObject.parent && regex.test(item.name)
-        ).length
-
-        // const exists = data.some(item => item.name === newObject.name)
-
         let newPath = folderPath
 
         // if (!exists){
         if (newObject.type === "folder") {
+            const regex = new RegExp(`^${newObject.name}(?:_\\d+)?$`);
+            const count = data.filter(
+                item => item.parent === newObject.parent && regex.test(item.name)
+            ).length
+
             const parentId = newObject.parent
             let parentPath = []
             if (newObject.parent){
@@ -135,13 +132,14 @@ export async function addDataJson(dir, newObject) {
             newObject.name = count > 0 ? `${newObject.name}_${count+1}` : newObject.name
         }
         else {
-            if (count > 0){
-                return {
-                    success: false,
-                    data: newObject,
-                    error: `${newObject.type} already exists`
-                }
-            }
+
+            // if (count > 0){
+            //     return {
+            //         success: false,
+            //         data: newObject,
+            //         error: `${newObject.type} already exists`
+            //     }
+            // }
         }
 
         data.push(newObject)
@@ -949,9 +947,9 @@ export async function handleImagesSave(folder, saveFiles, folders) {
             fileObject.createdAt = Date.now()
             fileObject.updatedAt = Date.now()
 
-            console.log(fileObject)
+            // console.log(fileObject)
             const resp = await addDataJson(dir, fileObject);
-            console.log(resp)
+            // console.log(resp)
 
             if (!resp.success && resp.error !== "New file already exists") {
               throw new Error(resp.error)
