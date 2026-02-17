@@ -870,7 +870,7 @@ export async function transferFiles(fileList, type) {
                 const folder = dataArray.find(item => item._id === id)
                 if (!folder) {
                     const value = index+1
-                    msg = `Image recorde for Image number ${value} doesn't exist`
+                    msg = `Image record for Image number ${value} doesn't exist`
                     break
                 }
                 const url = folder.url
@@ -902,29 +902,6 @@ export async function transferFiles(fileList, type) {
             }
 
         }
-        // const folder = dataArray.find(item => item._id === fileId)
-        // if (!folder){
-        //     return { success: false, error: "Folder/ File doesn't exist"}
-        // }
-
-        // if (folder.type === "file") {
-        //     const filePath = folder.url
-        //     console.log(filePath)
-        //     const buffer = await readFile(filePath)
-        //     const extension = filePath.split('.').pop().toLowerCase();
-        //     console.log(extension)
-        //     const mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
-        //     console.log(mimeType)
-        //
-        //     return {
-        //         success: true,
-        //         data: {
-        //             buffer,
-        //             name: folder.name,
-        //             mimeType
-        //         }
-        //     }
-        // }
 
         return {
             success: false
