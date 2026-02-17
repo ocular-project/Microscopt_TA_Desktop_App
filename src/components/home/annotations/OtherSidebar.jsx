@@ -188,7 +188,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         setLoader(true)
         try {
             const response = await axiosInstance.get(`desktop/download_annotations/${file._id}`)
-            const resp = await window.electronAPI.downloadImageAnnotations(response.data, file._id)
+            const resp = await window.electronAPI.downloadImageAnnotations(response.data)
             // console.log(response.data)
             if (resp.success) {
                 handleMessage(resp.message, "success", setMessage);

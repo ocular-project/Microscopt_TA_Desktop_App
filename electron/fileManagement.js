@@ -5,6 +5,9 @@ import path from "path";
 import { loadPath } from './storage.js'
 import dns from "dns"
 import { ObjectId } from "mongodb"
+import { Mutex } from 'async-mutex'
+const annotationMutex = new Mutex()
+const dbMutex = new Mutex()
 
 // creating a physical folder on computer
 export async function createPhysicalFolder(baseDir, folderName) {
@@ -79,8 +82,8 @@ export async function addDataJson(dir, newObject) {
             if (error.code !== 'ENOENT') throw error;
         }
 
-        if (newObject.name === "My Drive"){
-            const myDrive = data.find(item => item.name === "My Drive")
+        if (newObject.name === "my_drive"){
+            const myDrive = data.find(item => item.name === "my_drive")
             if (myDrive){
                 return {
                     success: true,
@@ -1006,7 +1009,7 @@ async function getArrayObject(file) {
 // save one image annotations and feedback from download
 export async function handleAnnotationsDownload(object, fileId) {
     try {
-        const { combined,  feedback} = object
+        const { annotations,  feedback} = object
 
         const dir = loadPath()
         if (!dir) {
@@ -1020,7 +1023,7 @@ export async function handleAnnotationsDownload(object, fileId) {
         const feedbackArray = await getArrayObject("feedback.json")
         const dataArray = await getArrayObject("database.json")
 
-        for(const anno of combined) {
+        for(const anno of annotations) {
             const index = annoArray.findIndex(item => item._id === anno._id)
             if (index !== -1) {
                 if(new Date(anno.updatedAt) > new Date(annoArray[index].updatedAt)){
@@ -1081,6 +1084,109 @@ export async function handleAnnotationsDownload(object, fileId) {
             error: `Error: ${error.message}`
         }
     }
+}
+
+export async function handleBatchAnnotationsDownload(pairs){
+    return annotationMutex.runExclusive(async () => {
+
+        const dir = loadPath()
+        if (!dir) {
+            return { success: false, error: "Failed to load primary directory" }
+        }
+        const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
+        const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+
+        // ✅ Load once
+        const [annoArray, feedbackArray, dataArray] = await Promise.all([
+            getArrayObject("annotations.json"),
+            getArrayObject("feedback.json"),
+            getArrayObject("database.json")
+        ])
+
+        // console.log("=========================================")
+        // console.log("=========================================")
+        // console.log("=========================================")
+        // console.log(pairs)
+        for (const { object, fileId } of pairs) {
+            applyAnnotations({annoArray, feedbackArray, dataArray}, object, fileId)
+        }
+
+        await Promise.all([
+            atomicWrite(annoFilePath, annoArray),
+            atomicWrite(feedbackFilePath, feedbackArray),
+            atomicWrite(filePath, dataArray)
+        ])
+
+        return {
+            success: true,
+            message: "Annotations saved successfully"
+        }
+    })
+}
+
+function applyAnnotations(state, object, fileId) {
+    const { annotations, feedback } = object
+    const {annoArray, feedbackArray, dataArray} = state
+
+    for(const anno of annotations) {
+        const index = annoArray.findIndex(item => item._id === anno._id)
+        if (index !== -1) {
+            if(new Date(anno.updatedAt) > new Date(annoArray[index].updatedAt)){
+                annoArray[index] = {
+                    ...annoArray[index],
+                    annotations: anno.annotations,
+                    shared_with: anno.shared_with,
+                    shared_with_team: anno.shared_with_team,
+                    updatedAt: anno.updatedAt
+                }
+            }
+        }
+        else {
+            annoArray.push({
+              ...anno
+            })
+        }
+    }
+
+    for(const feed of feedback) {
+        const index = feedbackArray.findIndex(item => item._id === feed._id)
+        if (index !== -1) {
+            if(new Date(feed.updatedAt) > new Date(feedbackArray[index].updatedAt)){
+                feedbackArray[index] = {
+                    ...feedbackArray[index],
+                    annotations: feedback.annotations,
+                    updatedAt: feedback.updatedAt
+                }
+            }
+        }
+        else {
+            feedbackArray.push({
+              ...feedback
+            })
+        }
+    }
+
+    // console.log(fileId)
+    // console.log(annotations)
+    // console.log(annotations.length)
+    if (!!annotations.length){
+        // console.log("Yes")
+        const index = dataArray.findIndex(item => item._id === fileId)
+        if (index !== -1){
+            dataArray[index] = {
+                ...dataArray[index],
+                isAnnotated: true,
+                updatedAt: Date.now()
+            }
+        }
+    }
+}
+
+async function atomicWrite(path, data) {
+    const tempPath = `${path}.tmp`
+    await writeFile(tempPath, JSON.stringify(data, null, 2), 'utf8')
+    await rename(tempPath, path)
 }
 
 //upload annotations and feedback of an image

@@ -6,10 +6,25 @@ import { savePath, loadPath } from './storage.js'
 import unzipper from "unzipper"
 import {
     addDataJson,
-    createPhysicalFolder, deleteFile, generateObjectId, getAllAnnotations, getAnnotatorFeedback, getDataFile,
-    getDataJson, getMyFeedback, getMyImageAnnotations, handleAnnotationsDownload, handleImagesSave,
+    createPhysicalFolder,
+    deleteFile,
+    generateObjectId,
+    getAllAnnotations,
+    getAnnotatorFeedback,
+    getDataFile,
+    getDataJson,
+    getMyFeedback,
+    getMyImageAnnotations,
+    handleAnnotationsDownload,
+    handleBatchAnnotationsDownload,
+    handleImagesSave,
     handleImagesUpload,
-    handleImageUpload, renameFolder, saveAnnotations, saveFeedback, transferFile, transferFiles
+    handleImageUpload,
+    renameFolder,
+    saveAnnotations,
+    saveFeedback,
+    transferFile,
+    transferFiles
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -307,9 +322,17 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
         let saveFiles = []
         const directory = await unzipper.Open.buffer(Buffer.from(buffer))
 
+        // console.log(directory.files)
+
         const foldersEntry = directory.files.find(entry =>
             entry.type === 'File' && entry.path.endsWith('folders.json')
         )
+
+        const annotationsEntry = directory.files.find(entry =>
+            entry.type === 'File' && entry.path.endsWith('annotationData.json')
+        )
+        // console.log(annotationsEntry)
+
         let folders = []
         let parentFolder = null
         if (foldersEntry) {
@@ -325,20 +348,13 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
             }
         }
 
-        // return {
-        //     success: true,
-        //     data: {}
-        // }
-
-
-        const name = "My Drive"
+        const name = "my_drive"
         let folder = await createFolder(name, null)
         if (!folder?.success) {
             throw new Error('Folder creation failed');
         }
         folder = folder.data
         const driveId = folder._id
-
 
         if (parentFolder){
             let childFolder = await createFolder(parentFolder.name, folder._id, parentFolder._id)
@@ -353,6 +369,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
             if (entry.type !== 'File') continue;
             if (!entry.path) continue;
             if (entry.path.endsWith('folders.json')) continue;
+            if (entry.path.endsWith('annotationData.json')) continue;
 
             let fullPath = ""
             if (driveId === folder._id){
@@ -377,6 +394,16 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
             throw new Error(response.error);
         }
 
+        if (annotationsEntry) {
+            try {
+                const content = await annotationsEntry.buffer();
+                const jsonContent = JSON.parse(content.toString('utf8'));
+                await handleBatchAnnotationsDownload(jsonContent)
+            } catch (err) {
+                console.error('Error reading or parsing annotationData.json:', err.message);
+            }
+        }
+
         // 3️⃣ Remove ZIP after extraction
         fs.unlinkSync(filePath);
 
@@ -395,6 +422,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
   }
 });
 
-ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, object, fileId) => {
-    return await handleAnnotationsDownload(object, fileId)
+ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair) => {
+   return await handleBatchAnnotationsDownload([pair])
+    // return await handleAnnotationsDownload(object, fileId)
 })
