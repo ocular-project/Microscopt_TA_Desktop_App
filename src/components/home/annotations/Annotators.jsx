@@ -15,8 +15,11 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
         try {
             let response
             if (cat === "computer"){
+                console.log(item._id)
+                console.log(cred)
                 response = await window.electronAPI.getMyAnnotations(item._id, cred)
                 if (!response.success) {
+                    console.log(response.error)
                      handleMessage(response.error, "error", setMessage)
                     return
                 }

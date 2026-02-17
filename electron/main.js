@@ -376,7 +376,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
                 fullPath = path.join(customDir, folder.name, entry.path)
             }
             else{
-                fullPath = path.join(customDir, "My Drive", folder.name, entry.path)
+                fullPath = path.join(customDir, "my_drive", folder.name, entry.path)
             }
            const content = await entry.buffer()
            fs.writeFileSync(fullPath, content)

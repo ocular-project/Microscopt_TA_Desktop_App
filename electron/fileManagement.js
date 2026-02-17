@@ -640,7 +640,7 @@ export async function getMyImageAnnotations(id, cred) {
         let feedback = []
         // console.log(cred?._id)
         // console.log(annotator._id)
-        if(annotator._id === cred?._id){
+        if(annotator?._id === cred?._id){
             // console.log(id)
             feedback = feedbackArray
                 .filter(item => item.annotator._id === cred?._id)
@@ -1150,19 +1150,20 @@ function applyAnnotations(state, object, fileId) {
     }
 
     for(const feed of feedback) {
+        // console.log(feed)
         const index = feedbackArray.findIndex(item => item._id === feed._id)
         if (index !== -1) {
             if(new Date(feed.updatedAt) > new Date(feedbackArray[index].updatedAt)){
                 feedbackArray[index] = {
                     ...feedbackArray[index],
-                    annotations: feedback.annotations,
-                    updatedAt: feedback.updatedAt
+                    annotations: feed.annotations,
+                    updatedAt: feed.updatedAt
                 }
             }
         }
         else {
             feedbackArray.push({
-              ...feedback
+              ...feed
             })
         }
     }
@@ -1195,18 +1196,20 @@ export async function getAllAnnotations(imageId) {
          const annoArray = await getArrayObject("annotations.json")
          const feedbackArray = await getArrayObject("feedback.json")
 
-        const imageAnno = annoArray.filter(item => item.imageId === imageId)
-        if (imageAnno.length === 0) {
-            throw new Error("There are no annotations for this image")
-        }
+        let annotations = []
+        let feedback = []
 
-        const annoIds = imageAnno.map(item => item._id)
-        const feedbacks = feedbackArray.filter(item => annoIds.includes(item.annotationId))
+        annotations = annoArray.filter(item => item.imageId === imageId)
+
+        const annoIds = annotations.map(item => item._id)
+        feedback = feedbackArray.filter(item => annoIds.includes(item.annotationId))
 
         return {
             success: true,
-            annotations: imageAnno,
-            feedbacks
+            data: {
+                annotations,
+                feedback
+            }
         }
 
     }catch (error) {

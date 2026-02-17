@@ -188,7 +188,12 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         setLoader(true)
         try {
             const response = await axiosInstance.get(`desktop/download_annotations/${file._id}`)
-            const resp = await window.electronAPI.downloadImageAnnotations(response.data)
+            const data = response.data
+            if (!data.object.annotations.length && !data.object.feedback.length){
+                handleMessage("There are no annotations to download", "warning", setMessage);
+                return
+            }
+            const resp = await window.electronAPI.downloadImageAnnotations(data)
             // console.log(response.data)
             if (resp.success) {
                 handleMessage(resp.message, "success", setMessage);
@@ -210,14 +215,21 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         setLoader(true)
         try {
             const response = await window.electronAPI.getAllAnnotations(fileId)
+
+            const data = response.data
+            if (!data.annotations.length && !data.feedback.length){
+                handleMessage("There are no annotations or annotation feedback to upload", "warning", setMessage);
+                return
+            }
+
             if (!response.success){
                 console.log(response.error)
                 handleMessage(`Error: ${response.error}`, "error", setMessage);
             }
             const obj = {
                 imageId: fileId,
-                annotations: response.annotations,
-                feedback: response.feedbacks
+                annotations: data.annotations,
+                feedback: data.feedback
             }
             const expressResponse = await axiosInstance.post('desktop/uploadAllAnnotations', obj)
             handleMessage(expressResponse.data.message, "success", setMessage);
