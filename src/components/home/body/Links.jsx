@@ -283,51 +283,57 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                             <>
                                 {
                                     !!checkedIds.length ? (
-                                        <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds} setMessage={setMessage} setLoader={setLoader}/>
+                                        <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds}
+                                                      setMessage={setMessage} setLoader={setLoader} cat={cat}/>
                                     ) : (
                                         <>
                                             <div className={styles.dropDown} ref={uploadRef}>
-                                    <div className={styles.dropText} onClick={(e) => handleVis(e)}>
-                                        <span className={styles.text}>Upload</span>
-                                        <span className={`${styles.icon} ${vis? styles.rotate : ""}`}><FontAwesomeIcon icon={faChevronDown} /></span>
-                                    </div>
-                                    <div className={`${styles.dropUl} ${vis? styles.active : ""}`}>
-                                        <ul>
-                                            <li onClick={() => folderInputRef.current.click()}>
-                                                <div style={{ position: 'relative'}}>
-                                                    <input
-                                                        type="file"
-                                                        ref={folderInputRef}
-                                                        webkitdirectory=""
-                                                        directory=""
-                                                        onChange={handleFileChange2}
-                                                        style={{ display: 'none' }}
-                                                    />
-                                                    <span>Folder</span>
+                                                <div className={styles.dropText} onClick={(e) => handleVis(e)}>
+                                                    <span className={styles.text}>Upload</span>
+                                                    <span className={`${styles.icon} ${vis? styles.rotate : ""}`}><FontAwesomeIcon icon={faChevronDown} /></span>
                                                 </div>
-                                            </li>
-                                            <li onClick={() => fileInputRef.current.click()}>
-                                                <div style={{ position: 'relative'}}>
-                                                    <input
-                                                        type="file"
-                                                        ref={fileInputRef}
-                                                        accept="image/*"
-                                                        multiple
-                                                        onChange={handleFileChange}
-                                                        style={{ display: 'none' }}
-                                                    />
-                                                    <span>Image(s)</span>
+                                                <div className={`${styles.dropUl} ${vis? styles.active : ""}`}>
+                                                    <ul>
+                                                        <li onClick={() => folderInputRef.current.click()}>
+                                                            <div style={{ position: 'relative'}}>
+                                                                <input
+                                                                    type="file"
+                                                                    ref={folderInputRef}
+                                                                    webkitdirectory=""
+                                                                    directory=""
+                                                                    onChange={handleFileChange2}
+                                                                    style={{ display: 'none' }}
+                                                                />
+                                                                <span>Folder</span>
+                                                            </div>
+                                                        </li>
+                                                        <li onClick={() => fileInputRef.current.click()}>
+                                                            <div style={{ position: 'relative'}}>
+                                                                <input
+                                                                    type="file"
+                                                                    ref={fileInputRef}
+                                                                    accept="image/*"
+                                                                    multiple
+                                                                    onChange={handleFileChange}
+                                                                    style={{ display: 'none' }}
+                                                                />
+                                                                <span>Image(s)</span>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
                                                 </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                            </div>
                                             <Button text="Create Folder" status="active" onClick={handleClick} />
                                         </>
                                     )
                                 }
 
                             </>
+                        ) : cat === "shared" ? (
+                            !!checkedIds.length && (
+                                <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds}
+                                              setMessage={setMessage} setLoader={setLoader} cat={cat}/>
+                            )
                         ) : cat === "team" ? (
                             <Button text="Create Team" status="active" onClick={handleTeamClick} />
                         ) : cat === "computer" ? (

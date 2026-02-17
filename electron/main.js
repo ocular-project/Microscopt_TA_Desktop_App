@@ -305,7 +305,7 @@ function getDateTime() {
     return `${year}-${month}-${day}_${hours}-${minutes}`;
 }
 
-ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
+ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
     try {
         const dir = loadPath();
         const customDir = path.join(dir, "Microscopy_TA", "folders_and_images");
@@ -348,7 +348,13 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
             }
         }
 
-        const name = "my_drive"
+        let name = ""
+        if (cat === "folder"){
+            name = "my_drive"
+        }
+        else {
+            name = "shared_files"
+        }
         let folder = await createFolder(name, null)
         if (!folder?.success) {
             throw new Error('Folder creation failed');
@@ -376,7 +382,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
                 fullPath = path.join(customDir, folder.name, entry.path)
             }
             else{
-                fullPath = path.join(customDir, "my_drive", folder.name, entry.path)
+                fullPath = path.join(customDir, name, folder.name, entry.path)
             }
            const content = await entry.buffer()
            fs.writeFileSync(fullPath, content)

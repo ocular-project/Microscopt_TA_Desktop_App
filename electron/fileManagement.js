@@ -92,6 +92,16 @@ export async function addDataJson(dir, newObject) {
             }
         }
 
+        if (newObject.name === "shared_files"){
+            const sharedFiles = data.find(item => item.name === "shared_files")
+            if (sharedFiles){
+                return {
+                    success: true,
+                    data: sharedFiles,
+                }
+            }
+        }
+
         const idCheck = data.find(item => item.type === "file" && item._id === newObject._id)
         if (idCheck) {
             await fs.unlink(newObject.url)

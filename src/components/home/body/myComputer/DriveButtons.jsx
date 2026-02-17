@@ -4,7 +4,7 @@ import {handleMessage} from "../../../utils/repeating.js";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {useNavigate} from "react-router-dom";
 
-export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage }){
+export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage, cat }){
 
     const navigate = useNavigate();
 
@@ -30,7 +30,8 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
             //
             // window.URL.revokeObjectURL(url)
             const buffer = await response.data.arrayBuffer()
-            const result = await window.electronAPI.saveZip(buffer)
+            console.log(cat)
+            const result = await window.electronAPI.saveZip(buffer, cat)
             if (result.success) {
                 handleMessage(result.message, "success", setMessage);
                 navigate(`/${result.folderId}`)
@@ -49,8 +50,8 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
         }
     }
 
-    async function handleDownloadSingle (fileId) {
 
+    async function handleDownloadSingle (fileId) {
         try {
             // const response = await axiosInstance.get(
             // `/desktop/download_single/${fileId}`,
