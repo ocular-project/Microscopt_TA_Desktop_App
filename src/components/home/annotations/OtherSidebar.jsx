@@ -135,7 +135,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
 
    function handleBack() {
         let folder = localStorage.getItem("folder")
-       // console.log(folder)
+       console.log(folder)
        if (folder) {
            folder = JSON.parse(folder)
            localStorage.removeItem("folder");

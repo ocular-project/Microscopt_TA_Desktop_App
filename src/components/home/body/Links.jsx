@@ -339,7 +339,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                         ) : cat === "computer" ? (
                             <ButtonLinks setLoader={setLoader} setScreen={setScreen} setIsPop={setIsPop}
                                          setMessage={setMessage} setFolders={setFolders} setCheckedIds={setCheckedIds}
-                                         checkedIds={checkedIds} config={config}
+                                         checkedIds={checkedIds} config={config} links={links} cat={cat}
                             />
                         // ) : cat === "device" ? (
                         //     <Button text="Refresh" status="active" onClick={handleRefresh} />

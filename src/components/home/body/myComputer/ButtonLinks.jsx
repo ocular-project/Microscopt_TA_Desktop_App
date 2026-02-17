@@ -1,13 +1,14 @@
 import Button from "../../../utils/Button";
 import styles from "../../../css/buttons.module.css"
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import dbApi from "../../../utils/files/dbApi";
 import axioss from "../../../utils/files/axios";
 import {useNavigate, useParams} from "react-router-dom";
 import {getPath, handleMessage} from "../../../utils/repeating";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 
-export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, setCheckedIds, checkedIds, config }){
+export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders
+                                        , setCheckedIds, checkedIds, config, links, cat }){
 
     const fileInputRef = useRef(null);
     const { folderId } = useParams();
@@ -239,13 +240,21 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
     }
 
     function openImage(folder){
-        localStorage.setItem("folder", currentPath)
-        navigate(`/annotation/${folder._id}`)
+        console.log(folder)
+        const obj = {
+            folderId: "",
+            path: "/"
+        }
+        localStorage.setItem("folder", JSON.stringify(obj))
+        // navigate(`/annotation/${folder._id}`)
+        navigate(`/annotation/${cat}/${folder._id}`)
     }
 
-    function handleDeselect () {
-        setCheckedIds([])
+    function handleDelete () {
+
     }
+
+    const isAllowed = !!links.find(item => item.name === "my_drive" || item.name === "shared_files")
 
     return (
         <>
@@ -264,13 +273,17 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                     <>
                         <Button text="Upload to My Drive" status="active" onClick={handleCopy} />
                         {/*<Button text="Move to My Drive" status="active" onClick={handleMove} />*/}
-                        <div className={styles.main} onClick={handleDeselect}>
-                            Deselect All
+                        <div className={styles.main} onClick={handleDelete}>
+                            Delete Selected
                         </div>
                     </>
                 ) : (
                     <>
-                        <Button text="Create Folder" status="active" onClick={handleAppClick} />
+                        {
+                            !isAllowed && (
+                                <Button text="Create Folder" status="active" onClick={handleAppClick} />
+                            )
+                        }
                         <div className={styles.main} onClick={handleRefresh}>
                             Refresh
                         </div>
