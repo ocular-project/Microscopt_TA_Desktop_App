@@ -102,6 +102,15 @@ export async function addDataJson(dir, newObject) {
 
         // if (!exists){
         if (newObject.type === "folder") {
+
+             const childFolder = data.find(item => item._id === newObject._id)
+            if (childFolder) {
+                return {
+                    success: true,
+                    data: childFolder,
+                }
+            }
+
             const regex = new RegExp(`^${newObject.name}(?:_\\d+)?$`);
             const count = data.filter(
                 item => item.parent === newObject.parent && regex.test(item.name)
@@ -132,14 +141,13 @@ export async function addDataJson(dir, newObject) {
             newObject.name = count > 0 ? `${newObject.name}_${count+1}` : newObject.name
         }
         else {
-
-            // if (count > 0){
-            //     return {
-            //         success: false,
-            //         data: newObject,
-            //         error: `${newObject.type} already exists`
-            //     }
-            // }
+            const newFile = data.find(item => item.parent === newObject.parent && item._id === newObject._id)
+            if (newFile){
+                return {
+                    success: true,
+                    data: newFile,
+                }
+            }
         }
 
         data.push(newObject)
@@ -930,7 +938,7 @@ function hasInternet(){
 }
 
 // saving images from zipped file
-export async function handleImagesSave(folder, saveFiles, folders) {
+export async function handleImagesSave(folder, saveFiles, folders, driveId) {
     try {
 
         const dir = loadPath();
@@ -941,9 +949,18 @@ export async function handleImagesSave(folder, saveFiles, folders) {
             if (!fileObject) {
                 throw new Error(`Image ${fileName} doesn't have metadata`)
             }
+
+            let pathX = []
+            if (driveId === folder._id){
+                pathX = [driveId]
+            }
+            else {
+                pathX = [driveId, folder._id]
+            }
+
             fileObject.url = file
             fileObject.parent = folder._id
-            fileObject.path = [folder._id]
+            fileObject.path = pathX
             fileObject.createdAt = Date.now()
             fileObject.updatedAt = Date.now()
 

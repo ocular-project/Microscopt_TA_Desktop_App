@@ -109,10 +109,10 @@ ipcMain.handle('electron:getPath', () => {
   return loadPath();
 });
 
-async function createFolder(name, parentId) {
+async function createFolder(name, parentId, _id = generateObjectId()) {
     const dir = loadPath()
     const data = {
-        _id: generateObjectId(),
+        _id,
         name,
         type: "folder",
         mineType: "",
@@ -311,30 +311,56 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
             entry.type === 'File' && entry.path.endsWith('folders.json')
         )
         let folders = []
+        let parentFolder = null
         if (foldersEntry) {
             try {
                 const content = await foldersEntry.buffer();
                 const jsonContent = JSON.parse(content.toString('utf8'));
+                // console.log(jsonContent)
                 folders = jsonContent.folders
+                parentFolder = jsonContent.parentFolder
                 // console.log(JSON.stringify(folders, null, 2));
             } catch (err) {
                 console.error('Error reading or parsing folders.json:', err.message);
             }
         }
 
+        // return {
+        //     success: true,
+        //     data: {}
+        // }
+
+
         const name = "My Drive"
         let folder = await createFolder(name, null)
         if (!folder?.success) {
             throw new Error('Folder creation failed');
         }
-
         folder = folder.data
+        const driveId = folder._id
+
+
+        if (parentFolder){
+            let childFolder = await createFolder(parentFolder.name, folder._id, parentFolder._id)
+            if (!childFolder?.success) {
+                throw new Error('Folder creation failed');
+            }
+            folder = childFolder.data
+        }
+
+        // folder = folder.data
          for (const entry of directory.files){
             if (entry.type !== 'File') continue;
             if (!entry.path) continue;
             if (entry.path.endsWith('folders.json')) continue;
 
-           const fullPath = path.join(customDir, folder.name, entry.path)
+            let fullPath = ""
+            if (driveId === folder._id){
+                fullPath = path.join(customDir, folder.name, entry.path)
+            }
+            else{
+                fullPath = path.join(customDir, "My Drive", folder.name, entry.path)
+            }
            const content = await entry.buffer()
            fs.writeFileSync(fullPath, content)
            saveFiles.push(fullPath)
@@ -346,7 +372,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer) => {
               throw new Error('Filed to save the images locally');
          }
 
-         const response = await handleImagesSave(folder, saveFiles, folders)
+         const response = await handleImagesSave(folder, saveFiles, folders, driveId)
         if (!response.success) {
             throw new Error(response.error);
         }
