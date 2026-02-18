@@ -284,8 +284,14 @@ export async function deleteFile(fileId) {
 
         const annoFilePath = `${dir}/Microscopy_TA/database/annotations.json`
         const annoArray = await accessAnnotationFile(annoFilePath)
+        const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
+        const feedbackArray = await getArrayObject("feedback.json")
+
         const updatedAnno = annoArray.filter(an => !imageList.includes(an.imageId))
         await writeFile(annoFilePath, JSON.stringify(updatedAnno, null, 2), 'utf8');
+
+        const updatedFeed = feedbackArray.filter(fb => !imageList.includes(fb.imageId))
+        await writeFile(feedbackFilePath, JSON.stringify(updatedFeed, null, 2), 'utf8');
 
         const newData = dataArray.filter(item => item._id !== fileId && !item.path.includes(fileId))
         await writeFile(filePath, JSON.stringify(newData, null, 2), 'utf8');
@@ -493,7 +499,7 @@ export async function handleImagesUpload(filePaths, parentId) {
           name: path.basename(file),
           type: "file",
           mineType: "",
-          parent: parentId || "",
+          parent: parentId || null,
           path: [],
           size: stats.size,
           isAnnotated: false,
@@ -533,12 +539,13 @@ export async function handleImageUpload(filePath) {
             name: path.basename(filePath),
             type: "file",
             mineType: "",
-            parent: "",
+            parent: null,
             path: [],
             url: filePath,
             size: stats.size,
             isAnnotated: false,
             category: "From PC",
+            isOnline: false,
             createdAt: Date.now(),
             updatedAt: Date.now(),
         };
@@ -856,61 +863,92 @@ async function validateImageExists(filePath) {
 
 export async function transferFiles(fileList, type) {
     try {
-        const dir = loadPath()
-        const filePath = `${dir}/Microscopy_TA/database/database.json`
-        const dataArray = await accessFolderFile(filePath)
 
-        const fileType = fileList.some(file => file.type === "file")
+        const dataArray = await getArrayObject("database.json")
+        // const feedbackArray = await getArrayObject("feedback.json")
+        const annoArray = await getArrayObject("annotations.json")
 
-        if (fileType) {
-            const newList = fileList.map(file => file.id)
-            let msg = ""
-            let data = []
-            for (const [index, id] of newList.entries()) {
-                const folder = dataArray.find(item => item._id === id)
-                if (!folder) {
-                    const value = index+1
-                    msg = `Image record for Image number ${value} doesn't exist`
-                    break
-                }
-                const url = folder.url
-                const exists = await imageExists(url);
-                if (!exists) {
-                     msg = `This image: ${folder.name} no longer exist on your machine`
-                    break
-                }
-                const buffer = await readFile(url)
-                const extension = url.split('.').pop().toLowerCase();
-                const obj = {
-                    buffer,
-                    name: folder.name,
-                    extension
-                }
-                data.push(obj)
+        const fileType = fileList.every(file => file.type === "file")
+
+        if (!fileType) {
+            throw new Error("There are some folders selected and they are not allowed")
+        }
+
+        // console.log(fileList)
+        const newList = fileList.map(file => file.id)
+        let msg = ""
+        let fol = []
+        let images = []
+        let annotations = []
+
+        const folderLookUp = new Map(
+            dataArray.map(item => [item._id, item])
+        );
+
+        const annoLookUp = new Map(
+            annoArray.map(item => [item.imageId, item])
+        );
+
+        // console.log(newList)
+
+        for (const [index, id] of newList.entries()) {
+            const folder = folderLookUp.get(id)
+
+            if (!folder) {
+                const value = index+1
+                msg = `Image record for Image number ${value} doesn't exist`
+                break
             }
 
-            if (msg) {
-                return {
-                    success: false,
-                    error: msg
-                }
-            }
+            // console.log("===================================")
+            // console.log(folder)
+            // console.log("===================================")
 
+            const url = folder.url
+            const exists = await imageExists(url);
+            if (!exists) {
+                 msg = `This image: ${folder.name} no longer exist on your machine`
+                break
+            }
+            const buffer = await readFile(url)
+            const extension = url.split('.').pop().toLowerCase();
+            const obj = {
+                buffer,
+                name: folder.name,
+                extension
+            }
+            images.push(obj)
+            fol.push(folder)
+
+            if(!annoLookUp.has(id)){
+                continue
+            }
+            const anno = annoLookUp.get(id)
+            annotations.push(anno)
+
+        }
+
+        if (msg) {
             return {
-                success: true,
-                data
+                success: false,
+                error: msg
             }
-
         }
 
         return {
-            success: false
+            success: true,
+            data: {
+                annotations,
+                folders: fol,
+                images
+            }
         }
+
     }
     catch (error) {
       return {
         success: false,
-        error: `Error: ${error.message}`
+        error: `${error.message}`
       };
     }
 }

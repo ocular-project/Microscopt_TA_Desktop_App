@@ -131,7 +131,7 @@ async function createFolder(name, parentId, _id = generateObjectId()) {
         name,
         type: "folder",
         mineType: "",
-        parent: parentId || "",
+        parent: parentId || null,
         path: [],
         size: 0,
         isAnnotated: false,

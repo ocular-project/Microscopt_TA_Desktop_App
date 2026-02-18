@@ -142,6 +142,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
 
     async function handleCopy () {
         setLoader(true)
+        // console.log(checkedIds)
        try {
            const response = await window.electronAPI.transferFiles(checkedIds, "copy")
            if (!response.success){
@@ -149,15 +150,20 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                return
            }
            const data = response.data
+           console.log(data)
            const formData = new FormData();
-           for (const da of data) {
-               const buffer = da.buffer
-               const blob = new Blob([buffer], { type: da.extension })
-               formData.append('files', blob, da.name);
+           for (const image of data.images) {
+               const buffer = image.buffer
+               const blob = new Blob([buffer], { type: `image/${image.extension}` })
+               formData.append('files', blob, image.name);
            }
+           formData.append("folders", JSON.stringify(data.folders))
+           formData.append("annotations", JSON.stringify(data.annotations))
+
+           console.log([...formData.entries()]);
 
            const resp = await axiosInstance.post("desktop/files", formData)
-           // console.log(resp.data)
+           // // console.log(resp.data)
            handleMessage(resp.data.message, "success", setMessage)
 
            // handleMessage("Folder/ File delete successfully", "success", setMessage)
@@ -177,12 +183,12 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
 
        }
        catch (err) {
-            console.log(err)
             if (err.response?.data?.error) {
+                console.log(err.response.data.error)
                 handleMessage(err.response.data.error, "error", setMessage);
                 return;
             }
-
+             console.log(err)
             handleMessage(`Error: ${err.message || err}`, "error", setMessage);
         }
        finally
@@ -207,7 +213,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                       data,
                       ...(Array.isArray(prev) ? prev : [])
                     ]);
-                    openImage(data)
+                    // openImage(data)
                 }
                 else {
                    // console.log(response)
@@ -279,11 +285,11 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                     </>
                 ) : (
                     <>
-                        {
-                            !isAllowed && (
-                                <Button text="Create Folder" status="active" onClick={handleAppClick} />
-                            )
-                        }
+                        {/*{*/}
+                        {/*    !isAllowed && (*/}
+                        {/*        <Button text="Create Folder" status="active" onClick={handleAppClick} />*/}
+                        {/*    )*/}
+                        {/*}*/}
                         <div className={styles.main} onClick={handleRefresh}>
                             Refresh
                         </div>

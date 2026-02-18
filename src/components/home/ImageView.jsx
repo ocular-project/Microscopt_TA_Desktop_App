@@ -79,6 +79,7 @@ export default function ImageView(){
            // console.log(response)
            if (response.success){
                const data = response.data
+               console.log(data.file)
                setFile(data.file)
                !!data.annotators.length && setAnnotators(data.annotators)
                // console.log(data.annotators)
