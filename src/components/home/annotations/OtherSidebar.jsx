@@ -80,7 +80,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         console.log(annotator.owner)
         console.log(annotator.annoId)
         const isAnnotatorValid = annotator.owner !== "" && annotator.annoId !== "";
-        console.log(annotations)
+        // console.log(annotations)
         console.log(fileId)
         console.log(hasFeedback())
         console.log(isAnnotatorValid)
@@ -233,6 +233,8 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                 annotations: data.annotations,
                 feedback: data.feedback
             }
+
+            // console.log(obj)
             const expressResponse = await axiosInstance.post('desktop/uploadAllAnnotations', obj)
             handleMessage(expressResponse.data.message, "success", setMessage);
             setTimeout(() => {

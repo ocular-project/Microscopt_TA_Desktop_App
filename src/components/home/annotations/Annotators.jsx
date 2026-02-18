@@ -79,11 +79,13 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
              }
              else {
                  response = await axiosInstance.get(`/annotations-feedback/${item.feedbackId}`)
-                 const dat = response.data
-                const data = dat.file
-                // console.log(data)
-                setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
+                 const data = response.data
+                 console.log(data)
+                 // const data = dat.file
+
+                // setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
                 setAnnotations(data.annotations)
+                 setAnnotator({ owner: data.annotator, annoId: data.annotationId })
              }
              setMsg("Loaded my feedback")
 
