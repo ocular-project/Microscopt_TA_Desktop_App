@@ -33,6 +33,9 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
     const { fileId } = useParams();
     const [annotator, setAnnotator] = useState({ owner: "", annoId: "" })
 
+    const [isOpen, setIsOpen] = useState({ image: false, sync: false, storage: false, annotations: false, tool: false });
+    // const [isOpen, setIsOpen] = useState(false);
+
     const getAssetPath = (relativePath) => {
       const isDev = process.env.NODE_ENV === 'development';
 
@@ -248,6 +251,10 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
         }
     }
 
+    function handleChange(name, bool) {
+        setIsOpen(prev =>({...prev, [name]: bool}))
+    }
+
     return (
         <div className={style.container}>
              <div className={style.header}>
@@ -262,6 +269,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
             </div>
             <div className={style.list}>
                 <div className={styles.info}>
+
                     <div className={styles.backDiv}>
                         <p>{msg}</p>
                         <div className={styles.back} onClick={() => handleBack()}>
@@ -271,11 +279,11 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                     </div>
 
                    <div className={styles.imgInfo}>
-                       <div className={styles.closeDiv}>
-                           <h1>Image Information</h1>
-                           {/*<IoCloseCircleOutline className={styles.close} onClick={handleClose} />*/}
+                       <div className={styles.header} onClick={() => handleChange("image", !isOpen.image)}>
+                           <h3 className={styles.title}>Image Information</h3>
+                           <span className={`${isOpen.image ? styles.open : ''} ${styles.icon}`}>▼</span>
                        </div>
-                       <div>
+                       <div className={`${isOpen.image ? styles.open : ''} ${styles.content}`}>
                            <div className={styles.labels}>
                                <p>Name:</p>
                                 <p className={styles.even}>{file?.name}</p>
@@ -303,13 +311,18 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                     {
                         (cat === "computer" && file?.isOnline) && (
                             <div className={styles.imgInfo}>
-                                <h1>Data Synchronisation</h1>
-                                <div className={`${styles.toolDiv}`}>
-                                    <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
-                                        <span>Download Latest Annotations</span>
-                                    </div>
-                                    <div className={`${styles.buttons}`} onClick={handleUpload}>
-                                        <span>Upload Annotation Changes</span>
+                                <div className={styles.header} onClick={() => handleChange("sync", !isOpen.sync)}>
+                                   <h3 className={styles.title}>Data Synchronisation</h3>
+                                   <span className={`${isOpen.sync ? styles.open : ''} ${styles.icon}`}>▼</span>
+                                </div>
+                                <div className={`${isOpen.sync ? styles.open : ''} ${styles.content}`}>
+                                   <div className={`${styles.toolDiv}`}>
+                                        <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
+                                            <span>Download Latest Annotations</span>
+                                        </div>
+                                        <div className={`${styles.buttons}`} onClick={handleUpload}>
+                                            <span>Upload Annotation Changes</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -319,42 +332,46 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                     {
                         !back && (
                             <div className={styles.imgInfo}>
-                                <h1>Data Storage and Sharing</h1>
-                                 <p>Actions</p>
-                                 <div>
-                                   {
-                                       other ? (
-                                           <div className={`${styles.buttons} ${button.feed ? styles.active : styles.disabled}`} onClick={handleSave2}>
-                                                <RiFeedbackLine />
-                                                <span>Save Feedback</span>
-                                            </div>
-                                       ) : (
-                                           cat === "computer" ? (
-                                              <>
-                                                  <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
-                                                        <IoSaveOutline />
-                                                        <span>Save Annotations Locally</span>
-                                                  </div>
-                                              </>
+                                <div className={styles.header} onClick={() => handleChange("storage", !isOpen.storage)}>
+                                   <h3 className={styles.title}>Data Storage and Sharing</h3>
+                                   <span className={`${isOpen.storage ? styles.open : ''} ${styles.icon}`}>▼</span>
+                                </div>
+                                <div className={`${isOpen.storage ? styles.open : ''} ${styles.content}`}>
+                                   <div>
+                                       {
+                                           other ? (
+                                               <div className={`${styles.buttons} ${button.feed ? styles.active : styles.disabled}`} onClick={handleSave2}>
+                                                    <RiFeedbackLine />
+                                                    <span>Save Feedback</span>
+                                                </div>
                                            ) : (
-                                               <>
-                                                   <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
-                                                        <IoSaveOutline />
-                                                        <span>Save Annotations</span>
-                                                   </div>
-                                                   <div className={`${styles.buttons} ${button.edit ? "" : styles.disabledOutline}`} onClick={handleShare}>
-                                                        <IoSettingsOutline />
-                                                        <span>Edit Access</span>
-                                                    </div>
-                                                   <div className={`${styles.buttons} ${button.share ? "" : styles.disabledOutline}`} onClick={handleShare}>
-                                                        <IoShareSocialOutline />
-                                                        <span>Share Annotations</span>
-                                                   </div>
-                                               </>
+                                               cat === "computer" ? (
+                                                  <>
+                                                      <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
+                                                            <IoSaveOutline />
+                                                            <span>Save Annotations Locally</span>
+                                                      </div>
+                                                  </>
+                                               ) : (
+                                                   <>
+                                                       <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
+                                                            <IoSaveOutline />
+                                                            <span>Save Annotations</span>
+                                                       </div>
+                                                       <div className={`${styles.buttons} ${button.edit ? "" : styles.disabledOutline}`} onClick={handleShare}>
+                                                            <IoSettingsOutline />
+                                                            <span>Edit Access</span>
+                                                        </div>
+                                                       <div className={`${styles.buttons} ${button.share ? "" : styles.disabledOutline}`} onClick={handleShare}>
+                                                            <IoShareSocialOutline />
+                                                            <span>Share Annotations</span>
+                                                       </div>
+                                                   </>
+                                               )
                                            )
-                                       )
-                                   }
-                                 </div>
+                                       }
+                                     </div>
+                                </div>
                             </div>
                         )
                     }
@@ -363,41 +380,47 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                         !!annotators?.length && (
                             <Annotators annotators={annotators} setAnnotations={setAnnotations} cred={cred} setLoader={setLoader}
                                         setMessage={setMessage} setMsg={setMsg} setAccess={setAccess} setOther={setOther}
-                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack} cat={cat}
+                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack} cat={cat} isOpen={isOpen}
+                                        setIsOpen={setIsOpen} handleChange={handleChange}
                             />
                         )
                     }
 
                    <div className={styles.imgInfo}>
-                       <h1>Annotation Tools</h1>
-                       <p>Annotation Mode </p>
-                       <div className={`${styles.toolDiv}`}>
-                           <div className={`${styles.tool} ${visual === 'box' ? styles.active : ""}`} onClick={() => setVisual("box")}>
-                               <LuRectangleHorizontal />
-                               <p>Bounding Box</p>
-                           </div>
-                           <div className={`${styles.tool} ${visual === 'pointer' ? styles.active : ""}`} onClick={() => setVisual("pointer")}>
-                               <PiCursor />
-                               <p>Pointer</p>
-                           </div>
+                       <div className={styles.header} onClick={() => handleChange("tool", !isOpen.tool)}>
+                           <h3 className={styles.title}>Annotation Tools</h3>
+                           <span className={`${isOpen.tool ? styles.open : ''} ${styles.icon}`}>▼</span>
                        </div>
-                       <hr/>
+                       <div className={`${isOpen.tool ? styles.open : ''} ${styles.content}`}>
+                            <p>Annotation Mode </p>
+                            <div className={`${styles.toolDiv}`}>
+                               <div className={`${styles.tool} ${visual === 'box' ? styles.active : ""}`} onClick={() => setVisual("box")}>
+                                   <LuRectangleHorizontal />
+                                   <p>Bounding Box</p>
+                               </div>
+                               <div className={`${styles.tool} ${visual === 'pointer' ? styles.active : ""}`} onClick={() => setVisual("pointer")}>
+                                   <PiCursor />
+                                   <p>Pointer</p>
+                               </div>
+                            </div>
+                           <hr/>
+                           <p>Zoom</p>
+                           <div className={`${styles.toolDiv}`}>
+                                <div className={`${styles.buttons}`} onClick={zoomOut}>
+                                    <GoZoomOut />
+                                    <span>Zoom out</span>
+                                </div>
+                                <div className={`${styles.buttons}`} onClick={zoomIn}>
+                                    <GoZoomIn />
+                                    <span>Zoom In</span>
+                                </div>
+                           </div>
+                           <div style={{ marginLeft: '-10px', marginRight: '-10px' }} className={`${styles.buttons} ${styles.active}`} onClick={resetZoom}>
+                                <TbZoomReset />
+                                <span>Reset</span>
+                            </div>
+                       </div>
 
-                       <p>Zoom</p>
-                       <div className={`${styles.toolDiv}`}>
-                            <div className={`${styles.buttons}`} onClick={zoomOut}>
-                                <GoZoomOut />
-                                <span>Zoom out</span>
-                            </div>
-                            <div className={`${styles.buttons}`} onClick={zoomIn}>
-                                <GoZoomIn />
-                                <span>Zoom In</span>
-                            </div>
-                       </div>
-                       <div className={`${styles.buttons} ${styles.active}`} onClick={resetZoom}>
-                            <TbZoomReset />
-                            <span>Reset</span>
-                        </div>
                    </div>
 
                </div>

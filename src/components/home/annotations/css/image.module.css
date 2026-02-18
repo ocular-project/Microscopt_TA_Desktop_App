@@ -148,32 +148,72 @@
 
 .imgInfo {
     background-color: white;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #dad2d2;
     padding: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.imgInfo h1 {
+.header {
+    padding: 10px;
+    background-color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.title {
     font-weight: 600;
     font-size: 14px;
-    margin-bottom: 20px;
+    color: #333;
 }
 
-.imgInfo p {
+.icon {
+    font-size: 12px;
+    color: #666;
+    transition: transform 0.3s ease;
+}
+
+.icon.open {
+  transform: rotate(180deg);
+}
+
+.content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  border-top: none;
+}
+
+.content.open {
+    max-height: 100%;
+    padding: 20px 10px 10px 10px;
+    opacity: 1;
+    border-top: 1px solid #e0e0e0;
+}
+
+.content p {
     font-weight: 400;
     font-size: 12px;
     margin-bottom: 10px;
 }
 
-.imgInfo .even {
+.content .even {
      font-weight: 500;
 }
 
 .toolDiv {
     display: grid;
-    grid-template-columns: 50% 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 5px;
+    margin-left: -10px;
+    margin-right: -10px;
 }
 
 .tool {
@@ -201,6 +241,8 @@
 }
 
 .buttons {
+    /*margin-left: -10px;*/
+    /*margin-right: -10px;*/
     margin-bottom: 10px;
     display: flex;
     justify-content: center;
@@ -256,6 +298,8 @@
 
 .annoDiv {
     background-color: #F7F9FB;
+    margin-right: -10px;
+    margin-left: -10px;
 }
 
 .annoDiv.active {
@@ -315,6 +359,10 @@
     display: flex;
     justify-content: left;
     gap: 5px;
+}
+
+.labels p {
+    font-size: 13px;
 }
 
 .labels p:nth-child(2) {

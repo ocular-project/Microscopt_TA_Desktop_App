@@ -1,55 +1,59 @@
 import Button from "../../../utils/Button.jsx";
 import styles from "../../../css/buttons.module.css";
-import {handleMessage} from "../../../utils/repeating.js";
+import {getPath, handleMessage} from "../../../utils/repeating.js";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {useNavigate} from "react-router-dom";
 
-export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage, cat }){
+export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage, cat, setScreen, setIsPop }){
 
     const navigate = useNavigate();
 
     async function handleDownload() {
-        const files= checkedIds.map(check => check.id)
-        // if (files.length === 1) {
-        //     console.log(files[0])
-        //     await handleDownloadSingle(files[0])
-        //     return
-        // }
-        setLoader(true)
-        try {
-            const response = await axiosInstance.post('desktop/download_multiple', { files }, { responseType: 'blob' })
-            // const blob = new Blob([response.data], { type: 'application/zip' })
-            // const url = window.URL.createObjectURL(blob)
-            //
-            // const link = document.createElement('a')
-            // link.href = url
-            // link.setAttribute('download', 'ocular_MTA_files.zip')
-            // document.body.appendChild(link)
-            // link.click()
-            // link.remove()
-            //
-            // window.URL.revokeObjectURL(url)
-            const buffer = await response.data.arrayBuffer()
-            console.log(cat)
-            const result = await window.electronAPI.saveZip(buffer, cat)
-            if (result.success) {
-                handleMessage(result.message, "success", setMessage);
-                navigate(`/${result.folderId}`)
-            }else {
-                console.log(result.error)
-                handleMessage(result.error, "error", setMessage);
-            }
-        }
-        catch (error) {
-            console.log(error)
-            handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
-        }
-        finally {
-            setCheckedIds([])
-            setLoader(false)
-        }
+        const path = await getPath();
+         if (path) {
+             const files = checkedIds.map(check => check.id)
+             // if (files.length === 1) {
+             //     console.log(files[0])
+             //     await handleDownloadSingle(files[0])
+             //     return
+             // }
+             setLoader(true)
+             try {
+                 const response = await axiosInstance.post('desktop/download_multiple', {files}, {responseType: 'blob'})
+                 // const blob = new Blob([response.data], { type: 'application/zip' })
+                 // const url = window.URL.createObjectURL(blob)
+                 //
+                 // const link = document.createElement('a')
+                 // link.href = url
+                 // link.setAttribute('download', 'ocular_MTA_files.zip')
+                 // document.body.appendChild(link)
+                 // link.click()
+                 // link.remove()
+                 //
+                 // window.URL.revokeObjectURL(url)
+                 const buffer = await response.data.arrayBuffer()
+                 console.log(cat)
+                 const result = await window.electronAPI.saveZip(buffer, cat)
+                 if (result.success) {
+                     handleMessage(result.message, "success", setMessage);
+                     navigate(`/${result.folderId}`)
+                 } else {
+                     console.log(result.error)
+                     handleMessage(result.error, "error", setMessage);
+                 }
+             } catch (error) {
+                 console.log(error)
+                 handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
+             } finally {
+                 setCheckedIds([])
+                 setLoader(false)
+             }
+         }
+         else {
+             setScreen(prev => ({...prev, pathCreate: true}))
+             setIsPop(true)
+         }
     }
-
 
     async function handleDownloadSingle (fileId) {
         try {

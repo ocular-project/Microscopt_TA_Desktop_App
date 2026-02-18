@@ -286,9 +286,9 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                     <>
                         <Button text="Upload to My Drive" status="active" onClick={handleCopy} />
                         {/*<Button text="Move to My Drive" status="active" onClick={handleMove} />*/}
-                        <div className={styles.main} onClick={handleDelete}>
-                            Delete Selected
-                        </div>
+                        {/*<div className={styles.main} onClick={handleDelete}>*/}
+                        {/*    Delete Selected*/}
+                        {/*</div>*/}
                     </>
                 ) : (
                     <>

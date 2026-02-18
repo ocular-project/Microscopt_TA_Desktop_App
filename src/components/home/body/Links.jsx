@@ -332,7 +332,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                         ) : cat === "shared" ? (
                             !!checkedIds.length && (
                                 <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds}
-                                              setMessage={setMessage} setLoader={setLoader} cat={cat}/>
+                                              setMessage={setMessage} setLoader={setLoader} cat={cat} setScreen={setScreen} setIsPop={setIsPop}/>
                             )
                         ) : cat === "team" ? (
                             <Button text="Create Team" status="active" onClick={handleTeamClick} />
