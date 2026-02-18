@@ -197,6 +197,8 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
             // console.log(response.data)
             if (resp.success) {
                 handleMessage(resp.message, "success", setMessage);
+                // navigate(`/annotation/computer/${fileId}`)
+                window.location.reload();
             }
             else {
                 handleMessage(resp.error, "error", setMessage);

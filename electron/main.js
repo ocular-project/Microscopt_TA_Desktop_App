@@ -24,7 +24,7 @@ import {
     saveAnnotations,
     saveFeedback,
     transferFile,
-    transferFiles
+    transferFiles, updateFiles
 } from './fileManagement.js'
 
 const __filename = fileURLToPath(import.meta.url);
@@ -167,12 +167,16 @@ ipcMain.handle('fileManagement:transferFile', (event, fileId, type) => {
   return  transferFile(fileId, type)
 })
 
-ipcMain.handle('fileManagement:transferFiles', (event, fileList, type) => {
-  return  transferFiles(fileList, type)
+ipcMain.handle('fileManagement:transferFiles', async (event, fileList, type) => {
+  return  await transferFiles(fileList, type)
 })
 
-ipcMain.handle('fileManagement:deleteFile', (event, fileId) => {
-  return  deleteFile(fileId)
+ipcMain.handle('fileManagement:updateFiles', async (event, fileList,) => {
+  return  await updateFiles(fileList)
+})
+
+ipcMain.handle('fileManagement:deleteFile', async (event, fileId) => {
+  return  await deleteFile(fileId)
 })
 
 ipcMain.handle('imageAnnotation:saveAnnotation', (event, body, cred) => {

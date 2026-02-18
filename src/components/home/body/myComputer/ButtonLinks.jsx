@@ -111,7 +111,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
         if (path) {
             setLoader(true)
             try {
-                const response = await window.electronAPI.getFoldersAndFiles(folderId || "");
+                const response = await window.electronAPI.getFoldersAndFiles(folderId || null);
                 if (!response.success) {
                      handleMessage(response.error, "error", setMessage)
                      return
@@ -150,7 +150,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                return
            }
            const data = response.data
-           console.log(data)
+           // console.log(data)
            const formData = new FormData();
            for (const image of data.images) {
                const buffer = image.buffer
@@ -160,12 +160,19 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
            formData.append("folders", JSON.stringify(data.folders))
            formData.append("annotations", JSON.stringify(data.annotations))
 
-           console.log([...formData.entries()]);
+           // console.log([...formData.entries()]);
 
            const resp = await axiosInstance.post("desktop/files", formData)
            // // console.log(resp.data)
            handleMessage(resp.data.message, "success", setMessage)
-
+           console.log(resp.data.files)
+           const resp2 = await window.electronAPI.updateFiles(resp.data.files)
+           if (!resp2.success){
+               console.log(resp2.error)
+               handleMessage(resp2.error, "warning", setMessage)
+               return
+           }
+           await handleRefresh()
            // handleMessage("Folder/ File delete successfully", "success", setMessage)
            // const data = response.data
            // const buffer = data.buffer

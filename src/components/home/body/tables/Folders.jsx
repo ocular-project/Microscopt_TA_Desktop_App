@@ -242,7 +242,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     }
 
     function handleSelectAll() {
-        const files = folders.filter(item => item.type === "file").map(item => ({ id: item._id, type: item.type }))
+        const files = folders.filter(item => item.type === "file" && !item.isOnline).map(item => ({ id: item._id, type: item.type }))
         if (files.length === checkedIds.length) {
             // setSelectedAll(false)
             setCheckedIds([])
@@ -275,6 +275,11 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                     <tr>
                         <th>Name</th>
                         {
+                            cat === "computer" && (
+                                <th>Synced with server</th>
+                            )
+                        }
+                        {
                             (config && currentPath === "/") && (
                                 <th>
                                     File Location
@@ -300,7 +305,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                <td>
                                    <div className={styles.type}>
                                        {
-                                           folder.type === "file" ? (
+                                           folder.type === "file" && !folder.isOnline ? (
                                                <div className={`${styles.checking2} ${checkedIds.some(item => item.id === folder._id)? styles.active : ''}`}
                                                     onClick={(e) => {
                                                         e.stopPropagation()
@@ -324,6 +329,16 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                        {getFileName(folder.name)}
                                    </div>
                                </td>
+                               {
+                                    cat === "computer" && (
+                                        folder.type === "file" ? (
+                                            <td>{folder.isOnline ? 'Yes' : 'No'}</td>
+                                        ) : (
+                                            <td></td>
+                                        )
+
+                                    )
+                                }
                                {
                                     (config && currentPath === "/") && (
                                         <td style={{
@@ -381,15 +396,15 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                 {
                                                     (config || folder?.owner?.email === "me") && (
                                                         <>
-                                                            {
-                                                                (config && currentPath === "/" && folder.type === "folder") && (
-                                                                   <li>
-                                                                        <div onClick={(e) => handleRename(folder)} >
-                                                                            Rename
-                                                                        </div>
-                                                                   </li>
-                                                                )
-                                                            }
+                                                            {/*{*/}
+                                                            {/*    (config && currentPath === "/" && folder.type === "folder") && (*/}
+                                                            {/*       <li>*/}
+                                                            {/*            <div onClick={(e) => handleRename(folder)} >*/}
+                                                            {/*                Rename*/}
+                                                            {/*            </div>*/}
+                                                            {/*       </li>*/}
+                                                            {/*    )*/}
+                                                            {/*}*/}
                                                             <li>
                                                                 <div onClick={(e) => {
                                                                     // e.stopPropagation()
@@ -398,28 +413,6 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                                     Delete
                                                                 </div>
                                                             </li>
-                                                        </>
-                                                    )
-                                                }
-                                                {
-                                                    (cat === "computer" && !folder.owner) && (
-                                                        <>
-                                                            <li>
-                                                                <div onClick={(e) => {
-                                                                    // e.stopPropagation()
-                                                                    handleCopyToDrive(folder)
-                                                                }}>
-                                                                    Copy to My Drive
-                                                                </div>
-                                                            </li>
-                                                            {/*<li>*/}
-                                                            {/*    <div onClick={(e) => {*/}
-                                                            {/*        // e.stopPropagation()*/}
-                                                            {/*        handleMoveToDrive(folder)*/}
-                                                            {/*    }}>*/}
-                                                            {/*        Move to My Drive*/}
-                                                            {/*    </div>*/}
-                                                            {/*</li>*/}
                                                         </>
                                                     )
                                                 }

@@ -848,6 +848,40 @@ export async function transferFile(fileId, type) {
     }
 }
 
+export async function updateFiles(fileList) {
+    try {
+        const dataArray = await getArrayObject("database.json")
+        const dataLookup = new Map(
+            dataArray.map(item => [item._id, item])
+        )
+        const now = Date.now()
+        for(const file of fileList) {
+            const item = dataLookup.get(file)
+            if (item) {
+                item.updatedAt = now,
+                item.isOnline = true
+            }
+        }
+
+        const dir = loadPath()
+        if (!dir) {
+            return {success: false, error: "Failed to load primary directory"}
+        }
+        const filePath = `${dir}/Microscopy_TA/database/database.json`
+        await writeFile(filePath, JSON.stringify(dataArray, null, 2), 'utf8');
+
+        return {
+            success: true
+        }
+    }
+    catch (error) {
+        return {
+            success: false,
+            error: error.message
+        }
+    }
+}
+
 async function validateImageExists(filePath) {
     const exists = await imageExists(filePath);
 
@@ -989,6 +1023,7 @@ export async function handleImagesSave(folder, saveFiles, folders, driveId) {
             fileObject.url = file
             fileObject.parent = folder._id
             fileObject.path = pathX
+            fileObject.isOnline = true
             fileObject.createdAt = Date.now()
             fileObject.updatedAt = Date.now()
 
