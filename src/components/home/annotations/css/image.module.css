@@ -104,7 +104,7 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: white;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .imageLoadingPlaceholder {
@@ -169,12 +169,12 @@
 
 .title {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     color: #333;
 }
 
 .icon {
-    font-size: 12px;
+    font-size: 10px;
     color: #666;
     transition: transform 0.3s ease;
 }
@@ -200,7 +200,7 @@
 
 .content p {
     font-weight: 400;
-    font-size: 12px;
+    font-size: 10px;
     margin-bottom: 10px;
 }
 
@@ -263,7 +263,7 @@
     cursor: pointer;
     gap: 10px;
     /*min-width: 60px;*/
-    font-size: 10px;
+    font-size: 8px;
     color: black;
     text-align: center;
 }
@@ -293,7 +293,7 @@
 }
 
 .buttons span {
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .annoDiv {
@@ -362,7 +362,7 @@
 }
 
 .labels p {
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .labels p:nth-child(2) {
@@ -371,12 +371,12 @@
 }
 
 .annotator h2 {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
 }
 
 .annotator p {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 400;
     margin-top: 5px;
     margin-bottom: 0;
@@ -387,7 +387,7 @@
     padding: 5px 10px;
     background-color: #F69220;
     color: white;
-    font-size: 10px;
+    font-size: 8px;
     cursor: pointer;
 }
 
@@ -396,7 +396,7 @@
     padding: 5px 5px;
     background-color: #F69220;
     color: white;
-    font-size: 10px;
+    font-size: 8px;
     cursor: pointer;
     width: 100%;
     text-align: center;
@@ -408,7 +408,7 @@
     border: 1px solid #F69220;
     background-color: white;
     color: #F69220;
-    font-size: 10px;
+    font-size: 8px;
     cursor: pointer;
     width: 100%;
     text-align: center;
@@ -427,7 +427,7 @@
 
 .close {
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .close:hover {
@@ -435,12 +435,12 @@
 }
 
 .closeH1 {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
 }
 
 .select {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     margin-top: -10px;
 }
@@ -454,7 +454,7 @@
     display: grid;
     justify-content: center;
     align-items: center;
-    font-size: 12px;
+    font-size: 10px;
     color: #677080;
     font-weight: 400;
     padding: 10px;
@@ -490,7 +490,7 @@
     border-radius: 5px;
     width: 18px;
     height: 18px;
-    font-size: 14px;
+    font-size: 12px;
     display: flex;
     color: white;
     align-items: center;
@@ -504,7 +504,7 @@
 }
 
 .selector span {
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .buttonsFlex {
@@ -538,7 +538,7 @@
 }
 
 .backDiv p {
-    font-size: 12px;
+    font-size: 10px;
     color: #677080;
     font-weight: 400;
 }
@@ -552,7 +552,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     cursor: pointer;
     border: 1px solid #dad2d2;

@@ -1,5 +1,5 @@
 .empty {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 300;
     color: #677080;
 }
@@ -12,7 +12,7 @@
 }
 
 .currentText {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 300;
     color: #677080;
 }
@@ -33,7 +33,7 @@
 }
 
 .location p {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 400;
 }
 
@@ -53,7 +53,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 11px;
+    font-size: 9px;
 }
 
 .linkBackDiv:hover {
@@ -61,7 +61,7 @@
 }
 
 .linkBack p {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 400;
 }
 
@@ -96,7 +96,7 @@
 }
 
 .listDivX .listDiv1 p {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -112,7 +112,7 @@
 }
 
 .listDiv1 p {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -130,7 +130,7 @@
     background-color: white;
     padding: 5px;
     border-radius: 5px;
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 400;
     cursor: pointer;
 }
@@ -138,7 +138,7 @@
 .links {
     margin-top: 20px;
     font-weight: 400;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .links ul li {

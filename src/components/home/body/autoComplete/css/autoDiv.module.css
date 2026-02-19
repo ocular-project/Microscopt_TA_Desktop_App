@@ -13,7 +13,7 @@
     min-height: 44px;
     margin-top: 10px;
     padding: 10px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
 }
 
@@ -58,7 +58,7 @@
 .main p {
     color: black;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 10px;
     margin-top: 10px;
 }
 
@@ -80,7 +80,7 @@
     border-radius: 30px;
     border: 1px solid #D8DDE7;
     background-color: #F7F9FB;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     padding: 5px 10px;
     display: flex;
@@ -134,11 +134,11 @@
 
 .userDiv2 div:nth-child(1) {
     font-weight: 400;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .userDiv2 div:nth-child(2) {
     font-weight: 400;
-    font-size: 11px;
+    font-size: 9px;
     color: #444746;
 }

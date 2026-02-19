@@ -3,7 +3,7 @@
     padding: 10px 24px;
     color: #F69220;
     font-weight: 400;
-    font-size: 11px;
+    font-size: 9px;
     background-color: white;
     border: 1px solid #F69220;
     border-radius: 5px;
@@ -15,7 +15,7 @@
     padding: 5px 6px;
     color: #F69220;
     font-weight: 400;
-    font-size: 11px;
+    font-size: 9px;
     background-color: white;
     border: 1px solid #F69220;
     border-radius: 5px;
@@ -27,7 +27,7 @@
     padding: 10px 24px 10px 16px;
     color: white;
     font-weight: 400;
-    font-size: 11px;
+    font-size: 9px;
     background-color: #F69220;
     border-radius: 5px;
     text-align: center;
@@ -56,12 +56,12 @@
 .load1 span {
     color: #F69220;
     font-weight: 400;
-    font-size: 11px;
+    font-size: 9px;
 }
 
 .load1 {
     color: #F69220;
-    font-size: 15px;
+    font-size: 13px;
 }
 
 .load2 {
@@ -95,7 +95,7 @@
 .otherAnno {
     padding: 10px 16px;
     text-align: center;
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
 
 }
@@ -108,7 +108,7 @@
 .anno {
     cursor: pointer;
     padding: 10px 16px;
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 400;
 }
 
@@ -118,7 +118,7 @@
 
 .saveIcon {
     color: white;
-    font-size: 15px;
+    font-size: 13px;
 }
 
 .main.area {

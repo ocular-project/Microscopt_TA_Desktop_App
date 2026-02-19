@@ -74,14 +74,14 @@
 }
 
 .header h1 {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: black;
     word-break: break-word;
 }
 
 .header p {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 300;
     color: #677080;
     margin-top: 5px;
@@ -112,7 +112,7 @@ hr {
 .team p {
     color: black;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .userDiv {
@@ -150,12 +150,12 @@ hr {
 
 .userDiv2 div:nth-child(1) {
     font-weight: 400;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .userDiv2 div:nth-child(2) {
     font-weight: 400;
-    font-size: 11px;
+    font-size: 9px;
     color: #444746;
 }
 
@@ -164,7 +164,7 @@ hr {
     justify-content: left;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     cursor: pointer;
     padding: 8px;
@@ -209,7 +209,7 @@ hr {
 .roleList li {
     padding: 8px 15px;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 10px;
     cursor: pointer;
 }
 
@@ -226,7 +226,7 @@ hr {
     display: grid;
     justify-content: center;
     align-items: center;
-    font-size: 12px;
+    font-size: 10px;
     color: #677080;
     font-weight: 400;
     padding: 10px;
