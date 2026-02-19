@@ -575,18 +575,18 @@ export async function saveAnnotations(body, cred){
         const dataArray = await getArrayObject("database.json")
         const annoArray = await getArrayObject("annotations.json")
         // console.log(feedbackArray)
-        console.log(cred)
-        console.log(imageId)
-        console.log(annoArray)
+        // console.log(cred)
+        // console.log(imageId)
+        // console.log(annoArray)
         const annoItem = annoArray.find(item => item.imageId === imageId && item.annotator?._id === cred?._id)
-        console.log(annoItem)
+        // console.log(annoItem)
         if (annoItem) {
             annoItem.annotations = annotations
             annoItem.updatedAt= Date.now()
         }
         else {
 
-            console.log(cred)
+            // console.log(cred)
             const newObject = {
                 _id: generateObjectId(),
                 annotator: {...cred},
@@ -597,7 +597,7 @@ export async function saveAnnotations(body, cred){
                 updatedAt: Date.now(),
                 createdAt: Date.now()
             }
-            console.log(newObject)
+            // console.log(newObject)
             annoArray.push(newObject)
         }
 

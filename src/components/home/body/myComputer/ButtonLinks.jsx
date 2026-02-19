@@ -267,7 +267,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
 
     }
 
-    const isAllowed = !!links.find(item => item.name === "my_drive" || item.name === "shared_files")
+    const isAllowed = links && !!links.find(item => item.name === "my_drive" || item.name === "shared_files")
 
     return (
         <>
