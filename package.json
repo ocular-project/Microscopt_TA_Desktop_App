@@ -1,13 +1,40 @@
 {
-  "name": "Microscopy Teaching Aid",
+  "name": "microscopy_teaching_aid",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
     "electron": "nodemon --watch main.js --watch storage.js --watch fileManagement.js --exec \"electron .\"",
     "dev": "vite",
-    "start": "npm run dev & wait-on http://localhost:3009 && npm run electron"
+    "start": "npm run dev & wait-on http://localhost:3009 && npm run electron",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --mac --linux"
+  },
+  "build": {
+    "appId": "com.ocular.microscopy",
+    "productName": "Microscopy Teaching Aid",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "artifactName": "microscopy-ta-setup-windows-v${version}.${ext}"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.education",
+      "artifactName": "microscopy-ta-installer-mac-v${version}.${ext}"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png",
+      "artifactName": "microscopy-ta-installer-linux-v${version}.${ext}"
+    }
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -33,6 +60,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "concurrently": "^9.2.1",
     "electron": "^39.2.7",
+    "electron-builder": "^26.8.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
