@@ -96,6 +96,8 @@
 .inputSpan2 input {
     /*background-color: #F69220;*/
     width: 100%;
+    font-weight: 300;
+    font-size: 12px;
 }
 
 .inputSpanDivIcon {
@@ -139,6 +141,6 @@
 
 .userDiv2 div:nth-child(2) {
     font-weight: 400;
-    font-size: 9px;
+    font-size: 10px;
     color: #444746;
 }

@@ -85,7 +85,7 @@ td:nth-child(1) span {
 
 .popAction ul div {
     color: #444746;
-    font-size: 12px;
+    font-size: 10px;
     padding: 10px 10px;
     font-weight: 400;
     cursor: pointer;
@@ -234,8 +234,17 @@ td:nth-child(1) span {
 
 .select {
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 10px;
     cursor: pointer;
-    font-weight: 100;
+    font-weight: 300;
     color: #F69220;
+    width: fit-content;
+    border: 1px solid #F69220;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.select:hover {
+    background-color: #F69220;
+    color: white;
 }

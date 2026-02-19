@@ -33,7 +33,7 @@
 }
 
 .location p {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 400;
 }
 
@@ -53,7 +53,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .linkBackDiv:hover {
@@ -130,7 +130,7 @@
     background-color: white;
     padding: 5px;
     border-radius: 5px;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 400;
     cursor: pointer;
 }

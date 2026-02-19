@@ -7,6 +7,8 @@ import {faEllipsisVertical, faXmark} from "@fortawesome/free-solid-svg-icons";
 import {useNavigate} from "react-router-dom";
 import {handleMessage, sendToDrive} from "../../../utils/repeating.js";
 import {IoMdCheckmark, IoMdClose} from "react-icons/io";
+import {FaFolder} from "react-icons/fa";
+import {IoImageOutline} from "react-icons/io5";
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
                                     setIsView, setRename, config, cat, setCheckedIds, checkedIds }){
@@ -325,7 +327,14 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                </div>
                                            )
                                        }
-                                       <img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>
+                                       {
+                                           folder.type === "file" ? (
+                                               <FaFolder style={{ color: '#F69220', fontSize: '18' }}/>
+                                           ) : (
+                                               <IoImageOutline style={{ color: '#F69220', fontSize: '18' }}/>
+                                           )
+                                       }
+                                       {/*<img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>*/}
                                        {getFileName(folder.name)}
                                    </div>
                                </td>
@@ -387,7 +396,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                 {
                                                     cat !== "computer" && (
                                                         <li>
-                                                            <div onClick={(e) => handleShare(folder)} >
+                                                            <div onClick={(e) => handleShare(folder)}>
                                                                 Share / File Information
                                                             </div>
                                                         </li>
