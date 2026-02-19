@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, session } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, session, protocol } from "electron";
 import path from "path";
 import fs from 'fs'
 import { fileURLToPath } from "url";
@@ -32,14 +32,14 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow
 
-const gotTheLock = app.requestSingleInstanceLock()
+// const gotTheLock = app.requestSingleInstanceLock()
 
-if (!gotTheLock) {
-  app.quit()
-} else {
-  // rest of your main.js code goes here
-  app.whenReady().then(createWindow)
-}
+// if (!gotTheLock) {
+//   app.quit()
+// } else {
+//   // rest of your main.js code goes here
+//   app.whenReady().then(createWindow)
+// }
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -53,7 +53,25 @@ async function createWindow() {
   });
 
   // Vite dev server
-  mainWindow.loadURL("http://localhost:3009");
+  console.log(process.env.NODE_ENV)
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL('http://localhost:3009');
+  } else {
+
+    protocol.registerFileProtocol('file', (request, callback) => {
+      const url = request.url.replace('file:///', '');
+      callback({ path: path.join(__dirname, '..', url) });
+    });
+
+
+    // Use built files in production
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    mainWindow.loadFile(indexPath).catch(err => console.error(err));
+  }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 
 }
 
@@ -63,6 +81,10 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
       app.quit()
   }
+});
+
+app.on('activate', () => {
+  if (mainWindow === null) createWindow();
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
