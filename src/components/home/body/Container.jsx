@@ -21,7 +21,7 @@ import {handleMessage} from "../../utils/repeating";
 import Move from "./popUps/Move";
 import DeleteFile from "./popUps/DeleteFile.jsx";
 
-export default function Container({ cat, setIsView, isView, message, setMessage, config }){
+export default function Container({ cat, setIsView, isView, message, setMessage, config, quota, setQuota }){
 
     const [isPop, setIsPop] = useState(false)
     const [screen, setScreen] = useState({folderCreate: false, teamCreate: false, share: false,
@@ -58,14 +58,15 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
             <Header cat={cat} />
             <Links setScreen={setScreen} setIsPop={setIsPop} cat={cat} setLoader={setLoader2}
                    loader={loader2} links={links} setFolders={setFolders} setMessage={setMessage}
-                   setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config}
+                   setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} setQuota={setQuota}
             />
             <TableInfo cat={cat} systemStatus={systemStatus} config={config}/>
 
             <Table cat={cat} setLoader={setLoader2} folders={folders} setFolders={setFolders}
                         setTeams={setTeams} teams={teams} setLinks={setLinks}
                         setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setMessage={setMessage}
-                        setIsView={setIsView} isView={isView} setRename={setRename} config={config} setCheckedIds={setCheckedIds} checkedIds={checkedIds}
+                        setIsView={setIsView} isView={isView} setRename={setRename} config={config}
+                        setCheckedIds={setCheckedIds} checkedIds={checkedIds} quota={quota} setQuota={setQuota}
             />
 
             <div className={`${styles.popup} ${isPop ? styles.active : ""}`}>
@@ -85,7 +86,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                         ) : screen.delete ? (
                             <Delete setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} setScreen={setScreen}
                                     screen={screen} file={file} setFolders={setFolders} folders={folders} setFile={setFile}
-                                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} />
+                                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} setQuota={setQuota}/>
                         ) : screen.rename ? (
                            <Rename setIsPop={setIsPop} setLoader={setLoader} rename={rename} setRename={setRename} setFolders={setFolders} setMessage={setMessage} cat={cat} config={config} />
                         ) : screen.share ? (

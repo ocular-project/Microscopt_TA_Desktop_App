@@ -3,11 +3,12 @@ import {NavLink, useNavigate} from "react-router-dom";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDesktop, faHouse, faLink, faUserGroup, faUsers} from "@fortawesome/free-solid-svg-icons";
 import {faFolder} from "@fortawesome/free-regular-svg-icons/faFolder";
-import {useEffect} from "react";
+import {useEffect, useMemo} from "react";
 import {faMobileScreen} from "@fortawesome/free-solid-svg-icons/faMobileScreen";
 import { configg } from "../utils/files/config.js";
+import {IoIosCloudOutline} from "react-icons/io";
 
-export default function Sidebar({ cat, config }){
+export default function Sidebar({ cat, config, quota }){
 
     const navigate = useNavigate()
     const getClassName = (category) => {
@@ -15,23 +16,6 @@ export default function Sidebar({ cat, config }){
             return `${styles.listLink} ${styles.active}`;
         }
         return `${styles.listLink}`;
-        // const currentPath = location.pathname;
-        //
-        // const excludedPaths = ['/teams'];
-        // const isSharedFilesPath = currentPath.startsWith('/sharedFiles');
-        // const isRootPath = currentPath === '/' || currentPath === '';
-        //
-        // const isExcludedPath = excludedPaths.some(excludedPath =>
-        //     currentPath.startsWith(excludedPath)
-        // );
-        //
-        // if (path.startsWith("/sharedFiles")) {
-        //     return `${styles.listLink} ${isSharedFilesPath ? styles.active : ''}`;
-        // }
-        // if (path === '/' || path === '') {
-        //     return `${styles.listLink} ${(isRootPath || (!isExcludedPath && !isSharedFilesPath)) ? styles.active : ''}`;
-        // }
-        // return `${styles.listLink} ${currentPath === path ? styles.active : ''}`;
     };
 
    const getAssetPath = (relativePath) => {
@@ -43,6 +27,19 @@ export default function Sidebar({ cat, config }){
     useEffect(() => {
         const currentPath = location.pathname
     }, [cat]);
+
+     const { usedGB, totalGB, percentage } = useMemo(() => {
+      if (!quota) return { usedGB: 0, totalGB: 0, percentage: 0 }
+
+      return {
+            usedGB: (quota.usedBytes / (1024 ** 3)).toFixed(2),
+            totalGB: (quota.totalBytes / (1024 ** 3)).toFixed(0),
+            percentage: Math.min(
+              Math.round((quota.usedBytes / quota.totalBytes) * 100),
+              100
+            )
+          }
+      }, [quota])
 
     return (
         <div className={styles.container}>
@@ -114,6 +111,30 @@ export default function Sidebar({ cat, config }){
                     </li>
                 </ul>
             </div>
+
+            {
+                quota && (
+                    <div className={styles.card}>
+                      <div className={styles.headerX}>
+                        <IoIosCloudOutline />
+                        <span className={styles.title}>
+                          Storage ({percentage}% full)
+                        </span>
+                      </div>
+
+                      <div className={styles.bar}>
+                        <div
+                          className={styles.fill}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+
+                      <div className={styles.text}>
+                        {usedGB} GB of {totalGB} GB used
+                      </div>
+                    </div>
+                )
+            }
         </div>
     )
 }

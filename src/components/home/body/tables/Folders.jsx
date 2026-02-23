@@ -329,9 +329,9 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                        }
                                        {
                                            folder.type === "file" ? (
-                                               <FaFolder style={{ color: '#F69220', fontSize: '18' }}/>
-                                           ) : (
                                                <IoImageOutline style={{ color: '#F69220', fontSize: '18' }}/>
+                                           ) : (
+                                               <FaFolder style={{ color: '#F69220', fontSize: '18' }}/>
                                            )
                                        }
                                        {/*<img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>*/}

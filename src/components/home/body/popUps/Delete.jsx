@@ -7,8 +7,9 @@ import Button from "../../../utils/Button";
 import {useState} from "react";
 import axioss from "../../../utils/files/axios";
 import {handleMessage} from "../../../utils/repeating";
+import {refreshQuota} from "../../../utils/files/RepeatingFiles.jsx";
 
-export default function Delete({ file, setFolders, setLoader, setMessage, folders, setIsPop, setFile, setCheckedIds, checkedIds }){
+export default function Delete({ file, setFolders, setLoader, setMessage, folders, setIsPop, setFile, setCheckedIds, checkedIds, setQuota }){
 
     const [error, setError] = useState(null)
 
@@ -34,6 +35,7 @@ export default function Delete({ file, setFolders, setLoader, setMessage, folder
                 // console.log(response.data.folders)
                 setFolders(prev => prev.filter(folder => folder._id !== file._id))
                 handleMessage("Folder/ File delete successfully", "success", setMessage)
+                await refreshQuota(setQuota, setMessage, setLoader)
                 // setMessage({show: true, message: "Folder/ File delete successfully", status: "success"})
                 handleCancel()
             }

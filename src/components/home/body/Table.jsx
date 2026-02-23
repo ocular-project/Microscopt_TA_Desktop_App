@@ -8,10 +8,10 @@ import { formatDate } from '../../utils/files/FormatDate.js'
 import {useLocation, useParams} from "react-router-dom";
 import Folders from "./tables/Folders.jsx";
 import Teams from "./tables/Teams.jsx";
-import { fetchTeamsData } from "../../utils/files/RepeatingFiles.jsx";
+import { fetchTeamsData, refreshQuota } from "../../utils/files/RepeatingFiles.jsx";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
-                                  setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds }){
+                                  setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds, quota, setQuota }){
 
     const [error, setError] = useState(null)
     const location = useLocation()
@@ -32,6 +32,8 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                      setError(response.error);
                      return
                 }
+                 setFolders(response.data.folders)
+                 setLinks(response.data.path)
                 // console.log(response)
             }
             else {
@@ -40,10 +42,12 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                         parentId: folderId || "" // Will be undefined for root folders
                     }
                 })
+                 setFolders(response.data.folders)
+                 setLinks(response.data.path)
+
+                await refreshQuota(setQuota, setMessage, setLoader)
             }
             // console.log(response.data.folders)
-            setFolders(response.data.folders)
-            setLinks(response.data.path)
 
         }catch (err) {
             // console.log(err.response)
@@ -82,6 +86,8 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                     setFolders(response.data.folders)
                     setLinks(response.data.path)
 
+                    await refreshQuota(setQuota, setMessage, setLoader)
+
                 }catch (err) {
                     // console.log(err.response)
                     const error = err.response?.data?.error || 'An error occurred'
@@ -98,9 +104,14 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
 
     useEffect(() => {
          if (location.pathname === "/teams") {
-              fetchTeamsData(setLoader, setTeams, setMessage)
+              fetchData2()
          }
     }, []);
+
+    async function fetchData2() {
+        await fetchTeamsData(setLoader, setTeams, setMessage, setQuota)
+        await refreshQuota(setQuota, setMessage, setLoader)
+    }
 
     return (
         <div className={styles.main}>

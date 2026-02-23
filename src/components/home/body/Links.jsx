@@ -9,8 +9,9 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import ButtonLinks from "./myComputer/ButtonLinks";
 import {handleMessage} from "../../utils/repeating";
 import DriveButtons from "./myComputer/DriveButtons.jsx";
+import {refreshQuota} from "../../utils/files/RepeatingFiles.jsx";
 
-export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config }){
+export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config, setQuota }){
 
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -92,6 +93,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                 const response = await axiosInstance.post('uploadFile', formData);
                 // console.log(response.data)
                 uploadFiles.push(response.data);
+                await refreshQuota(setQuota, setMessage, setLoader)
             } catch (err) {
                 console.log(err.response);
                 const error = err.response?.data?.error || 'An error occurred';
@@ -159,6 +161,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
             // console.log(response.data)
             setFolders(prev => [response.data, ...prev])
              handleMessage("Folder uploaded successfully", "success", setMessage)
+             await refreshQuota(setQuota, setMessage, setLoader)
             // setMessage([{show: true, message: "Folder uploaded successfully", status: "success"}])
         }catch (err) {
             console.log(err.response)
@@ -339,7 +342,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                         ) : cat === "computer" ? (
                             <ButtonLinks setLoader={setLoader} setScreen={setScreen} setIsPop={setIsPop}
                                          setMessage={setMessage} setFolders={setFolders} setCheckedIds={setCheckedIds}
-                                         checkedIds={checkedIds} config={config} links={links} cat={cat}
+                                         checkedIds={checkedIds} config={config} links={links} cat={cat} setQuota={setQuota}
                             />
                         // ) : cat === "device" ? (
                         //     <Button text="Refresh" status="active" onClick={handleRefresh} />

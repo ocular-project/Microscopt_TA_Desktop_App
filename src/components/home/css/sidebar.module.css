@@ -89,3 +89,50 @@
     height: 1px;
     background-color: #D8DDE7;
 }
+
+.card {
+  width: 100%;
+  border-radius: 10px;
+  padding: 14px 16px;
+    margin-top: 20px;
+}
+
+.headerX {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+.title {
+  font-size: 11px;
+  font-weight: 500;
+  color: #1f1f1f;
+}
+
+.bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e6e6e6;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px;
+    margin-top: 14px;
+}
+
+.fill {
+  height: 100%;
+  background-color: #F69220;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.text {
+  font-size: 11px;
+  color: #677080;
+}
