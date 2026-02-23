@@ -11,7 +11,7 @@ import {FaFolder} from "react-icons/fa";
 import {IoImageOutline} from "react-icons/io5";
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
-                                    setIsView, setRename, config, cat, setCheckedIds, checkedIds }){
+                                    setIsView, setRename, config, cat, setCheckedIds, checkedIds, setQuota }){
 
     const [selectedId, setSelectedId] = useState(null);
     const [selectedIconId, setSelectedIconId] = useState(null);

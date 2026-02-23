@@ -15,7 +15,7 @@
     "build:linux": "cross-env NODE_ENV=production electron-builder --linux",
     "build:all": "cross-env NODE_ENV=production electron-builder --win --mac --linux",
     "preview:win": "cross-env NODE_ENV=production npm run build && electron-builder build --win --dir",
-    "preview:mac": "cross-env NODE_ENV=production electron-builder build --mac --dir",
+    "preview:mac": "cross-env NODE_ENV=production npm run build && electron-builder build --mac --dir",
     "preview:linux": "cross-env NODE_ENV=production electron-builder build --linux --dir"
   },
   "build": {

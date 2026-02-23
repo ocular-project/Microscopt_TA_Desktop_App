@@ -5,8 +5,10 @@ import {faXmark} from "@fortawesome/free-solid-svg-icons";
 import css from "../../../css/general.module.css";
 import Button from "../../../utils/Button.jsx";
 import {handleMessage} from "../../../utils/repeating.js";
+import {refreshQuota} from "../../../utils/files/RepeatingFiles.jsx";
+import axiosInstance from "../../../utils/files/axiosInstance.js";
 
-export default function DeleteFile({ setLoader, setMessage, setFolders, setScreen, setIsPop, cat, file }){
+export default function DeleteFile({ setLoader, setMessage, setFolders, setScreen, setIsPop, cat, file, setQuota }){
 
     const [error, setError] = useState(null)
 
@@ -28,6 +30,13 @@ export default function DeleteFile({ setLoader, setMessage, setFolders, setScree
                 setFolders(prev => prev.filter(f => f._id !== file._id))
                 handleMessage(response.message, "success", setMessage)
                 handleCancel()
+            }
+            else {
+                await axiosInstance.delete(`folders/${file._id}`)
+                setFolders(prev => prev.filter(f => f._id !== file._id))
+                // setMessage({show: true, message: "Folder/ File delete successfully", status: "success"})
+                handleMessage("Folder/ File delete successfully", "success", setMessage)
+                await refreshQuota(setQuota, setMessage, setLoader)
             }
         }
         catch (err) {

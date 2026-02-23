@@ -94,7 +94,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                         ) : screen.move ? (
                            <Move setIsPop={setIsPop} setLoader={setLoader} rename={rename} setRename={setRename} setFolders={setFolders} setMessage={setMessage} cat={cat} />
                         ) : screen.deleteFile ? (
-                            <DeleteFile setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} setScreen={setScreen} setFolders={setFolders} cat={cat} file={file}/>
+                            <DeleteFile setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} setScreen={setScreen} setFolders={setFolders} cat={cat} file={file} setQuota={setQuota}/>
                         ) : null
                     }
 
