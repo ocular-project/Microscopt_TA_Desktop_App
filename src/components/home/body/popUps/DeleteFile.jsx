@@ -37,6 +37,7 @@ export default function DeleteFile({ setLoader, setMessage, setFolders, setScree
                 // setMessage({show: true, message: "Folder/ File delete successfully", status: "success"})
                 handleMessage("Folder/ File delete successfully", "success", setMessage)
                 await refreshQuota(setQuota, setMessage, setLoader)
+                handleCancel()
             }
         }
         catch (err) {

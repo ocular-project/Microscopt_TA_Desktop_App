@@ -10,13 +10,13 @@
     "electron:wait": "wait-on http://localhost:3009 && npm run electron",
     "electron": "electronmon electron/main.js --no-open-devtools",
     "build": "vite build",
-    "build:win": "cross-env NODE_ENV=production electron-builder --win",
-    "build:mac": "cross-env NODE_ENV=production electron-builder --mac",
-    "build:linux": "cross-env NODE_ENV=production electron-builder --linux",
+    "build:win": "cross-env NODE_ENV=production npm run build && electron-builder --win",
+    "build:mac": "cross-env NODE_ENV=production npm run build && electron-builder --mac",
+    "build:linux": "cross-env NODE_ENV=production npm run build && electron-builder --linux",
     "build:all": "cross-env NODE_ENV=production electron-builder --win --mac --linux",
     "preview:win": "cross-env NODE_ENV=production npm run build && electron-builder build --win --dir",
     "preview:mac": "cross-env NODE_ENV=production npm run build && electron-builder build --mac --dir",
-    "preview:linux": "cross-env NODE_ENV=production electron-builder build --linux --dir"
+    "preview:linux": "cross-env NODE_ENV=production npm run build && electron-builder build --linux --dir"
   },
   "build": {
     "appId": "com.ocular.microscopy",
