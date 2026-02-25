@@ -6,9 +6,10 @@ import axioss from "../../../utils/files/axios";
 import {useNavigate, useParams} from "react-router-dom";
 import {getPath, handleMessage} from "../../../utils/repeating";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
+import {refreshQuota} from "../../../utils/files/RepeatingFiles.jsx";
 
 export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders
-                                        , setCheckedIds, checkedIds, config, links, cat }){
+                                        , setCheckedIds, checkedIds, config, links, cat, setQuota }){
 
     const fileInputRef = useRef(null);
     const { folderId } = useParams();
@@ -172,6 +173,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                handleMessage(resp2.error, "warning", setMessage)
                return
            }
+           await refreshQuota(setQuota, setMessage, setLoader)
            await handleRefresh()
            // handleMessage("Folder/ File delete successfully", "success", setMessage)
            // const data = response.data

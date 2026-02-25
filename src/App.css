@@ -4,6 +4,7 @@
     margin: 0;
     outline: none;
     border: none;
+    font-family: 'JetBrains Mono', monospace;
     box-sizing: border-box;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
@@ -11,6 +12,10 @@
 
 body {
     background: #F7F9FB;
+}
+
+input {
+    font-family: 'JetBrains Mono', monospace;
 }
 
 ul, ol {
@@ -32,7 +37,6 @@ a {
   max-width: 800px;
   margin: auto;
   padding: 2rem;
-  font-family: Arial, sans-serif;
   line-height: 1.6;
   background-color: #ffffff;
   color: #333;

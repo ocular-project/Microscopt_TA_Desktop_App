@@ -12,7 +12,7 @@
 .inputDiv {
     position: relative;
     background-color: #D8DDE7;
-    font-size: 12px;
+    font-size: 10px;
     color: #677080;
     padding: 10px;
     cursor: pointer;
@@ -20,7 +20,7 @@
 
 .input {
     padding: 0 10px;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
     flex: 1;
 }

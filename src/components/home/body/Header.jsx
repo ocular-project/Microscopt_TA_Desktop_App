@@ -72,7 +72,7 @@ export default function Header({ cat }){
                               <div className={styles.leftSpan}>
                                     <FontAwesomeIcon icon={faMagnifyingGlass} />
                               </div>
-                             <input type="text" placeholder="Search for file or folder"/>
+                              <input type="text" placeholder="Search for file or folder"/>
                          </div>
                      ) : null
                 }

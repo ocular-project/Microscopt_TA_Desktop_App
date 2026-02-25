@@ -19,6 +19,17 @@
     padding: 0 5px;
 }
 
+.mainLeftDiv {
+    flex: 1;
+}
+
+.mainLeftDiv input {
+    width: 100%;
+    font-weight: 300;
+    font-size: 12px;
+    word-spacing: 1px;
+}
+
 .leftSpan {
     height: 30px;
     width: 30px;
@@ -45,7 +56,7 @@
     width: 35px;
     border-radius: 50%;
     background-color: #FEF3E7;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: #F69220;
     margin-right: 5px;
@@ -76,7 +87,7 @@
 }
 
 .mainList p {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
 }
 
@@ -98,7 +109,7 @@
 .mainList ul div {
     cursor: pointer;
     padding: 10px 16px;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
 }
 

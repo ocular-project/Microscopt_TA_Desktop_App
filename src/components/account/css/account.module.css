@@ -21,13 +21,13 @@
 
 .sectionText h1 {
     font-weight: 700;
-    font-size: 16px;
+    font-size: 14px;
     color: black;
 }
 
 .sectionText p {
     font-weight: 400;
-    font-size: 12px;
+    font-size: 10px;
     color: #677080;
     margin-top: 5px;
 }
@@ -65,13 +65,13 @@
 }
 
 .checkSpanIcon {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .check p {
     color: black;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .check p span {
@@ -88,7 +88,7 @@
 }
 
 .lower div {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
     cursor: pointer;
 }
@@ -120,6 +120,6 @@
     padding: 10px;
     margin-top: 20px;
     color: #F69220;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 400;
 }

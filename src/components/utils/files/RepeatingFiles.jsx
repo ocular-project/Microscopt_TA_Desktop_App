@@ -15,6 +15,20 @@ export const fetchTeamsData = async (setLoader, setTeams, setMessage) => {
     }
 }
 
+export async function refreshQuota(setQuota, setMessage, setLoader) {
+    try {
+        const response = await axiosInstance.get('user/quota')
+        // console.log(response)
+        setQuota(response.data)
+    }catch (err) {
+        console.log(err)
+        const error = err.response?.data?.error || 'An error occurred'
+        setMessage({show: true, message:  error, status: "error"})
+    }finally {
+        setLoader(false)
+    }
+}
+
 export const getUserData = (key) => {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : {};

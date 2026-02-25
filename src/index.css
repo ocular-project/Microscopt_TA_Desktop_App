@@ -1,4 +1,5 @@
 body {
-    font-family: 'Inter', Arial, sans-serif;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.2;
     background: #F7F9FB;
 }

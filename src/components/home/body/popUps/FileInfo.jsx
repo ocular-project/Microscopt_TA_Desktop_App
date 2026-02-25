@@ -8,6 +8,8 @@ import People from "./tabs/People.jsx";
 import Team from "./tabs/Team.jsx";
 import css from "../../../css/general.module.css";
 import Button from "../../../utils/Button.jsx";
+import {FaFolder} from "react-icons/fa";
+import {IoImageOutline} from "react-icons/io5";
 
 export default function FileInfo({ setIsPop, setLoader, setMessage, setScreen, screen }){
 
@@ -124,7 +126,13 @@ export default function FileInfo({ setIsPop, setLoader, setMessage, setScreen, s
                             <div className={styles.headerDiv1}>
                                 <div className={styles.headerDiv1X}>
                                     <div className={styles.headerDiv11}>
-                                        <img src={`${folder.type === "file" ? "/images/image.png" : "/images/folder.png"}`} alt=""/>
+                                        {
+                                               folder.type === "file" ? (
+                                                   <FaFolder style={{ color: '#F69220', fontSize: '18' }}/>
+                                               ) : (
+                                                   <IoImageOutline style={{ color: '#F69220', fontSize: '18' }}/>
+                                               )
+                                        }
                                     </div>
                                     <div>
                                         <h1>{folder.name}</h1>

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Microscopt_TA_Desktop_App.iml" filepath="$PROJECT_DIR$/.idea/Microscopt_TA_Desktop_App.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/TeachingAid.iml" filepath="$PROJECT_DIR$/.idea/TeachingAid.iml" />
     </modules>
   </component>
 </project>
