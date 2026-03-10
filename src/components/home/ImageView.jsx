@@ -97,7 +97,10 @@ export default function ImageView(){
            // console.log(data)
            setFile(data.file)
            setMsg(data.message)
-           !!data.annotators.length && setAnnotators(data.annotators)
+           if (!!data.annotators.length){
+               setAnnotators(data.annotators)
+               setPop(true)
+           }
            // console.log(data.annotators)
            // console.log(cred._id)
            const response2 = await axiosInstance.get(`/file-instructions/${fileId}`)
@@ -122,7 +125,10 @@ export default function ImageView(){
                const data = response.data
                console.log(data.file)
                setFile(data.file)
-               !!data.annotators.length && setAnnotators(data.annotators)
+               if (!!data.annotators.length){
+                   setAnnotators(data.annotators)
+                   setPop(true)
+               }
                // console.log(data.annotators)
                setMsg(data.message)
            }

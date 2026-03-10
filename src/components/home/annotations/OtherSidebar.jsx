@@ -53,9 +53,11 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
            folder = JSON.parse(folder)
            localStorage.removeItem("folder");
            if (folder.folderId) {
+               console.log(`${folder.path}/${folder.folderId}`)
                navigate(`${folder.path}/${folder.folderId}`)
            }
            else {
+               console.log(`${folder.path}`)
               navigate(folder.path)
            }
        }

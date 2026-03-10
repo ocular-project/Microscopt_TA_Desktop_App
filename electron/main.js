@@ -43,14 +43,16 @@ let mainWindow
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    // width: 1200,
+    // height: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
+
+  mainWindow.maximize()
 
   // Vite dev server
   console.log(process.env.NODE_ENV)

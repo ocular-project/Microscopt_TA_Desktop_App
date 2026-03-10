@@ -22,12 +22,17 @@
     flex-shrink: 0;
     overflow-y: auto;
     box-sizing: border-box;
+    /*background-color: black;*/
     /*border-right: 1px solid #cccccc;*/
+}
+
+.innerContainer1.closed {
+    display: none;
 }
 
 .innerContainer2 {
     position: relative;
-    /*flex-grow: 1;*/
+    flex-grow: 1;
     overflow: hidden;
     /*background-color: #F69220;*/
     height: 99vh;

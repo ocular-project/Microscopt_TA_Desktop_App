@@ -57,7 +57,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
             }
             else if (cat === "shared") {
                 obj = {
-                    folderId: parent,
+                    folderId: "",
                     path: "/sharedFiles"
                 }
             }

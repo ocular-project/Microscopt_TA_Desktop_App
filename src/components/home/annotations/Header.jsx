@@ -142,7 +142,7 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                                                 }`}
                                                 onClick={button.feed ? handleSave2 : undefined}>
                                                     <RiFeedbackLine />
-                                                    <span className="text-sm hidden lg:inline">Save Feedback</span>
+                                                    <span className="text-[12px] hidden lg:inline">Save Feedback</span>
                                             </div>
                                         ) : (
                                             <>
@@ -155,7 +155,7 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                                                     }`}
                                                     onClick={button.save ? handleSave : undefined}>
                                                         <IoSaveOutline />
-                                                        <span className="text-sm hidden lg:inline">Save Annotations</span>
+                                                        <span className="text-[12px] hidden lg:inline">Save Annotations</span>
                                                </div>
                                                <div
                                                     style={{ padding: '5px 10px' }}
@@ -166,7 +166,7 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                                                     }`}
                                                     onClick={button.share ? handleShare : undefined}>
                                                         <IoSettingsOutline />
-                                                        <span className="text-sm hidden lg:inline">Edit Access</span>
+                                                        <span className="text-[12px] hidden lg:inline">Edit Access</span>
                                                </div>
                                                <div
                                                     style={{ padding: '5px 10px' }}
@@ -177,7 +177,7 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                                                     }`}
                                                      onClick={button.share ? handleShare : undefined}>
                                                         <IoShareSocialOutline />
-                                                        <span className="text-sm hidden lg:inline">Share Annotations</span>
+                                                        <span className="text-[12px] hidden lg:inline">Share Annotations</span>
                                                 </div>
                                             </>
                                         )
@@ -189,18 +189,18 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                      <div className="flex justify-end items-center">
                         <div style={{ padding: '5px 10px' }} className="px-5 flex justify-center items-center gap-2 hover:bg-primary rounded hover:text-white cursor-pointer" onClick={zoomOut}>
                             <GoZoomOut />
-                            <span className="text-sm hidden lg:inline">Zoom out</span>
+                            <span className="text-[12px] hidden lg:inline">Zoom out</span>
                         </div>
                         <div
                             style={{ padding: '5px 10px' }}
                             className="px-5 flex justify-center items-center gap-2 hover:bg-primary rounded hover:text-white cursor-pointer "
                             onClick={zoomIn}>
                                 <GoZoomIn />
-                                <span className="text-sm hidden lg:inline">Zoom in</span>
+                                <span className="text-[12px] hidden lg:inline">Zoom in</span>
                         </div>
                         <div style={{ padding: '5px 10px' }} className="px-5 flex justify-center items-center gap-2 hover:bg-primary rounded hover:text-white cursor-pointer" onClick={resetZoom}>
                             <TbZoomReset />
-                            <span className="text-sm hidden lg:inline">Reset Zoom</span>
+                            <span className="text-[12px] hidden lg:inline">Reset Zoom</span>
                         </div>
                     </div>
                 </div>

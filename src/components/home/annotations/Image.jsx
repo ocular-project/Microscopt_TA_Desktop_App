@@ -464,8 +464,10 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
        canvas.width = width;
        canvas.height = height;
 
-       img.style.width = `${width}px`;
-       img.style.height = `${height}px`;
+       // img.style.width = `${width}px`;
+       // img.style.height = `${height}px`;
+        img.style.transform = `scale(${zoom})`;
+        img.style.transformOrigin = "top left";
 
        redrawCanvas();
      }, [zoom, imageSize, redrawCanvas]);

@@ -61,21 +61,21 @@ export async function moveData (setError, setLoader, setFolders, rename, setIsPo
 
 export function handleBack(navigate) {
     let folder = localStorage.getItem("folder")
-    console.log(folder)
-    if (folder) {
-        folder = JSON.parse(folder)
-        localStorage.removeItem("folder");
-        if (folder.folderId) {
-            navigate(`${folder.path}/${folder.folderId}`)
-        }
-        else {
-            navigate(folder.path)
-        }
-    }
-    else {
-        localStorage.removeItem("folder");
-        navigate("/")
-    }
+   // console.log(folder)
+   if (folder) {
+       folder = JSON.parse(folder)
+       localStorage.removeItem("folder");
+       if (folder.folderId) {
+           navigate(`${folder.path}/${folder.folderId}`)
+       }
+       else {
+          navigate(folder.path)
+       }
+   }
+   else {
+       localStorage.removeItem("folder");
+       navigate("/")
+   }
 }
 
 export async function getPath() {
