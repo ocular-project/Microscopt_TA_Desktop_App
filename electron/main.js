@@ -116,7 +116,7 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
 
   if (result.canceled) return [];
   // console.log(parentId)
-  return handleImagesUpload(result.filePaths, parentId)
+  return handleImagesUpload(result.filePaths)
 })
 
 
@@ -124,7 +124,7 @@ ipcMain.handle('dialog:openOneImagePicker', async () => {
 
   const result = await  dialog.showOpenDialog({
     title: "Select images",
-    properties: ["openFile"],
+    properties: ["openFile", "multiSelections"],
     filters: [
       {
         name: "Images",
@@ -135,7 +135,8 @@ ipcMain.handle('dialog:openOneImagePicker', async () => {
 
   if (result.canceled || result.filePaths.length === 0) return null;
   // console.log(parentId)
-  return handleImageUpload(result.filePaths[0])
+  // return handleImageUpload(result.filePaths[0])
+    return handleImagesUpload(result.filePaths)
 })
 
 ipcMain.handle('electron:savePath', (event, folderPath) => {

@@ -215,13 +215,14 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                 setLoader(true)
                 let data;
                 if (response.success){
-                    data = response.data
-                    // console.log(response.data)
-                    // setFolders(prev => [response.data, ...prev])
-                    setFolders(prev => [
-                      data,
-                      ...(Array.isArray(prev) ? prev : [])
-                    ]);
+                    await handleRefresh()
+                    // data = response.data
+                    // // console.log(response.data)
+                    // // setFolders(prev => [response.data, ...prev])
+                    // setFolders(prev => [
+                    //   data,
+                    //   ...(Array.isArray(prev) ? prev : [])
+                    // ]);
                     // openImage(data)
                 }
                 else {
@@ -279,7 +280,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                     //     Load Image
                     // </div>
                     <div className={styles.main} onClick={loadImage}>
-                        Load Image
+                        Load Image(s)
                     </div>
                 )
             }

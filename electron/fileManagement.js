@@ -487,7 +487,7 @@ export async function getDataJson(filePath, parentId) {
 }
 
 // saving the images' objects of the image on the computer
-export async function handleImagesUpload(filePaths, parentId) {
+export async function handleImagesUpload(filePaths) {
   try {
       const results = [];
 
@@ -499,7 +499,8 @@ export async function handleImagesUpload(filePaths, parentId) {
           name: path.basename(file),
           type: "file",
           mineType: "",
-          parent: parentId || null,
+          parent: null,
+          url: file,
           path: [],
           size: stats.size,
           isAnnotated: false,

@@ -57,7 +57,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                navigate(`${folder.path}/${folder.folderId}`)
            }
            else {
-               console.log(`${folder.path}`)
+               console.log(`${folder.path}/${folder.folderId}`)
               navigate(folder.path)
            }
        }
@@ -334,7 +334,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                            </div>
 
                            <hr/>
-                           <p>Instructions</p>
+
                            <div>
                                {
                                    cred?._id === file?.owner?._id ? (
@@ -342,6 +342,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                            {
                                                instructions ? (
                                                    <>
+                                                       <p>Instructions</p>
                                                         <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
                                                             <RiFileEditLine />
                                                             <span>Edit Instructions</span>
@@ -352,10 +353,14 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                                       </div>
                                                    </>
                                                ) : (
-                                                  <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
-                                                        <RxFilePlus />
-                                                        <span>Add Instructions</span>
-                                                  </div>
+                                                   <>
+                                                       <p>Instructions</p>
+                                                        <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                            <RxFilePlus />
+                                                            <span>Add Instructions</span>
+                                                        </div>
+                                                   </>
+
                                                )
                                            }
                                        </>
@@ -364,10 +369,14 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                        <>
                                            {
                                                instructions && (
-                                                   <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
-                                                        <FaRegFileAlt />
-                                                        <span>View Instructions</span>
-                                                  </div>
+                                                   <>
+                                                       <p>Instructions</p>
+                                                       <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                            <FaRegFileAlt />
+                                                            <span>View Instructions</span>
+                                                      </div>
+                                                   </>
+
                                                )
                                            }
                                        </>

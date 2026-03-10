@@ -54,7 +54,17 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                imageId: fileId,
            }
            try {
-               await axiosInstance.post('/save-annotations', obj)
+               if (cat === "computer") {
+                   // console.log(cred)
+                   const response = await window.electronAPI.saveAnnotation(obj, cred)
+                   if(!response.success){
+                       handleMessage(response.error, "error", setMessage)
+                       return
+                   }
+               }
+               else {
+                   await axiosInstance.post('/save-annotations', obj)
+               }
                handleMessage("Image annotations have been saved", "success", setMessage)
                setTimeout(() => {
                    handleBack(navigate)
@@ -146,39 +156,57 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                                             </div>
                                         ) : (
                                             <>
-                                               <div
-                                                    style={{ padding: '5px 10px' }}
-                                                    className={`flex justify-center items-center gap-2 rounded border border-gray-300
-                                                        ${!button.save 
-                                                          ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                          : "hover:bg-primary hover:text-white cursor-pointer"
-                                                    }`}
-                                                    onClick={button.save ? handleSave : undefined}>
-                                                        <IoSaveOutline />
-                                                        <span className="text-[12px] hidden lg:inline">Save Annotations</span>
-                                               </div>
-                                               <div
-                                                    style={{ padding: '5px 10px' }}
-                                                     className={`flex justify-center items-center gap-2 rounded
-                                                        ${!button.share
-                                                          ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                          : "hover:bg-primary hover:text-white cursor-pointer"
-                                                    }`}
-                                                    onClick={button.share ? handleShare : undefined}>
-                                                        <IoSettingsOutline />
-                                                        <span className="text-[12px] hidden lg:inline">Edit Access</span>
-                                               </div>
-                                               <div
-                                                    style={{ padding: '5px 10px' }}
-                                                     className={`flex justify-center items-center gap-2 rounded
-                                                        ${!button.share
-                                                          ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                          : "hover:bg-primary hover:text-white cursor-pointer"
-                                                    }`}
-                                                     onClick={button.share ? handleShare : undefined}>
-                                                        <IoShareSocialOutline />
-                                                        <span className="text-[12px] hidden lg:inline">Share Annotations</span>
-                                                </div>
+                                                {
+                                                    cat === "computer" ? (
+                                                         <div
+                                                                style={{ padding: '5px 10px' }}
+                                                                className={`flex justify-center items-center gap-2 rounded border border-gray-300
+                                                                    ${!button.save 
+                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
+                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
+                                                                }`}
+                                                                onClick={button.save ? handleSave : undefined}>
+                                                                    <IoSaveOutline />
+                                                                    <span className="text-[12px] hidden lg:inline">Save Annotations Locally</span>
+                                                         </div>
+                                                    ) : (
+                                                        <>
+                                                            <div
+                                                                style={{ padding: '5px 10px' }}
+                                                                className={`flex justify-center items-center gap-2 rounded border border-gray-300
+                                                                    ${!button.save 
+                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
+                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
+                                                                }`}
+                                                                onClick={button.save ? handleSave : undefined}>
+                                                                    <IoSaveOutline />
+                                                                    <span className="text-[12px] hidden lg:inline">Save Annotations</span>
+                                                           </div>
+                                                           <div
+                                                                style={{ padding: '5px 10px' }}
+                                                                 className={`flex justify-center items-center gap-2 rounded
+                                                                    ${!button.share
+                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
+                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
+                                                                }`}
+                                                                onClick={button.share ? handleShare : undefined}>
+                                                                    <IoSettingsOutline />
+                                                                    <span className="text-[12px] hidden lg:inline">Edit Access</span>
+                                                           </div>
+                                                           <div
+                                                                style={{ padding: '5px 10px' }}
+                                                                 className={`flex justify-center items-center gap-2 rounded
+                                                                    ${!button.share
+                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
+                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
+                                                                }`}
+                                                                 onClick={button.share ? handleShare : undefined}>
+                                                                    <IoShareSocialOutline />
+                                                                    <span className="text-[12px] hidden lg:inline">Share Annotations</span>
+                                                            </div>
+                                                        </>
+                                                    )
+                                                }
                                             </>
                                         )
                                     }
