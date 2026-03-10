@@ -167,6 +167,22 @@
     transition: background-color 0.2s ease;
 }
 
+.buttonsDelete {
+    /*margin-left: -10px;*/
+    /*margin-right: -10px;*/
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: red;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 10px;
+    gap: 10px;
+    color: white;
+}
+
 .title {
     font-weight: 600;
     font-size: 12px;
@@ -391,6 +407,15 @@
     cursor: pointer;
 }
 
+.loadx {
+    border-radius: 5px;
+    padding: 5px 20px;
+    background-color: #F69220;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+}
+
 .load2 {
     border-radius: 5px;
     padding: 5px 5px;
@@ -399,6 +424,16 @@
     font-size: 8px;
     cursor: pointer;
     width: 100%;
+    text-align: center;
+}
+
+.load2x {
+    border-radius: 5px;
+    padding: 5px 20px;
+    background-color: #F69220;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
     text-align: center;
 }
 
@@ -411,6 +446,17 @@
     font-size: 8px;
     cursor: pointer;
     width: 100%;
+    text-align: center;
+}
+
+.load3x {
+    border-radius: 5px;
+     padding: 5px 20px;
+    border: 1px solid #F69220;
+    background-color: white;
+    color: #F69220;
+    font-size: 11px;
+    cursor: pointer;
     text-align: center;
 }
 
@@ -556,4 +602,31 @@
     font-weight: 400;
     cursor: pointer;
     border: 1px solid #dad2d2;
+}
+
+@media (max-width: 768px) {
+    .main2 {
+        grid-template-columns: 1fr; /* Stack on mobile */
+        grid-template-rows: auto 1fr;
+    }
+
+     .main4 {
+        width: 80vw;
+    }
+
+    .info {
+        /*max-height: 40vh;*/
+        /*overflow-y: auto;*/
+    }
+}
+
+@media (max-width: 480px) {
+    .main4 {
+        width: 90vw;
+    }
+
+    .buttonsFlex {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 2px;
+    }
 }

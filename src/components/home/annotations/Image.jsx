@@ -12,8 +12,9 @@ function clamp(val, min, max) {
  return Math.min(Math.max(val, min), max);
 }
 
-export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setImageSize, imageRef, imageSize,
-                                fitImageToViewport, setAnnotations, annotations, cred, feed, visual, cat }){
+export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setImageSize, imageRef, imageSize, ZOOM_STEP,
+                                  labels, fitImageToViewport, setAnnotations, annotations, cred, feed, visual,
+                                  setIsClosed, width, containerRe, cat, containerRef }){
 
      const [selectedIndex, setSelectedIndex] = useState(null);
      const [action, setAction] = useState(null); // 'draw', 'move', 'resize'
@@ -23,7 +24,7 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
      const [feedbackLabel, setFeedbackLabel] = useState("");
 
      const canvasRef = useRef(null);
-     const containerRef = useRef(null);
+     // const containerRef = useRef(null);
 
     // Utility: get normalized coords inside canvas
      const getNormalizedCoordinates = (e) => {
@@ -470,123 +471,139 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
      }, [zoom, imageSize, redrawCanvas]);
 
     return (
-        <div className={styles.container2}>
-            {
-                cat === 'computer' && (
-                    <div className={styles.strip}>
-                        <p>All your annotations will be saved on your machine</p>
-                    </div>
-                )
-            }
+        <div className={styles.innerContainer3} ref={containerRef}>
+            <div style={{ position: "relative" }}>
+           <img
+             ref={imageRef}
+             src={file?.url}
+             alt="Image Loading..."
+             onLoad={fitImageToViewport}
+             draggable={false}
+             style={{ display: "block", userSelect: "none" }}
+           />
+           <canvas
+             ref={canvasRef}
+             style={{
+               position: "absolute",
+               top: 0,
+               left: 0,
+               cursor:
+                 action === "resize"
+                   ? "nwse-resize"
+                   : action === "move"
+                   ? "move"
+                   : "crosshair",
+               userSelect: "none",
+             }}
+             onMouseDown={handleMouseDown}
+             onMouseMove={handleMouseMove}
+             onMouseUp={handleMouseUp}
+             onMouseLeave={handleMouseUp}
+           />
 
-            <div className={styles.innerContainer2} ref={containerRef}>
-              <div className={`${css.loader} ${loader ? css.active : ""}`}></div>
-              <div style={{ position: "relative" }}>
-               <img
-                 ref={imageRef}
-                 src={file?.url}
-                 alt="Image Loading..."
-                 onLoad={fitImageToViewport}
-                 draggable={false}
-                 style={{ display: "block", userSelect: "none" }}
-               />
-               <canvas
-                 ref={canvasRef}
-                 style={{
-                   position: "absolute",
-                   top: 0,
-                   left: 0,
-                   cursor:
-                     action === "resize"
-                       ? "nwse-resize"
-                       : action === "move"
-                       ? "move"
-                       : "crosshair",
-                   userSelect: "none",
-                 }}
-                 onMouseDown={handleMouseDown}
-                 onMouseMove={handleMouseMove}
-                 onMouseUp={handleMouseUp}
-                 onMouseLeave={handleMouseUp}
-               />
+       {selectedIndex !== null && (() => {
+         const annotation = annotations[selectedIndex];
+         if (!annotation) return null;
 
-               {selectedIndex !== null && (() => {
-                 const annotation = annotations[selectedIndex];
-                 if (!annotation) return null;
+         let left, top;
+         if (annotation.type === 'pointer') {
+           left = annotation.x * imageSize.width * zoom;
+           top = annotation.y * imageSize.height * zoom + POINTER_SIZE + 5;
+         } else {
+           left = Math.min(annotation.x1, annotation.x2) * imageSize.width * zoom;
+           top = Math.max(annotation.y1, annotation.y2) * imageSize.height * zoom + 5;
+         }
 
-                 let left, top;
-                 if (annotation.type === 'pointer') {
-                   left = annotation.x * imageSize.width * zoom;
-                   top = annotation.y * imageSize.height * zoom + POINTER_SIZE + 5;
-                 } else {
-                   left = Math.min(annotation.x1, annotation.x2) * imageSize.width * zoom;
-                   top = Math.max(annotation.y1, annotation.y2) * imageSize.height * zoom + 5;
-                 }
+         return (
+           <div
+             style={{
+               position: "absolute",
+               left,
+               top,
+               background: "rgba(255,255,255,0.9)",
+               padding: "10px",
+               borderRadius: 5,
+               boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+               zIndex: 10,
+               userSelect: "auto",
+             }}
+           >
+               {
+                    labels.some(item => item.trim() === '') ? (
+                        <input
+                           type="text"
+                           value={inputLabel}
+                           onChange={handleLabelChange}
+                           className={styles.input}
+                           autoFocus
+                           placeholder={`Enter ${annotation.type || 'box'} label`}
+                           disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}
+                         />
+                    ) : (
+                       <select
+                           name="labels"
+                           className={styles.input}
+                           onChange={handleLabelChange}
+                           required disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}>
+                           <option value="">-- Select box label --</option>
+                           {
+                               labels.map((label, index) => (
+                                   <option key={index} value={label}>{label}</option>
+                               ))
+                           }
+                       </select>
+                    )
+               }
 
-                 return (
-                   <div
-                     style={{
-                       position: "absolute",
-                       left,
-                       top,
-                       background: "rgba(255,255,255,0.9)",
-                       padding: "10px",
-                       borderRadius: 5,
-                       boxShadow: "0 0 5px rgba(0,0,0,0.3)",
-                       zIndex: 10,
-                       userSelect: "auto",
-                     }}
-                   >
-                     <input
-                       type="text"
-                       value={inputLabel}
-                       onChange={handleLabelChange}
-                       className={styles.input}
-                       autoFocus
-                       placeholder={`Enter ${annotation.type || 'box'} label`}
-                       disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}
-                     />
-                     {
-                       feed ? (
-                           feedbackLabel && (
-                              <div>
-                               <input
-                                 type="text"
-                                 value={feedbackLabel}
-                                 className={styles.input}
-                                 style={{ marginTop: '10px' }}
-                                 disabled
-                               />
-                             </div>
-                           )
-                       ) : (
-                            annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id ? (
-                               <div>
-                                   <input
-                                   type="text"
-                                   value={feedbackLabel}
-                                   onChange={handleFeedbackLabelChange}
-                                   className={styles.input}
-                                   style={{ marginTop: '10px' }}
-                                   autoFocus
-                                   placeholder={`Enter your feedback`}
-                                 />
-                                 <div className={`${style.delete}`} onClick={handleDelete2}>
-                                    <span>Delete Feedback</span>
-                                </div>
-                               </div>
-                           ) : (
-                               <div className={`${style.delete}`} onClick={handleDelete}>
-                              <span>Delete</span>
-                          </div>
-                           )
-                       )
-                     }
-                   </div>
-                 );
-               })()}
-             </div>
-            </div>
+             {/*<input*/}
+             {/*  type="text"*/}
+             {/*  value={inputLabel}*/}
+             {/*  onChange={handleLabelChange}*/}
+             {/*  className={styles.input}*/}
+             {/*  autoFocus*/}
+             {/*  placeholder={`Enter ${annotation.type || 'box'} label`}*/}
+             {/*  disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}*/}
+             {/*/>*/}
+             {
+               feed ? (
+                   feedbackLabel && (
+                      <div>
+                       <input
+                         type="text"
+                         value={feedbackLabel}
+                         className={styles.input}
+                         style={{ marginTop: '10px' }}
+                         disabled
+                       />
+                     </div>
+                   )
+               ) : (
+                    annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id ? (
+                       <div>
+                           <input
+                           type="text"
+                           value={feedbackLabel}
+                           onChange={handleFeedbackLabelChange}
+                           className={styles.input}
+                           style={{ marginTop: '10px' }}
+                           autoFocus
+                           placeholder={`Enter your feedback`}
+                         />
+                         <div className={`${style.delete}`} onClick={handleDelete2}>
+                            <span>Delete Feedback</span>
+                        </div>
+                       </div>
+                   ) : (
+                       <div className={`${style.delete}`} onClick={handleDelete}>
+                      <span>Delete</span>
+                  </div>
+                   )
+               )
+             }
+           </div>
+         );
+       })()}
+     </div>
         </div>
 
     )

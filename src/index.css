@@ -1,5 +1,17 @@
+@import "tailwindcss";
+
 body {
     font-family: 'JetBrains Mono', monospace;
     line-height: 1.2;
     background: #F7F9FB;
+}
+
+@theme {
+    --color-primary: #F69220;
+}
+
+.ql-editor {
+    min-height: 100px;
+    max-height: 37vh;
+    overflow-y: auto;
 }
