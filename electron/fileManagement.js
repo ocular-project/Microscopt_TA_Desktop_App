@@ -502,6 +502,8 @@ export async function handleImagesUpload(filePaths) {
           parent: null,
           url: file,
           path: [],
+          category: "From PC",
+          isOnline: false,
           size: stats.size,
           isAnnotated: false,
           createdAt: Date.now(),

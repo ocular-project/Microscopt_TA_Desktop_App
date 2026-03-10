@@ -66,9 +66,9 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                    await axiosInstance.post('/save-annotations', obj)
                }
                handleMessage("Image annotations have been saved", "success", setMessage)
-               setTimeout(() => {
-                   handleBack(navigate)
-               }, 2000)
+               // setTimeout(() => {
+               //     handleBack(navigate)
+               // }, 2000)
            }catch (err) {
                console.log(err.response)
                const error = err.response.data.error
@@ -97,9 +97,9 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
            try {
                await axiosInstance.post(`/save-feedback/`, obj)
                 handleMessage("Annotation feedback has been saved", "success", setMessage)
-               setTimeout(() => {
-                   handleBack(navigate)
-               }, 2000)
+               // setTimeout(() => {
+               //     handleBack(navigate)
+               // }, 2000)
            }catch (err) {
                console.log(err)
                const error = err.response.data.error
