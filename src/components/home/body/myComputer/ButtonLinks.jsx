@@ -173,7 +173,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                handleMessage(resp2.error, "warning", setMessage)
                return
            }
-           await refreshQuota(setQuota, setMessage, setLoader)
+           // await refreshQuota(setQuota, setMessage, setLoader)
            await handleRefresh()
            // handleMessage("Folder/ File delete successfully", "success", setMessage)
            // const data = response.data
