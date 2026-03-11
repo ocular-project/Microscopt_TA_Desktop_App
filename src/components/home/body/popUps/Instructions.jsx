@@ -39,8 +39,18 @@ export default function Instructions({ setMessage, file, cat, setIsPop, setLoade
     async function fetchInstructions() {
         setLoader(true)
         try {
-             const response2 = await axiosInstance.get(`/file-instructions/${file._id}`)
-             setInstructions(response2.data.file)
+            if (cat === "computer"){
+                const response = await window.electronAPI.getInstructions(file._id);
+                if (!response.success) {
+                     setError(response.error);
+                     return
+                }
+                setInstructions(response.file)
+            }
+            else {
+                const response2 = await axiosInstance.get(`/file-instructions/${file._id}`)
+                setInstructions(response2.data.file)
+            }
         }catch (err) {
            console.log(err)
             const error = err.response?.data?.error || "Unknown error occurred"

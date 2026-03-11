@@ -411,6 +411,7 @@ export async function getDataJson(filePath, parentId) {
 
         // 2. Read the file
         const content = await readFile(filePath, 'utf8');
+        const instArray = await getArrayObject("Instructions.json")
 
         // 3. Handle empty files or invalid JSON
         if (!content.trim()) {
@@ -443,7 +444,10 @@ export async function getDataJson(filePath, parentId) {
                 sizeMB >= 0.01
                     ? `${sizeMB.toFixed(2)} MB`
                     : `${(obj.size / 1024).toFixed(2)} KB`;
-            return { ...obj, size };
+
+            const instructions = instArray.find(inst => inst.file._id === obj._id)
+
+            return { ...obj, size, instructions: !!instructions };
         })
 
         let currentPath = []
@@ -1149,6 +1153,36 @@ export async function handleAnnotationsDownload(object, fileId) {
     }
 }
 
+export async function handleInstructionsDownload(instructionsList){
+    const dir = loadPath()
+    if (!dir) {
+        return { success: false, error: "Failed to load primary directory" }
+    }
+    const instFilePath = `${dir}/Microscopy_TA/database/instructions.json`
+    let instArray = await getArrayObject("instructions.json")
+
+    // console.log(instructionsList)
+    for(const inst of instructionsList) {
+        const index = instArray.findIndex(item => item._id === inst._id)
+        if (index !== -1) {
+            if(new Date(inst.updatedAt) > new Date(instArray[index].updatedAt)){
+                instArray[index] = {
+                    ...instArray[index],
+                    instructions: inst.instructions
+                }
+            }
+        }
+        else {
+            instArray.push({
+              ...inst
+            })
+        }
+    }
+
+    await atomicWrite(instFilePath, instArray)
+
+}
+
 export async function handleBatchAnnotationsDownload(pairs){
     return annotationMutex.runExclusive(async () => {
 
@@ -1275,6 +1309,22 @@ export async function getAllAnnotations(imageId) {
             }
         }
 
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+        }
+    }
+}
+
+export async function getInstructions(fileId) {
+    try {
+        const instArray = await getArrayObject("Instructions.json")
+        const instructions = instArray.find(inst => inst.file._id === fileId)
+        return {
+            success: true,
+            file: instructions
+        }
     }catch (error) {
         return {
             success: false,

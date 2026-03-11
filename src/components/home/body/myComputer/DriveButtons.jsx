@@ -32,7 +32,7 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
                  //
                  // window.URL.revokeObjectURL(url)
                  const buffer = await response.data.arrayBuffer()
-                 console.log(cat)
+                 // console.log(cat)
                  const result = await window.electronAPI.saveZip(buffer, cat)
                  if (result.success) {
                      handleMessage(result.message, "success", setMessage);

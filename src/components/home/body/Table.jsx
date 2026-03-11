@@ -34,7 +34,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                 }
                  setFolders(response.data.folders)
                  setLinks(response.data.path)
-                // console.log(response)
+                // console.log(response.data.folders)
             }
             else {
                 response = await axiosInstance.get('folders', {

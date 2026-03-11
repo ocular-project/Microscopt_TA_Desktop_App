@@ -452,6 +452,18 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                             {/*       </li>*/}
                                                             {/*    )*/}
                                                             {/*}*/}
+                                                            {
+                                                                folder.instructions && (
+                                                                    <li>
+                                                                        <div onClick={(e) => {
+                                                                            // e.stopPropagation()
+                                                                            handleInstructions(folder)
+                                                                        }}>
+                                                                            Instructions
+                                                                        </div>
+                                                                    </li>
+                                                                )
+                                                            }
                                                             <li>
                                                                 <div onClick={(e) => {
                                                                     // e.stopPropagation()
