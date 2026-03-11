@@ -20,12 +20,13 @@ import Rename from "./popUps/Rename";
 import {handleMessage} from "../../utils/repeating";
 import Move from "./popUps/Move";
 import DeleteFile from "./popUps/DeleteFile.jsx";
+import Instructions from "./popUps/Instructions.jsx";
 
 export default function Container({ cat, setIsView, isView, message, setMessage, config, quota, setQuota }){
 
     const [isPop, setIsPop] = useState(false)
     const [screen, setScreen] = useState({folderCreate: false, teamCreate: false, share: false,
-        teamInfo: false, fileInfo: false, id: "", pathCreate: false, delete: false, rename: false, move: false, deleteFile: false})
+        teamInfo: false, fileInfo: false, id: "", pathCreate: false, delete: false, rename: false, move: false, deleteFile: false, instructions: false})
     const [loader, setLoader] = useState(false)
     const [loader2, setLoader2] = useState(false)
     const [folder, setFolder] = useState({name: "", parentId: ""})
@@ -47,7 +48,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
     useEffect(() => {
         if (!isPop) {
             setScreen({folderCreate: false, teamCreate: false, share: false, teamInfo: false, fileInfo: false,
-                id: "", pathCreate: false, delete: false, rename: false, move: false, deleteFile: false});
+                id: "", pathCreate: false, delete: false, rename: false, move: false, deleteFile: false, instructions: false});
             setFile({})
         }
     }, [isPop]);
@@ -95,6 +96,8 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                            <Move setIsPop={setIsPop} setLoader={setLoader} rename={rename} setRename={setRename} setFolders={setFolders} setMessage={setMessage} cat={cat} />
                         ) : screen.deleteFile ? (
                             <DeleteFile setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} setScreen={setScreen} setFolders={setFolders} cat={cat} file={file} setQuota={setQuota}/>
+                        ) : screen.instructions ? (
+                            <Instructions setFolders={setFolders} setLoader={setLoader} setMessage={setMessage} cat={cat} setIsPop={setIsPop} file={file}/>
                         ) : null
                     }
 

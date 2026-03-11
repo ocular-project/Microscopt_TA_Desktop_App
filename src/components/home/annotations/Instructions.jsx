@@ -96,7 +96,7 @@ export default function Instructions({ instructions, setInstructions, setMessage
                </div>
                {
                    file?.owner?._id === cred?._id ? (
-                      <p className={styles.select}>Please add instructions annotators are to follow will annotating this image. All individuals with access to this image will view the instructions</p>
+                      <p className={styles.select}>Please add instructions annotators are to follow while annotating this image. All individuals with access to this image will view the instructions</p>
                    ) : (
                       <p className={styles.select}>Here are the instructions you are to follow while annotating this image</p>
                    )

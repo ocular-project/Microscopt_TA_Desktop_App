@@ -14,4 +14,5 @@ body {
     min-height: 100px;
     max-height: 37vh;
     overflow-y: auto;
+    font-size: 12px;
 }
