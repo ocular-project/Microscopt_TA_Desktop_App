@@ -68,7 +68,7 @@ export default function Instructions({ setMessage, file, cat, setIsPop, setLoade
           theme: "snow",
           placeholder: "Write your instructions...",
           modules: {
-            toolbar: file.owner.email === "me" ? [
+            toolbar: (cat !== "computer" && file.owner.email === "me") ? [
               [{ header: [1, 2, false] }],
               ["bold", "italic"],
               [{ list: "ordered" }, { list: "bullet" }],
@@ -102,7 +102,7 @@ export default function Instructions({ setMessage, file, cat, setIsPop, setLoade
       }
 
       if (quillRef.current) {
-        const canEdit = file.owner.email === "me";
+        const canEdit = (cat !== "computer" && file.owner.email === "me");
         quillRef.current.enable(canEdit); // true = editable, false = read-only
       }
 
@@ -145,7 +145,7 @@ export default function Instructions({ setMessage, file, cat, setIsPop, setLoade
             <div className={styles.header}>
                 <div className={styles.headerDiv1}>
                     {
-                        file.owner.email === "me" ? (
+                       (cat !== "computer" && file.owner.email === "me") ? (
                             <>
                                 <h1>{instructions ? "Edit" : "Add"} instructions</h1>
                                 <p>
@@ -176,7 +176,7 @@ export default function Instructions({ setMessage, file, cat, setIsPop, setLoade
                                cred && (
                                    <>
                                        {
-                                          file.owner.email === 'me' ? (
+                                          (cat !== "computer" && file.owner.email === "me") ? (
                                               <p className="text-[10px] font-[400]">Please add instructions annotators are to follow will annotating {file.type === "file" ? "this image": "images in this folder"}. All individuals with access to {file.type === "file" ? "this image": "this folder"} will view the instructions</p>
                                            ) : (
                                               <p className="text-[10px] font-[400]">Here are the instructions you are to follow while annotating {file.type === "file" ? "this image": "images in this folder"}</p>
@@ -194,7 +194,7 @@ export default function Instructions({ setMessage, file, cat, setIsPop, setLoade
                          }
 
                         {
-                             file.owner.email === "me" && (
+                            (cat !== "computer" && file.owner.email === "me") && (
                                  <>
                                      <hr/>
 

@@ -22,7 +22,7 @@ import {
     handleImageUpload, handleInstructionsDownload,
     renameFolder,
     saveAnnotations,
-    saveFeedback,
+    saveFeedback, saveInstructions,
     transferFile,
     transferFiles, updateFiles
 } from './fileManagement.js'
@@ -478,11 +478,15 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
   }
 });
 
-ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair) => {
+ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair, instructions) => {
    return await handleBatchAnnotationsDownload([pair])
     // return await handleAnnotationsDownload(object, fileId)
 })
 
 ipcMain.handle('instructions:getInstructions', async (event, fileId) => {
     return await getInstructions(fileId)
+})
+
+ipcMain.handle('instructions:saveInstructions', async (event, instructions) => {
+    return await saveInstructions(instructions)
 })

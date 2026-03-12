@@ -1338,3 +1338,42 @@ export async function getInstructions(fileId) {
         }
     }
 }
+
+export async function saveInstructions(instruction) {
+    try {
+        const dir = loadPath()
+        if (!dir) {
+            return { success: false, error: "Failed to load primary directory" }
+        }
+        const instFilePath = `${dir}/Microscopy_TA/database/instructions.json`
+        let instArray = await getArrayObject("instructions.json")
+
+
+        const index = instArray.findIndex(item => item._id === instruction._id)
+        if (index !== -1) {
+            if(new Date(instruction.updatedAt) > new Date(instArray[index].updatedAt)){
+                instArray[index] = {
+                    ...instArray[index],
+                    instructions: instruction.instructions
+                }
+            }
+        }
+        else {
+            instArray.push({
+              ...instruction
+            })
+        }
+
+
+        await atomicWrite(instFilePath, instArray)
+
+        return {
+            success: true,
+        }
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+        }
+    }
+}

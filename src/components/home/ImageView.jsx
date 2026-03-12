@@ -210,7 +210,7 @@ export default function ImageView(){
 
                 <OtherSidebar setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP}
                       setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} instructions={instructions} setInstruct={setInstruct}
-                              setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} setLabels={setLabels}
+                              setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} setLabels={setLabels} setInstructions={setInstructions}
                               setBack={setBack} back={back} feedback={feedback} setFeedback={setFeedback} selected={selected} setSelected={setSelected}
                               setShare={setShare} setAccess={setAccess} setOther={setOther} other={other} annotator={annotator} setAnnotator={setAnnotator}
                               setFeed={setFeed} setVisual={setVisual} visual={visual} file={file} setIsClosed={setIsClosed} width={width} setLabel={setLabel} cat={cat}

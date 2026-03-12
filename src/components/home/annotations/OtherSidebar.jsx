@@ -27,7 +27,7 @@ import {handleUploading} from "../../utils/files/RepeatingFiles.jsx";
 export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, setAnnotations, annotations, setLoader, setInstruct, instructions,
                                      setMessage, file, msg, annotators, cred, setMsg, setShare, setAccess, other, setOther, setSelected, selected,
                                      setFeed, setVisual, visual, setIsClosed, width, annotator, setAnnotator, setBack, back, feedback, setFeedback,
-                                         setLabel, setLabels, cat }) {
+                                         setLabel, setLabels, cat, setInstructions }) {
 
     // const [tool, setTool] = useState("box")
     // const [back, setBack] = useState(false)
@@ -110,7 +110,14 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
             if (resp.success) {
                 handleMessage(resp.message, "success", setMessage);
                 // navigate(`/annotation/computer/${fileId}`)
+                const response2 = await axiosInstance.get(`/file-instructions/${fileId}`)
+                const resp2 = await window.electronAPI.saveInstructions(response2.data.file)
+                if (!resp.success) {
+                    handleMessage(resp2.message, "error", setMessage);
+                    return
+                }
                 window.location.reload();
+
             }
             else {
                 handleMessage(resp.error, "error", setMessage);
@@ -250,10 +257,10 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                 <div className={`${isOpen.sync ? styles.open : ''} ${styles.content}`}>
                                    <div className={`${styles.toolDiv}`}>
                                         <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
-                                            <span>Download Latest Annotations</span>
+                                            <span>Download Latest Changes</span>
                                         </div>
                                         <div className={`${styles.buttons}`} onClick={handleUpload}>
-                                            <span>Upload Annotation Changes</span>
+                                            <span>Upload Changes</span>
                                         </div>
                                     </div>
                                 </div>
