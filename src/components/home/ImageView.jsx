@@ -19,6 +19,7 @@ import AnnotatorShare from "./annotations/AnnotatorShare.jsx";
 import AnnotatorFeedback from "./annotations/AnnotatorFeedback.jsx";
 import Instructions from "./annotations/Instructions.jsx";
 import Labels from "./annotations/Labels.jsx";
+import Sync from "./annotations/Sync.jsx";
 
 const SIDEBAR_WIDTH = 300;
 const ZOOM_STEP = 0.1;
@@ -48,6 +49,8 @@ export default function ImageView(){
     const [instruct, setInstruct] = useState(false)
     const [label, setLabel] = useState(false)
     const [labels, setLabels] = useState([''])
+
+    const [sync, setSync] = useState(false)
 
     const [access, setAccess] = useState(null)
     const [other, setOther] = useState(false)
@@ -215,7 +218,7 @@ export default function ImageView(){
             </div>
             <div className={styles.innerContainer2}>
                 <Header setIsClosed={setIsClosed} width={width} setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} other={other}
-                     setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} cat={cat}
+                     setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} cat={cat} setSync={setSync}
                     setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back}
                 />
                 {
@@ -264,6 +267,12 @@ export default function ImageView(){
             {
                 label && (
                     <Labels setLabel={setLabel} setMessage={setMessage} labels={labels} setLabels={setLabels}/>
+                )
+            }
+
+            {
+                sync && (
+                    <Sync setSync={setSync} setMessage={setMessage} fileId={fileId}/>
                 )
             }
 

@@ -287,6 +287,9 @@ export async function deleteFile(fileId) {
         const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
         const feedbackArray = await getArrayObject("feedback.json")
 
+        const instFilePath = `${dir}/Microscopy_TA/database/instructions.json`
+        const instArray = await getArrayObject("instructions.json")
+
         const updatedAnno = annoArray.filter(an => !imageList.includes(an.imageId))
         await writeFile(annoFilePath, JSON.stringify(updatedAnno, null, 2), 'utf8');
 
@@ -295,6 +298,9 @@ export async function deleteFile(fileId) {
 
         const newData = dataArray.filter(item => item._id !== fileId && !item.path.includes(fileId))
         await writeFile(filePath, JSON.stringify(newData, null, 2), 'utf8');
+
+        const newInst = instArray.filter(item => item.file._id !== fileId)
+        await writeFile(instFilePath, JSON.stringify(newInst, null, 2), 'utf8');
 
         return {
             success: true,

@@ -10,7 +10,7 @@ import {RiFeedbackLine} from "react-icons/ri";
 import {useNavigate, useParams} from "react-router-dom";
 
 export default function Header({ setIsClosed, width, setZoom, fitImageToViewport, ZOOM_STEP, other, setShare, back,
-                                   setLoader, setAnnotations, annotations, annotators, setMessage, cred, annotator, cat }){
+                                   setLoader, setAnnotations, annotations, annotators, setMessage, cred, annotator, cat, setSync }){
 
     const [button, setButton] = useState({ save: false, edit: false, share: false, load: false, finalShare: false, feed: false })
      const navigate = useNavigate()
@@ -61,6 +61,7 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                        handleMessage(response.error, "error", setMessage)
                        return
                    }
+                   setSync(true)
                }
                else {
                    await axiosInstance.post('/save-annotations', obj)
@@ -95,11 +96,21 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                annotator
            }
            try {
-               await axiosInstance.post(`/save-feedback/`, obj)
-                handleMessage("Annotation feedback has been saved", "success", setMessage)
-               // setTimeout(() => {
-               //     handleBack(navigate)
-               // }, 2000)
+               let response
+               if (cat === "computer") {
+                   response = await window.electronAPI.saveFeedback(obj, cred)
+                   if(!response.success) {
+                       console.log(response.error)
+                       handleMessage(response.error, "error", setMessage)
+                       return
+                   }
+                   handleMessage(response.message, "success", setMessage)
+                   setSync(true)
+               }
+               else {
+                   response = await axiosInstance.post(`/save-feedback/`, obj)
+                   handleMessage(response.data.message, "success", setMessage)
+               }
            }catch (err) {
                console.log(err)
                const error = err.response.data.error

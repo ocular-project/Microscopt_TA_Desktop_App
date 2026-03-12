@@ -1,5 +1,5 @@
 import axiosInstance from "./axiosInstance.js";
-import {handleMessage} from "../repeating.js";
+import {handleBack, handleMessage} from "../repeating.js";
 
 export const fetchTeamsData = async (setLoader, setTeams, setMessage) => {
     setLoader(true);
@@ -167,3 +167,38 @@ export async function handleLoadFeedbacking(cat, fb, setLoader, setAnnotator, se
        setLoader(false)
    }
 }
+
+ export async function handleUploading(setLoader, fileId, setMessage, navigate) {
+        setLoader(true)
+        try {
+            const response = await window.electronAPI.getAllAnnotations(fileId)
+
+            const data = response.data
+            if (!data.annotations.length && !data.feedback.length){
+                handleMessage("There are no annotations or annotation feedback to upload", "warning", setMessage);
+                return
+            }
+
+            if (!response.success){
+                console.log(response.error)
+                handleMessage(`Error: ${response.error}`, "error", setMessage);
+            }
+            const obj = {
+                imageId: fileId,
+                annotations: data.annotations,
+                feedback: data.feedback
+            }
+
+            // console.log(obj)
+            const expressResponse = await axiosInstance.post('desktop/uploadAllAnnotations', obj)
+            handleMessage(expressResponse.data.message, "success", setMessage);
+            setTimeout(() => {
+                handleBack(navigate)
+            }, 500)
+        }catch (error) {
+            console.log(error)
+            handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
+        }finally {
+            setLoader(false)
+        }
+    }
