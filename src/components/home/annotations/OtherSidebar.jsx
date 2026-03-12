@@ -342,51 +342,73 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
 
                            <div>
                                {
-                                   cred?._id === file?.owner?._id ? (
-                                       <>
-                                           {
-                                               instructions ? (
+                                   <>
+                                   {
+                                       cat === "computer" ? (
+                                           <>
+                                               {
+                                                   instructions && (
+                                                       <>
+                                                           <p>Instructions</p>
+                                                           <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                <FaRegFileAlt />
+                                                                <span>View Instructions</span>
+                                                          </div>
+                                                       </>
+                                                   )
+                                               }
+                                           </>
+                                       ) : (
+                                           <>
+                                               cred?._id === file?.owner?._id ? (
                                                    <>
-                                                       <p>Instructions</p>
-                                                        <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
-                                                            <RiFileEditLine />
-                                                            <span>Edit Instructions</span>
-                                                      </div>
-                                                      <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
-                                                            <FaRegFileAlt />
-                                                            <span>View Instructions</span>
-                                                      </div>
+                                                       {
+                                                           instructions ? (
+                                                               <>
+                                                                   <p>Instructions</p>
+                                                                    <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                        <RiFileEditLine />
+                                                                        <span>Edit Instructions</span>
+                                                                  </div>
+                                                                  <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                        <FaRegFileAlt />
+                                                                        <span>View Instructions</span>
+                                                                  </div>
+                                                               </>
+                                                           ) : (
+                                                               <>
+                                                                   <p>Instructions</p>
+                                                                    <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                        <RxFilePlus />
+                                                                        <span>Add Instructions</span>
+                                                                    </div>
+                                                               </>
+
+                                                           )
+                                                       }
                                                    </>
+
                                                ) : (
                                                    <>
-                                                       <p>Instructions</p>
-                                                        <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
-                                                            <RxFilePlus />
-                                                            <span>Add Instructions</span>
-                                                        </div>
+                                                       {
+                                                           instructions && (
+                                                               <>
+                                                                   <p>Instructions</p>
+                                                                   <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                        <FaRegFileAlt />
+                                                                        <span>View Instructions</span>
+                                                                  </div>
+                                                               </>
+
+                                                           )
+                                                       }
                                                    </>
-
                                                )
-                                           }
-                                       </>
+                                           </>
+                                       )
+                                   }
+                                   </>
 
-                                   ) : (
-                                       <>
-                                           {
-                                               instructions && (
-                                                   <>
-                                                       <p>Instructions</p>
-                                                       <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
-                                                            <FaRegFileAlt />
-                                                            <span>View Instructions</span>
-                                                      </div>
-                                                   </>
-
-                                               )
-                                           }
-                                       </>
-
-                                   )
                                }
 
                            </div>

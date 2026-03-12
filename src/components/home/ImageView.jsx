@@ -131,6 +131,13 @@ export default function ImageView(){
                }
                // console.log(data.annotators)
                setMsg(data.message)
+
+               const response2 = await window.electronAPI.getInstructions(fileId);
+                if (!response2.success) {
+                     handleMessage(response2.error, "error", setMessage)
+                     return
+                }
+                setInstructions(response2.file)
            }
            else {
                handleMessage(response.error, "error", setMessage)

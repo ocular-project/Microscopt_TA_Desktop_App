@@ -21,7 +21,7 @@ export default function Instructions({ instructions, setInstructions, setMessage
           theme: "snow",
           placeholder: "Write your instructions...",
           modules: {
-            toolbar: file?.owner?._id === cred?._id ? [
+            toolbar: (cat !== "computer" && file?.owner?._id === cred?._id) ? [
               [{ header: [1, 2, false] }],
               ["bold", "italic"],
               [{ list: "ordered" }, { list: "bullet" }],
@@ -55,7 +55,7 @@ export default function Instructions({ instructions, setInstructions, setMessage
       }
 
       if (quillRef.current) {
-        const canEdit = file?.owner?._id === cred?._id;
+        const canEdit = (cat !== "computer" && file?.owner?._id === cred?._id);
         quillRef.current.enable(canEdit); // true = editable, false = read-only
       }
 
@@ -95,7 +95,7 @@ export default function Instructions({ instructions, setInstructions, setMessage
                    <IoCloseCircleOutline className={styles.close} />
                </div>
                {
-                   file?.owner?._id === cred?._id ? (
+                   (cat !== "computer" && file?.owner?._id === cred?._id) ? (
                       <p className={styles.select}>Please add instructions annotators are to follow while annotating this image. All individuals with access to this image will view the instructions</p>
                    ) : (
                       <p className={styles.select}>Here are the instructions you are to follow while annotating this image</p>
@@ -112,7 +112,7 @@ export default function Instructions({ instructions, setInstructions, setMessage
                    {/*     <span>Save Instructions</span>*/}
                    {/*</div>*/}
                    {
-                       file?.owner?._id === cred?._id && (
+                       (cat !== "computer" && file?.owner?._id === cred?._id) && (
                            <>
                                {
                                    instructions ? (

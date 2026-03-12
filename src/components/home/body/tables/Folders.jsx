@@ -422,6 +422,11 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                                                 } Instructions
                                                                             </div>
                                                                         </li>
+                                                                        {/*<li>*/}
+                                                                        {/*    <div onClick={(e) => handleInstructions(folder)} >*/}
+                                                                        {/*        View Instructions*/}
+                                                                        {/*    </div>*/}
+                                                                        {/*</li>*/}
                                                                     </>
                                                                 ) : (
                                                                     <>
@@ -429,7 +434,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                                             folder.instructions && (
                                                                                <li>
                                                                                     <div onClick={(e) => handleInstructions(folder)} >
-                                                                                        Instructions
+                                                                                        View Instructions
                                                                                     </div>
                                                                                </li>
                                                                             )
@@ -459,7 +464,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                                             // e.stopPropagation()
                                                                             handleInstructions(folder)
                                                                         }}>
-                                                                            Instructions
+                                                                            View Instructions
                                                                         </div>
                                                                     </li>
                                                                 )
