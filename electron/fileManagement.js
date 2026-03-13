@@ -451,7 +451,8 @@ export async function getDataJson(filePath, parentId) {
                     ? `${sizeMB.toFixed(2)} MB`
                     : `${(obj.size / 1024).toFixed(2)} KB`;
 
-            const instructions = instArray.find(inst => inst.file._id === obj._id)
+            console.log(obj._id)
+            const instructions = instArray.find(inst => inst.file._id === obj._id || inst.files.includes(obj._id))
 
             return { ...obj, size, instructions: !!instructions };
         })
@@ -1174,6 +1175,7 @@ export async function handleInstructionsDownload(instructionsList){
             if(new Date(inst.updatedAt) > new Date(instArray[index].updatedAt)){
                 instArray[index] = {
                     ...instArray[index],
+                    files: inst.files,
                     instructions: inst.instructions
                 }
             }
@@ -1326,7 +1328,7 @@ export async function getAllAnnotations(imageId) {
 export async function getInstructions(fileId) {
     try {
         const instArray = await getArrayObject("Instructions.json")
-        const instructions = instArray.find(inst => inst.file._id === fileId)
+        const instructions = instArray.find(inst => inst.file._id === fileId || inst.files.includes(fileId))
         return {
             success: true,
             file: instructions
@@ -1354,6 +1356,7 @@ export async function saveInstructions(instruction) {
             if(new Date(instruction.updatedAt) > new Date(instArray[index].updatedAt)){
                 instArray[index] = {
                     ...instArray[index],
+                    files: instruction.files,
                     instructions: instruction.instructions
                 }
             }
