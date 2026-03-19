@@ -12,17 +12,17 @@ import {
     getAllAnnotations,
     getAnnotatorFeedback,
     getDataFile,
-    getDataJson,
+    getDataJson, getInstructions,
     getMyFeedback,
     getMyImageAnnotations,
     handleAnnotationsDownload,
     handleBatchAnnotationsDownload,
     handleImagesSave,
     handleImagesUpload,
-    handleImageUpload,
+    handleImageUpload, handleInstructionsDownload,
     renameFolder,
     saveAnnotations,
-    saveFeedback,
+    saveFeedback, saveInstructions,
     transferFile,
     transferFiles, updateFiles
 } from './fileManagement.js'
@@ -43,14 +43,16 @@ let mainWindow
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    // width: 1200,
+    // height: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
+
+  mainWindow.maximize()
 
   // Vite dev server
   console.log(process.env.NODE_ENV)
@@ -114,7 +116,7 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
 
   if (result.canceled) return [];
   // console.log(parentId)
-  return handleImagesUpload(result.filePaths, parentId)
+  return handleImagesUpload(result.filePaths)
 })
 
 
@@ -122,7 +124,7 @@ ipcMain.handle('dialog:openOneImagePicker', async () => {
 
   const result = await  dialog.showOpenDialog({
     title: "Select images",
-    properties: ["openFile"],
+    properties: ["openFile", "multiSelections"],
     filters: [
       {
         name: "Images",
@@ -133,7 +135,8 @@ ipcMain.handle('dialog:openOneImagePicker', async () => {
 
   if (result.canceled || result.filePaths.length === 0) return null;
   // console.log(parentId)
-  return handleImageUpload(result.filePaths[0])
+  // return handleImageUpload(result.filePaths[0])
+    return handleImagesUpload(result.filePaths)
 })
 
 ipcMain.handle('electron:savePath', (event, folderPath) => {
@@ -173,10 +176,9 @@ ipcMain.handle('fileManagement:renameFolder', (event, object) => {
 
 })
 
-ipcMain.handle('fileManagement:getFoldersAndFiles', (event, parentId) => {
+ipcMain.handle('fileManagement:getFoldersAndFiles', async (event, parentId) => {
   const dir = loadPath()
-  return  getDataJson(`${dir}/Microscopy_TA/database/database.json`, parentId)
-
+  return  await getDataJson(`${dir}/Microscopy_TA/database/database.json`, parentId)
 })
 
 ipcMain.handle('fileManagement:getFile', async (event, fileId, credentials) => {
@@ -185,8 +187,8 @@ ipcMain.handle('fileManagement:getFile', async (event, fileId, credentials) => {
 
 })
 
-ipcMain.handle('fileManagement:transferFile', (event, fileId, type) => {
-  return  transferFile(fileId, type)
+ipcMain.handle('fileManagement:transferFile', async (event, fileId, type) => {
+  return  await transferFile(fileId, type)
 })
 
 ipcMain.handle('fileManagement:transferFiles', async (event, fileList, type) => {
@@ -359,6 +361,10 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
         )
         // console.log(annotationsEntry)
 
+        const instructionsEntry = directory.files.find(entry =>
+            entry.type === 'File' && entry.path.endsWith('instructions.json')
+        )
+
         let folders = []
         let parentFolder = null
         if (foldersEntry) {
@@ -402,6 +408,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
             if (!entry.path) continue;
             if (entry.path.endsWith('folders.json')) continue;
             if (entry.path.endsWith('annotationData.json')) continue;
+            if (entry.path.endsWith('instructions.json')) continue;
 
             let fullPath = ""
             if (driveId === folder._id){
@@ -436,6 +443,18 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
             }
         }
 
+        if (instructionsEntry) {
+            try {
+                const content = await instructionsEntry.buffer();
+                const jsonContent = JSON.parse(content.toString('utf8'));
+                if (!!jsonContent.length){
+                    await handleInstructionsDownload(jsonContent)
+                }
+            } catch (err) {
+                console.error('Error reading or parsing instructions.json:', err.message);
+            }
+        }
+
         // 3️⃣ Remove ZIP after extraction
         fs.unlinkSync(filePath);
 
@@ -444,6 +463,11 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
           folderId: folder._id,
           message: "Files extracted successfully",
         };
+        // return {
+        //   success: true,
+        //   folderId: "sdsdfsdfsadfasdfsdfsdf",
+        //   message: "Files extracted successfully asdsdasdasasdsdasd",
+        // };
     }
     catch (error) {
         console.error(error);
@@ -454,7 +478,15 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
   }
 });
 
-ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair) => {
+ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair, instructions) => {
    return await handleBatchAnnotationsDownload([pair])
     // return await handleAnnotationsDownload(object, fileId)
+})
+
+ipcMain.handle('instructions:getInstructions', async (event, fileId) => {
+    return await getInstructions(fileId)
+})
+
+ipcMain.handle('instructions:saveInstructions', async (event, instructions) => {
+    return await saveInstructions(instructions)
 })

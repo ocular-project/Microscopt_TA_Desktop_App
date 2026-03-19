@@ -10,7 +10,7 @@ import {
 import {LuRectangleHorizontal, LuUser} from "react-icons/lu";
 import {PiCursor} from "react-icons/pi";
 import {FaRegUser} from "react-icons/fa6";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {GoZoomIn, GoZoomOut} from "react-icons/go";
 import {TbZoomReset} from "react-icons/tb";
 import {IoIosArrowRoundBack} from "react-icons/io";
@@ -18,123 +18,34 @@ import {useNavigate, useParams} from "react-router-dom";
 import {handleBack, handleMessage} from "../../utils/repeating.js";
 import axiosInstance from "../../utils/files/axiosInstance.js";
 import Annotators from "./Annotators.jsx";
-import {RiFeedbackLine} from "react-icons/ri";
+import {RiFeedbackLine, RiFileEditLine} from "react-icons/ri";
 import { configg } from "../../utils/files/config.js";
+import {FaRegFileAlt} from "react-icons/fa";
+import {RxFilePlus} from "react-icons/rx";
+import {handleUploading} from "../../utils/files/RepeatingFiles.jsx";
 
-export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, setAnnotations, annotations, setLoader,
-                                     setMessage, file, msg, annotators, cred, setMsg, setShare, setAccess, other, setOther,
-                                     setFeed, setVisual, visual, cat }) {
+export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, setAnnotations, annotations, setLoader, setInstruct, instructions,
+                                     setMessage, file, msg, annotators, cred, setMsg, setShare, setAccess, other, setOther, setSelected, selected,
+                                     setFeed, setVisual, visual, setIsClosed, width, annotator, setAnnotator, setBack, back, feedback, setFeedback,
+                                         setLabel, setLabels, cat, setInstructions }) {
 
-    const [tool, setTool] = useState("box")
-    const [back, setBack] = useState(false)
+    // const [tool, setTool] = useState("box")
+    // const [back, setBack] = useState(false)
 
     const navigate = useNavigate()
     const [button, setButton] = useState({ save: false, edit: false, share: false, load: false, finalShare: false, feed: false })
     const { fileId } = useParams();
-    const [annotator, setAnnotator] = useState({ owner: "", annoId: "" })
+    // const [annotator, setAnnotator] = useState({ owner: "", annoId: "" })
 
-    const [isOpen, setIsOpen] = useState({ image: false, sync: false, storage: false, annotations: false, tool: false });
-    // const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState({ image: false, sync: false, storage: false, annotations: false, tool: true });
+     const fileInputRef = useRef(null);
+    const [filename, setFilename] = useState("")
 
     const getAssetPath = (relativePath) => {
       const isDev = process.env.NODE_ENV === 'development';
 
       return isDev ? `/${relativePath}` : `./${relativePath}`;
     };
-
-    async function handleSave() {
-        // console.log(annotations)
-       if (!!annotations.length && fileId) {
-           setLoader(true)
-           const obj = {
-               annotations,
-               imageId: fileId,
-           }
-           try {
-               if (cat === "computer") {
-                   // console.log(cred)
-                   const response = await window.electronAPI.saveAnnotation(obj, cred)
-                   if(!response.success){
-                       handleMessage(response.error, "error", setMessage)
-                       return
-                   }
-               }
-               else {
-                   await axiosInstance.post('/save-annotations', obj)
-               }
-               handleBack()
-           }catch (err) {
-               console.log(err.response)
-               const error = err.response.data.error
-               handleMessage(error, "error", setMessage)
-           }finally {
-               setLoader(false)
-           }
-       }
-       else if (!fileId) {
-           handleMessage("Image has no ID.", "warning", setMessage)
-       }
-       else {
-           handleMessage("Add some annotations to the image before you can save.", "warning", setMessage)
-       }
-    }
-
-    async function handleSave2() {
-        console.log(annotator.owner)
-        console.log(annotator.annoId)
-        const isAnnotatorValid = annotator.owner !== "" && annotator.annoId !== "";
-        // console.log(annotations)
-        console.log(fileId)
-        console.log(hasFeedback())
-        console.log(isAnnotatorValid)
-        if (!!annotations.length && fileId && hasFeedback() && isAnnotatorValid) {
-           setLoader(true)
-           const obj = {
-               annotations,
-               imageId: fileId,
-               annotator
-           }
-           try {
-               let response
-               if (cat === "computer") {
-                   response = await window.electronAPI.saveFeedback(obj, cred)
-                   if(!response.success) {
-                       console.log(response.error)
-                       handleMessage(response.error, "error", setMessage)
-                       return
-                   }
-                   handleMessage(response.message, "success", setMessage)
-               }
-               else {
-                   response = await axiosInstance.post(`/save-feedback/`, obj)
-                   handleMessage(response.data.message, "success", setMessage)
-               }
-               handleBack()
-           }catch (err) {
-               console.log(err)
-               const error = err.response.data.error
-               handleMessage(error, "error", setMessage)
-           }finally {
-               setLoader(false)
-           }
-       }
-       else if (!annotator) {
-           handleMessage("Annotator ID not obtained.", "warning", setMessage)
-       }
-       else if (!fileId) {
-           handleMessage("Image has no ID.", "warning", setMessage)
-       }
-       else if(annotations.length === 0) {
-           handleMessage("Add some annotations to the image or provide before you save.", "warning", setMessage)
-       }
-       else {
-           handleMessage("Provide feedback to some or all of the available annotations before you save .", "warning", setMessage)
-        }
-    }
-
-    function handleShare(){
-        setShare(true)
-    }
 
    function handleBack() {
         let folder = localStorage.getItem("folder")
@@ -143,9 +54,11 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
            folder = JSON.parse(folder)
            localStorage.removeItem("folder");
            if (folder.folderId) {
+               console.log(`${folder.path}/${folder.folderId}`)
                navigate(`${folder.path}/${folder.folderId}`)
            }
            else {
+               console.log(`${folder.path}/${folder.folderId}`)
               navigate(folder.path)
            }
        }
@@ -154,10 +67,6 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
            navigate("/")
        }
    }
-
-     const zoomIn = () => setZoom((z) => Math.min(z + ZOOM_STEP, 5));
-     const zoomOut = () => setZoom((z) => Math.max(z - ZOOM_STEP, 0.1));
-     const resetZoom = () => fitImageToViewport();
 
     useEffect(() => {
         if (other) {
@@ -201,7 +110,14 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
             if (resp.success) {
                 handleMessage(resp.message, "success", setMessage);
                 // navigate(`/annotation/computer/${fileId}`)
+                const response2 = await axiosInstance.get(`/file-instructions/${fileId}`)
+                const resp2 = await window.electronAPI.saveInstructions(response2.data.file)
+                if (!resp.success) {
+                    handleMessage(resp2.message, "error", setMessage);
+                    return
+                }
                 window.location.reload();
+
             }
             else {
                 handleMessage(resp.error, "error", setMessage);
@@ -217,43 +133,66 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
     }
 
     async function handleUpload() {
-        setLoader(true)
-        try {
-            const response = await window.electronAPI.getAllAnnotations(fileId)
-
-            const data = response.data
-            if (!data.annotations.length && !data.feedback.length){
-                handleMessage("There are no annotations or annotation feedback to upload", "warning", setMessage);
-                return
-            }
-
-            if (!response.success){
-                console.log(response.error)
-                handleMessage(`Error: ${response.error}`, "error", setMessage);
-            }
-            const obj = {
-                imageId: fileId,
-                annotations: data.annotations,
-                feedback: data.feedback
-            }
-
-            // console.log(obj)
-            const expressResponse = await axiosInstance.post('desktop/uploadAllAnnotations', obj)
-            handleMessage(expressResponse.data.message, "success", setMessage);
-            setTimeout(() => {
-                handleBack()
-            }, 500)
-        }catch (error) {
-            console.log(error)
-            handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
-        }finally {
-            setLoader(false)
-        }
+        await handleUploading(setLoader, fileId, setMessage, navigate)
     }
 
     function handleChange(name, bool) {
         setIsOpen(prev =>({...prev, [name]: bool}))
     }
+
+    function handleClose() {
+        if (width <= 768){
+           setIsClosed(true)
+        }
+    }
+
+    function handleLabelLoad() {
+        fileInputRef.current.click();
+    }
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // console.log(file)
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+
+            // Check if it's an array of strings
+            if (Array.isArray(data) && data.every(item => typeof item === "string")) {
+              setFilename(file.name)
+              setLabels(data)
+              handleMessage("Labels loaded successfully", "success", setMessage)
+              // Do something with the data
+            } else {
+                handleMessage("The json file loaded doesn't have valid labels, Please click Create Labels to generate the correct labels", "error", setMessage)
+            }
+
+          } catch (err) {
+                handleMessage("Failed to load the json file, Please click Create Labels to generate the correct labels", "error", setMessage)
+          }
+        };
+
+        reader.readAsText(file);
+    };
+
+    function handleLabelCreate() {
+        setLabels([''])
+        setFilename("")
+        setLabel(true)
+    }
+
+    function handleLabelsDelete() {
+        setFilename("")
+        setLabels([''])
+    }
+
+    // useEffect(() => {
+    //     console.log(file)
+    // }, [file]);
+
 
     return (
         <div className={style.container}>
@@ -309,7 +248,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                    </div>
 
                     {
-                        (cat === "computer" && file?.isOnline) && (
+                        (cat === "computer") && (
                             <div className={styles.imgInfo}>
                                 <div className={styles.header} onClick={() => handleChange("sync", !isOpen.sync)}>
                                    <h3 className={styles.title}>Data Synchronisation</h3>
@@ -318,10 +257,10 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                 <div className={`${isOpen.sync ? styles.open : ''} ${styles.content}`}>
                                    <div className={`${styles.toolDiv}`}>
                                         <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
-                                            <span>Download Latest Annotations</span>
+                                            <span>Download Latest Changes</span>
                                         </div>
                                         <div className={`${styles.buttons}`} onClick={handleUpload}>
-                                            <span>Upload Annotation Changes</span>
+                                            <span>Upload Changes</span>
                                         </div>
                                     </div>
                                 </div>
@@ -329,70 +268,13 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                         )
                     }
 
-                    {
-                        !back && (
-                            <div className={styles.imgInfo}>
-                                <div className={styles.header} onClick={() => handleChange("storage", !isOpen.storage)}>
-                                   <h3 className={styles.title}>Data Storage and Sharing</h3>
-                                   <span className={`${isOpen.storage ? styles.open : ''} ${styles.icon}`}>▼</span>
-                                </div>
-                                <div className={`${isOpen.storage ? styles.open : ''} ${styles.content}`}>
-                                   <div>
-                                       {
-                                           other ? (
-                                               <div className={`${styles.buttons} ${button.feed ? styles.active : styles.disabled}`} onClick={handleSave2}>
-                                                    <RiFeedbackLine />
-                                                    <span>Save Feedback</span>
-                                                </div>
-                                           ) : (
-                                               cat === "computer" ? (
-                                                  <>
-                                                      <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
-                                                            <IoSaveOutline />
-                                                            <span>Save Annotations Locally</span>
-                                                      </div>
-                                                  </>
-                                               ) : (
-                                                   <>
-                                                       <div className={`${styles.buttons} ${button.save ? styles.active : styles.disabled}`} onClick={handleSave}>
-                                                            <IoSaveOutline />
-                                                            <span>Save Annotations</span>
-                                                       </div>
-                                                       <div className={`${styles.buttons} ${button.edit ? "" : styles.disabledOutline}`} onClick={handleShare}>
-                                                            <IoSettingsOutline />
-                                                            <span>Edit Access</span>
-                                                        </div>
-                                                       <div className={`${styles.buttons} ${button.share ? "" : styles.disabledOutline}`} onClick={handleShare}>
-                                                            <IoShareSocialOutline />
-                                                            <span>Share Annotations</span>
-                                                       </div>
-                                                   </>
-                                               )
-                                           )
-                                       }
-                                     </div>
-                                </div>
-                            </div>
-                        )
-                    }
-
-                    {
-                        !!annotators?.length && (
-                            <Annotators annotators={annotators} setAnnotations={setAnnotations} cred={cred} setLoader={setLoader}
-                                        setMessage={setMessage} setMsg={setMsg} setAccess={setAccess} setOther={setOther}
-                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack} cat={cat} isOpen={isOpen}
-                                        setIsOpen={setIsOpen} handleChange={handleChange}
-                            />
-                        )
-                    }
-
-                   <div className={styles.imgInfo}>
+                    <div className={styles.imgInfo}>
                        <div className={styles.header} onClick={() => handleChange("tool", !isOpen.tool)}>
                            <h3 className={styles.title}>Annotation Tools</h3>
                            <span className={`${isOpen.tool ? styles.open : ''} ${styles.icon}`}>▼</span>
                        </div>
                        <div className={`${isOpen.tool ? styles.open : ''} ${styles.content}`}>
-                            <p>Annotation Mode </p>
+                            {/*<p>Annotation Mode </p>*/}
                             <div className={`${styles.toolDiv}`}>
                                <div className={`${styles.tool} ${visual === 'box' ? styles.active : ""}`} onClick={() => setVisual("box")}>
                                    <LuRectangleHorizontal />
@@ -403,25 +285,128 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                    <p>Pointer</p>
                                </div>
                             </div>
-                           <hr/>
-                           <p>Zoom</p>
-                           <div className={`${styles.toolDiv}`}>
-                                <div className={`${styles.buttons}`} onClick={zoomOut}>
-                                    <GoZoomOut />
-                                    <span>Zoom out</span>
-                                </div>
-                                <div className={`${styles.buttons}`} onClick={zoomIn}>
-                                    <GoZoomIn />
-                                    <span>Zoom In</span>
-                                </div>
-                           </div>
-                           <div style={{ marginLeft: '-10px', marginRight: '-10px' }} className={`${styles.buttons} ${styles.active}`} onClick={resetZoom}>
-                                <TbZoomReset />
-                                <span>Reset</span>
-                            </div>
-                       </div>
 
+                           <hr/>
+                           <p>Annotation Labels</p>
+                           <div>
+                               <div className="flex gap-2 justify-between">
+                                   <div className={`${styles.buttons} ${styles.active} w-full`} onClick={() => handleLabelLoad()}>
+                                        {/*<BiUpload />*/}
+                                        <span>Load labels</span>
+                                        <input type="file" id="fileInput" accept=".json" className="hidden" ref={fileInputRef} onChange={handleFileChange}/>
+                                   </div>
+                                   <div className={`${styles.buttons} w-full`} onClick={() => handleLabelCreate()}>
+                                        {/*<IoCreateOutline />*/}
+                                        <span>Create labels</span>
+                                   </div>
+                               </div>
+                               {
+                                   filename && (
+                                       <>
+                                           <p className="text-slate-400 italic">Label file: {filename}</p>
+                                           <div className={`${styles.buttonsDelete} w-full`} onClick={handleLabelsDelete}>
+                                                {/*<BiUpload />*/}
+                                                <span>Remove labels</span>
+                                           </div>
+                                       </>
+
+                                   )
+                               }
+
+                           </div>
+
+                           <hr/>
+
+                           <div>
+                               {
+                                   <>
+                                   {
+                                       cat === "computer" ? (
+                                           <>
+                                               {
+                                                   instructions && (
+                                                       <>
+                                                           <p>Instructions</p>
+                                                           <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                <FaRegFileAlt />
+                                                                <span>View Instructions</span>
+                                                          </div>
+                                                       </>
+                                                   )
+                                               }
+                                           </>
+                                       ) : (
+                                           <>
+                                               {
+                                                  cred?._id === file?.owner?._id ? (
+                                                       <>
+                                                           {
+                                                               instructions ? (
+                                                                   <>
+                                                                       <p>Instructions</p>
+                                                                        <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                            <RiFileEditLine />
+                                                                            <span>Edit Instructions</span>
+                                                                      </div>
+                                                                      <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                            <FaRegFileAlt />
+                                                                            <span>View Instructions</span>
+                                                                      </div>
+                                                                   </>
+                                                               ) : (
+                                                                   <>
+                                                                       <p>Instructions</p>
+                                                                        <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                            <RxFilePlus />
+                                                                            <span>Add Instructions</span>
+                                                                        </div>
+                                                                   </>
+
+                                                               )
+                                                           }
+                                                       </>
+
+                                                   ) : (
+                                                       <>
+                                                           {
+                                                               instructions && (
+                                                                   <>
+                                                                       <p>Instructions</p>
+                                                                       <div className={`${styles.buttons}`} onClick={() => setInstruct(true)}>
+                                                                            <FaRegFileAlt />
+                                                                            <span>View Instructions</span>
+                                                                      </div>
+                                                                   </>
+
+                                                               )
+                                                           }
+                                                       </>
+                                                   )
+                                               }
+
+                                           </>
+                                       )
+                                   }
+                                   </>
+
+                               }
+
+                           </div>
+
+
+                       </div>
                    </div>
+
+                    {
+                        !!annotators?.length && (
+                            <Annotators annotators={annotators} setAnnotations={setAnnotations} cred={cred} setLoader={setLoader}
+                                        setMessage={setMessage} setMsg={setMsg} setAccess={setAccess} setOther={setOther} feedback={feedback} setFeedback={setFeedback}
+                                        setAnnotator={setAnnotator} setFeed={setFeed} setBack={setBack} isOpen={isOpen} cat={cat}
+                                        setIsOpen={setIsOpen} handleChange={handleChange} selected={selected} setSelected={setSelected}
+                            />
+                        )
+                    }
+
 
                </div>
             </div>

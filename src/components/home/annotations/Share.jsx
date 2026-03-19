@@ -178,7 +178,7 @@ export default function Share({ setShare, share, setMessage, file, access, annot
     }
 
     async function handleShare() {
-        // console.log(shared)
+        console.log(file)
         setLoader(true)
         const originalSet1 = new Set(original1);
         const originalSet2 = new Set(original2);
@@ -189,6 +189,13 @@ export default function Share({ setShare, share, setMessage, file, access, annot
             newEmails,
             newTeams
         }
+
+        if (!newEmails.length && !newTeams.length){
+            setLoader(false)
+            handleMessage("Please add at least one team or one email in addition to the already selected individuals", "warning", setMessage)
+            return
+        }
+
         try {
 
             await axiosInstance.post(`/share-annotations/${file._id}`, obj)
@@ -196,10 +203,11 @@ export default function Share({ setShare, share, setMessage, file, access, annot
             setOriginal1(null)
             setOriginal2(null)
             setShared({people: [], team: [], annotations: []})
-            handleBack(navigate)
+            // handleBack(navigate)
         }catch (err) {
             console.log(err.response)
            const error = err.response.data.error
+            console.log(error)
            handleMessage(error, "error", setMessage)
         }finally {
             setLoader(false)

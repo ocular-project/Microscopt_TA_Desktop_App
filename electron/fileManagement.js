@@ -287,6 +287,9 @@ export async function deleteFile(fileId) {
         const feedbackFilePath = `${dir}/Microscopy_TA/database/feedback.json`
         const feedbackArray = await getArrayObject("feedback.json")
 
+        const instFilePath = `${dir}/Microscopy_TA/database/instructions.json`
+        const instArray = await getArrayObject("instructions.json")
+
         const updatedAnno = annoArray.filter(an => !imageList.includes(an.imageId))
         await writeFile(annoFilePath, JSON.stringify(updatedAnno, null, 2), 'utf8');
 
@@ -295,6 +298,9 @@ export async function deleteFile(fileId) {
 
         const newData = dataArray.filter(item => item._id !== fileId && !item.path.includes(fileId))
         await writeFile(filePath, JSON.stringify(newData, null, 2), 'utf8');
+
+        const newInst = instArray.filter(item => item.file._id !== fileId)
+        await writeFile(instFilePath, JSON.stringify(newInst, null, 2), 'utf8');
 
         return {
             success: true,
@@ -411,6 +417,7 @@ export async function getDataJson(filePath, parentId) {
 
         // 2. Read the file
         const content = await readFile(filePath, 'utf8');
+        const instArray = await getArrayObject("Instructions.json")
 
         // 3. Handle empty files or invalid JSON
         if (!content.trim()) {
@@ -443,7 +450,11 @@ export async function getDataJson(filePath, parentId) {
                 sizeMB >= 0.01
                     ? `${sizeMB.toFixed(2)} MB`
                     : `${(obj.size / 1024).toFixed(2)} KB`;
-            return { ...obj, size };
+
+            console.log(obj._id)
+            const instructions = instArray.find(inst => inst.file._id === obj._id || inst.files.includes(obj._id))
+
+            return { ...obj, size, instructions: !!instructions };
         })
 
         let currentPath = []
@@ -487,7 +498,7 @@ export async function getDataJson(filePath, parentId) {
 }
 
 // saving the images' objects of the image on the computer
-export async function handleImagesUpload(filePaths, parentId) {
+export async function handleImagesUpload(filePaths) {
   try {
       const results = [];
 
@@ -499,8 +510,11 @@ export async function handleImagesUpload(filePaths, parentId) {
           name: path.basename(file),
           type: "file",
           mineType: "",
-          parent: parentId || null,
+          parent: null,
+          url: file,
           path: [],
+          category: "From PC",
+          isOnline: false,
           size: stats.size,
           isAnnotated: false,
           createdAt: Date.now(),
@@ -1146,6 +1160,37 @@ export async function handleAnnotationsDownload(object, fileId) {
     }
 }
 
+export async function handleInstructionsDownload(instructionsList){
+    const dir = loadPath()
+    if (!dir) {
+        return { success: false, error: "Failed to load primary directory" }
+    }
+    const instFilePath = `${dir}/Microscopy_TA/database/instructions.json`
+    let instArray = await getArrayObject("instructions.json")
+
+    // console.log(instructionsList)
+    for(const inst of instructionsList) {
+        const index = instArray.findIndex(item => item._id === inst._id)
+        if (index !== -1) {
+            if(new Date(inst.updatedAt) > new Date(instArray[index].updatedAt)){
+                instArray[index] = {
+                    ...instArray[index],
+                    files: inst.files,
+                    instructions: inst.instructions
+                }
+            }
+        }
+        else {
+            instArray.push({
+              ...inst
+            })
+        }
+    }
+
+    await atomicWrite(instFilePath, instArray)
+
+}
+
 export async function handleBatchAnnotationsDownload(pairs){
     return annotationMutex.runExclusive(async () => {
 
@@ -1272,6 +1317,62 @@ export async function getAllAnnotations(imageId) {
             }
         }
 
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+        }
+    }
+}
+
+export async function getInstructions(fileId) {
+    try {
+        const instArray = await getArrayObject("Instructions.json")
+        const instructions = instArray.find(inst => inst.file._id === fileId || inst.files.includes(fileId))
+        return {
+            success: true,
+            file: instructions
+        }
+    }catch (error) {
+        return {
+            success: false,
+            error: `Error: ${error.message}`
+        }
+    }
+}
+
+export async function saveInstructions(instruction) {
+    try {
+        const dir = loadPath()
+        if (!dir) {
+            return { success: false, error: "Failed to load primary directory" }
+        }
+        const instFilePath = `${dir}/Microscopy_TA/database/instructions.json`
+        let instArray = await getArrayObject("instructions.json")
+
+
+        const index = instArray.findIndex(item => item._id === instruction._id)
+        if (index !== -1) {
+            if(new Date(instruction.updatedAt) > new Date(instArray[index].updatedAt)){
+                instArray[index] = {
+                    ...instArray[index],
+                    files: instruction.files,
+                    instructions: instruction.instructions
+                }
+            }
+        }
+        else {
+            instArray.push({
+              ...instruction
+            })
+        }
+
+
+        await atomicWrite(instFilePath, instArray)
+
+        return {
+            success: true,
+        }
     }catch (error) {
         return {
             success: false,

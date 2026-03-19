@@ -12,7 +12,7 @@ export default function Users({ en, users, heading, selectedUsers, setSelectedUs
     const inputRef = useRef(null)
 
     const handleBlur = () => {
-        console.log('clikedd')
+        // console.log('clikedd')
         if (value) {
             // console.log(value)
             const email = value.trim()
@@ -47,7 +47,7 @@ export default function Users({ en, users, heading, selectedUsers, setSelectedUs
                  )
             )
 
-            console.log(filtered)
+            // console.log(filtered)
             setMatchingUsers(filtered)
         }
         else {

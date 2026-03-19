@@ -57,7 +57,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
             }
             else if (cat === "shared") {
                 obj = {
-                    folderId: parent,
+                    folderId: "",
                     path: "/sharedFiles"
                 }
             }
@@ -264,6 +264,12 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
         }
     }, [checkedIds]);
 
+    function handleInstructions(folder) {
+       setFile(folder)
+       setIsPop(true)
+       setScreen(prev => ({...prev, instructions: true}))
+    }
+
     return (
         <>
             {
@@ -395,11 +401,48 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                             <ul>
                                                 {
                                                     cat !== "computer" && (
-                                                        <li>
-                                                            <div onClick={(e) => handleShare(folder)}>
-                                                                Share / File Information
-                                                            </div>
-                                                        </li>
+                                                        <>
+                                                            <li>
+                                                                <div onClick={(e) => handleShare(folder)}>
+                                                                    Share / File Information
+                                                                </div>
+                                                            </li>
+                                                            {
+                                                                folder.owner.email === "me" ? (
+                                                                    <>
+                                                                        <li>
+                                                                            <div onClick={(e) => handleRename(folder)} >
+                                                                                Rename
+                                                                            </div>
+                                                                        </li>
+                                                                        <li>
+                                                                            <div onClick={(e) => handleInstructions(folder)} >
+                                                                                {
+                                                                                    folder.instructions ? 'Edit' : 'Add'
+                                                                                } Instructions
+                                                                            </div>
+                                                                        </li>
+                                                                        {/*<li>*/}
+                                                                        {/*    <div onClick={(e) => handleInstructions(folder)} >*/}
+                                                                        {/*        View Instructions*/}
+                                                                        {/*    </div>*/}
+                                                                        {/*</li>*/}
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        {
+                                                                            folder.instructions && (
+                                                                               <li>
+                                                                                    <div onClick={(e) => handleInstructions(folder)} >
+                                                                                        View Instructions
+                                                                                    </div>
+                                                                               </li>
+                                                                            )
+                                                                        }
+                                                                    </>
+                                                                )
+                                                            }
+                                                        </>
                                                     )
                                                 }
                                                 {
@@ -414,6 +457,18 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                                                             {/*       </li>*/}
                                                             {/*    )*/}
                                                             {/*}*/}
+                                                            {
+                                                                folder.instructions && (
+                                                                    <li>
+                                                                        <div onClick={(e) => {
+                                                                            // e.stopPropagation()
+                                                                            handleInstructions(folder)
+                                                                        }}>
+                                                                            View Instructions
+                                                                        </div>
+                                                                    </li>
+                                                                )
+                                                            }
                                                             <li>
                                                                 <div onClick={(e) => {
                                                                     // e.stopPropagation()

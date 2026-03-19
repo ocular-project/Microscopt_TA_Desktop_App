@@ -66,16 +66,16 @@ export default function Header({ cat }){
     return (
         <div className={styles.main}>
             <div className={styles.mainLeft}>
-                {
-                     files.includes(cat) ? (
-                         <div className={styles.mainLeftDiv}>
-                              <div className={styles.leftSpan}>
-                                    <FontAwesomeIcon icon={faMagnifyingGlass} />
-                              </div>
-                              <input type="text" placeholder="Search for file or folder"/>
-                         </div>
-                     ) : null
-                }
+                {/*{*/}
+                {/*     files.includes(cat) ? (*/}
+                {/*         <div className={styles.mainLeftDiv}>*/}
+                {/*              <div className={styles.leftSpan}>*/}
+                {/*                    <FontAwesomeIcon icon={faMagnifyingGlass} />*/}
+                {/*              </div>*/}
+                {/*              <input type="text" placeholder="Search for file or folder"/>*/}
+                {/*         </div>*/}
+                {/*     ) : null*/}
+                {/*}*/}
 
             </div>
             <div className={styles.mainRight} ref={mainRightRef}>

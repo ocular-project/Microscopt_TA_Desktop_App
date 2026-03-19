@@ -4,136 +4,25 @@ import {handleMessage} from "../../utils/repeating.js";
 import axiosInstance from "../../utils/files/axiosInstance.js";
 import {LuUser} from "react-icons/lu";
 import {useState} from "react";
+import {handleLoad2ing, handleLoadFeedbacking, handleLoading} from "../../utils/files/RepeatingFiles.jsx";
 
-export default function Annotators({ annotators, setAnnotations, cred, setLoader, setMessage, setMsg, setAccess,
-                                       setOther, setAnnotator, setFeed, setBack, cat, isOpen, setIsOpen, handleChange }){
+export default function Annotators({ annotators, setAnnotations, cred, setLoader, setMessage, setMsg, setAccess, setOther,
+                                       setAnnotator, setFeed, setBack, isOpen, setIsOpen, handleChange, setFeedback,
+                                       feedback, setSelected, selected, cat }){
 
-    const [feedback, setFeedback] = useState(null)
-    const [selected, setSelected] = useState(null)
+    // const [feedback, setFeedback] = useState(null)
+    // const [selected, setSelected] = useState(null)
 
     async function handleLoad(item, bool) {
-        setLoader(true)
-        try {
-            let response
-            if (cat === "computer"){
-                console.log(item._id)
-                console.log(cred)
-                response = await window.electronAPI.getMyAnnotations(item._id, cred)
-                if (!response.success) {
-                    console.log(response.error)
-                     handleMessage(response.error, "error", setMessage)
-                    return
-                }
-                // console.log(response)
-            }
-            else {
-                response = await axiosInstance.get(`/annotations/${item._id}`)
-            }
-            const dat = response.data
-            const data = dat.file
-            // console.log(data)
-            setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
-            setAnnotations(data.annotations)
-            // console.log(response.data.annotations)
-            if (item.annotator.email === cred.email){
-                setMsg("Loaded my annotations")
-            }
-            else {
-                setAnnotator({ owner: item.annotator._id, annoId: item._id})
-                setMsg(`Loaded ${item.annotator.firstName}'s annotations`)
-            }
-
-            // console.log(dat.feedback)
-            const feed = dat.feedback
-            if (feed && !!feed.length) {
-                setFeedback(feed)
-            }
-
-            setOther(bool)
-            setFeed(false)
-            setBack(false)
-            setSelected(item._id)
-        }catch (err) {
-           console.log(err)
-           const error = err.response.data.error
-           handleMessage(error, "error", setMessage)
-       }finally {
-           setLoader(false)
-       }
+        await handleLoading(cat, item, bool, setLoader, setAccess, setAnnotations, setOther, setFeed, setBack, setSelected, cred, setMessage, setMsg, setAnnotator, setFeedback);
     }
 
     async function handleLoad2(item, bool) {
-         setLoader(true)
-         try {
-             let response
-             if (cat === "computer") {
-                 response = await window.electronAPI.getMyFeedback(item.feedbackId)
-                 if(!response.success){
-                     console.log(response.error)
-                     handleMessage(response.error, "error", setMessage)
-                     return
-                 }
-                 // console.log(response.data.feedback)
-                 const data = response.data.feedback
-                 setAnnotations(data.annotations)
-                 setAnnotator({ owner: data.owner._id, annoId: data.annotationId })
-             }
-             else {
-                 response = await axiosInstance.get(`/annotations-feedback/${item.feedbackId}`)
-                 const data = response.data
-                 console.log(data)
-                 // const data = dat.file
-
-                // setAccess({ shared_with: data.shared_with, shared_with_team: data.shared_with_team })
-                setAnnotations(data.annotations)
-                 setAnnotator({ owner: data.annotator, annoId: data.annotationId })
-             }
-             setMsg("Loaded my feedback")
-
-            setOther(bool)
-            setFeed(false)
-            setSelected(item._id)
-        }catch (err) {
-           console.log(err)
-           const error = err.response.data.error
-           handleMessage(error, "error", setMessage)
-       }finally {
-           setLoader(false)
-       }
+        await handleLoad2ing(cat, item, bool, setLoader, setAccess, setAnnotations, setOther, setFeed, setBack, setSelected, cred, setMessage, setMsg, setAnnotator)
     }
 
     async function handleLoadFeedback(fb) {
-        setLoader(true)
-        try {
-             let response
-            if (cat === "computer"){
-                response = await window.electronAPI.getAnnotatorFeedback(fb._id, cred)
-                if (!response.success) {
-                     handleMessage(response.error, "error", setMessage)
-                    return
-                }
-                // console.log("asas",response)
-                const data = response.data.feedback
-                setAnnotations(data.annotations)
-                setAnnotator({ owner: data.owner._id, annoId: data.annotationId })
-            }
-            else {
-                response = await axiosInstance.get(`/feedback/${fb._id}`)
-                setAnnotations(response.data.annotations)
-            }
-
-            // setAnnotations(response.data.annotations)
-            setFeed(true)
-            setMsg(`Loaded ${fb.owner.firstName}'s feedback`)
-            setBack(true)
-            setSelected(fb._id)
-        }catch (err) {
-           console.log(err)
-           const error = err.response.data.error
-           handleMessage(error, "error", setMessage)
-       }finally {
-           setLoader(false)
-       }
+        await handleLoadFeedbacking(cat, fb, setLoader, setAnnotator, setAccess, setAnnotations, setOther, setFeed, setBack, setSelected, cred, setMessage, setMsg)
     }
 
     const myAnnotation = annotators.find(

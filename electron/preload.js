@@ -32,4 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveZip: (buffer, cat) => ipcRenderer.invoke("fileDownload:saveZip", buffer, cat),
 
     downloadImageAnnotations: (pair) => ipcRenderer.invoke('fileDownload:downloadImageAnnotations', pair),
+
+    getInstructions: (fileId) => ipcRenderer.invoke('instructions:getInstructions', fileId),
+    saveInstructions: (instructions) => ipcRenderer.invoke('instructions:saveInstructions', instructions)
 })
