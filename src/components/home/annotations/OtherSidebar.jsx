@@ -44,7 +44,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
     const getAssetPath = (relativePath) => {
       const isDev = process.env.NODE_ENV === 'development';
 
-      return isDev ? `/${relativePath}` : `../${relativePath}`;
+      return isDev ? `/${relativePath}` : `./${relativePath}`;
     };
 
    function handleBack() {

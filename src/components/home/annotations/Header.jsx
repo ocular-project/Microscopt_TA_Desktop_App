@@ -137,6 +137,10 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
         setShare(true)
     }
 
+    function handleAnnotate(){
+
+    }
+
     const zoomIn = () => setZoom((z) => Math.min(z + ZOOM_STEP, 5));
     const zoomOut = () => setZoom((z) => Math.max(z - ZOOM_STEP, 0.1));
     const resetZoom = () => fitImageToViewport();
@@ -154,17 +158,20 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                                  <>
                                      {
                                         other ? (
-                                            <div
-                                                style={{ padding: '5px 10px' }}
-                                                 className={`flex justify-center items-center gap-2 rounded
-                                                    ${!button.feed
-                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                      : "hover:bg-primary hover:text-white cursor-pointer"
-                                                }`}
-                                                onClick={button.feed ? handleSave2 : undefined}>
-                                                    <RiFeedbackLine />
-                                                    <span className="text-[12px] hidden lg:inline">Save Feedback</span>
-                                            </div>
+                                            <>
+                                                <div
+                                                    style={{ padding: '5px 10px' }}
+                                                     className={`flex justify-center items-center gap-2 rounded
+                                                        ${!button.feed
+                                                          ? "text-gray-500 cursor-not-allowed opacity-60" 
+                                                          : "hover:bg-primary hover:text-white cursor-pointer"
+                                                    }`}
+                                                    onClick={button.feed ? handleSave2 : undefined}>
+                                                        <RiFeedbackLine />
+                                                        <span className="text-[12px] hidden lg:inline">Save Feedback</span>
+                                                </div>
+                                            </>
+
                                         ) : (
                                             <>
                                                 {
