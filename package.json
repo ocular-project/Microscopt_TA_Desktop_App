@@ -25,9 +25,23 @@
       "output": "dist_electron"
     },
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
       "icon": "assets/icon.ico",
-      "artifactName": "microscopy-ta-setup-windows-v${version}.${ext}"
+      "artifactName": "microscopy-ta-setup-windows-v${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true
     },
     "mac": {
       "target": [
