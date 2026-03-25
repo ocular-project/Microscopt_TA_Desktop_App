@@ -1,5 +1,7 @@
-import { app, BrowserWindow, ipcMain, dialog, session, protocol } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, session, protocol, shell} from "electron";
+import updater from "electron-updater";
 import path from "path";
+import packageJson from "../package.json" with { type: "json" };
 import fs from 'fs'
 import { fileURLToPath } from "url";
 import { savePath, loadPath } from './storage.js'
@@ -29,6 +31,14 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+app.setVersion(packageJson.version)
+const version= app.getVersion();
+console.log("APP VERSION:", version);
+
+const { autoUpdater } = updater;
+autoUpdater.autoDownload = false;
+autoUpdater.forceDevUpdateConfig = true;
 
 let mainWindow
 
@@ -77,7 +87,10 @@ async function createWindow() {
 
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow()
+    autoUpdater.checkForUpdates();
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -490,3 +503,58 @@ ipcMain.handle('instructions:getInstructions', async (event, fileId) => {
 ipcMain.handle('instructions:saveInstructions', async (event, instructions) => {
     return await saveInstructions(instructions)
 })
+
+autoUpdater.on("update-available", (info) => {
+  // console.log("Update available:", info);
+  mainWindow.webContents.send("update-available", {
+      version: info.version,
+      releaseDate: info.releaseDate,
+      releaseNotes: info.releaseNotes
+  })
+});
+
+ipcMain.on("download-update", () => {
+  autoUpdater.downloadUpdate();
+});
+
+autoUpdater.on("update-downloaded", () => {
+  console.log("Update downloaded successfully");
+
+  mainWindow.webContents.send("update-status", {
+    status: "downloaded",
+    message: "Update downloaded successfully"
+  });
+});
+
+autoUpdater.on("error", (err) => {
+  console.error("Update error:", err);
+
+  mainWindow.webContents.send("update-status", {
+    status: "error",
+    message: err?.message || "Update failed"
+  });
+});
+
+autoUpdater.on("download-progress", (progress) => {
+  mainWindow.webContents.send("download-progress", {
+    percent: progress.percent,
+    bytesPerSecond: progress.bytesPerSecond
+  });
+});
+
+// Manual download
+ipcMain.on("open-download-page", () => {
+  shell.openExternal("https://github.com/ocular-project/Microscopt_TA_Desktop_App/releases/latest");
+});
+
+// autoUpdater.on("update-downloaded", () => {
+//   dialog.showMessageBox({
+//     title: "Install Updates",
+//     message: "Update downloaded. Restart now?",
+//     buttons: ["Restart", "Later"]
+//   }).then(result => {
+//     if (result.response === 0) {
+//       autoUpdater.quitAndInstall();
+//     }
+//   });
+// });

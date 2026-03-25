@@ -34,5 +34,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     downloadImageAnnotations: (pair) => ipcRenderer.invoke('fileDownload:downloadImageAnnotations', pair),
 
     getInstructions: (fileId) => ipcRenderer.invoke('instructions:getInstructions', fileId),
-    saveInstructions: (instructions) => ipcRenderer.invoke('instructions:saveInstructions', instructions)
+    saveInstructions: (instructions) => ipcRenderer.invoke('instructions:saveInstructions', instructions),
+
+    onUpdateAvailable: (callback) => ipcRenderer.on("update-available", (_, data) => callback(data)),
+    downloadUpdate: () => ipcRenderer.send("download-update"),
+    onUpdateStatus: (callback) => ipcRenderer.on("update-status", (_, data) => callback(data)),
+    onDownloadProgress: (callback) => ipcRenderer.on("download-progress", (_, data) => callback(data)),
+    openDownloadPage: () => ipcRenderer.send("open-download-page")
 })

@@ -63,7 +63,7 @@ export default function Sidebar({ cat, config, quota }){
                                     <NavLink to="/" className={getClassName("computer")}>
                                         <div className={styles.linkDiv}>
                                             <FontAwesomeIcon icon={faDesktop} />
-                                            <span>My Computer</span>
+                                            <span>My Computers</span>
                                         </div>
                                     </NavLink>
                                 </li>
