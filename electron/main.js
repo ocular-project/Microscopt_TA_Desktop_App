@@ -547,7 +547,7 @@ autoUpdater.on("update-downloaded", () => {
 });
 
 autoUpdater.on("error", (err) => {
-  console.error("Update error:", err);
+  // console.error("Update error:", err);
 
   mainWindow.webContents.send("update-status", {
     status: "error",

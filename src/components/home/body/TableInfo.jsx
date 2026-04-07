@@ -5,13 +5,11 @@ export default function TableInfo({ cat, systemStatus }){
     return (
         <>
             {
-                cat === "device" ? (
-                    systemStatus.adb && systemStatus.scrcpy ? (
-                        <div className={styles.tableInfo}>
-                            <h1>All connected mobile devices</h1>
-                            <p>Overview of all connected devices</p>
-                        </div>
-                    ) : null
+                cat === "devices" ? (
+                    <div className={styles.tableInfo}>
+                        <h1>All connected mobile devices</h1>
+                        <p>Overview of all connected devices</p>
+                    </div>
                 ) : (
                     <div className={styles.tableInfo}>
                          {

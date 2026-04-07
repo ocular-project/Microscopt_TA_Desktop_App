@@ -68,6 +68,14 @@ export default function Sidebar({ cat, config, quota }){
                                     </NavLink>
                                 </li>
                                 <li>
+                                    <NavLink to="/devices" className={getClassName("devices")}>
+                                        <div className={styles.linkDiv}>
+                                            <FontAwesomeIcon icon={faMobileScreen} />
+                                            <span>Connected Devices</span>
+                                        </div>
+                                    </NavLink>
+                                </li>
+                                <li>
                                     <div className={styles.divider}>
 
                                     </div>

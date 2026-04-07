@@ -93,30 +93,43 @@ class AdbManager {
     for (const line of lines) {
       const trimmedLine = line.trim();
 
-      // Skip header line and empty lines
       if (!trimmedLine || trimmedLine.startsWith('List of devices')) {
         continue;
       }
 
-      // Parse device line format: "device_id    device_status    product:... model:... device:..."
       const parts = trimmedLine.split(/\s+/);
       if (parts.length >= 2) {
         const deviceId = parts[0];
         const status = parts[1];
 
-        // Only include devices that are properly connected
         if (status === 'device') {
-          // Extract model name if available
-          let modelName = deviceId;
+          let model = null;
+          let product = null;
+          let manufacturer = null;
+
           const modelMatch = trimmedLine.match(/model:([^\s]+)/);
+          const productMatch = trimmedLine.match(/product:([^\s]+)/);
+          const manufacturerMatch = trimmedLine.match(/manufacturer:([^\s]+)/);
+
           if (modelMatch) {
-            modelName = modelMatch[1].replace(/_/g, ' ');
+            model = modelMatch[1].replace(/_/g, ' ');
+          }
+
+          if (productMatch) {
+            product = productMatch[1];
+          }
+
+          if (manufacturerMatch) {
+            manufacturer = manufacturerMatch[1];
           }
 
           devices.push({
             id: deviceId,
-            status: status,
-            name: modelName,
+            status,
+            model,
+            product,
+            manufacturer, // e.g. samsung
+            name: model || deviceId,
             fullInfo: trimmedLine
           });
         }
@@ -127,7 +140,7 @@ class AdbManager {
   }
 
   async enableUsbDebugging(deviceId) {
-    // This just checks if the device is authorized
+    // This just checks if the devices is authorized
     return new Promise((resolve, reject) => {
       const process = spawn('adb', ['-s', deviceId, 'shell', 'echo', 'test']);
 

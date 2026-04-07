@@ -17,6 +17,7 @@ import {configg} from "./components/utils/files/config.js";
 import MyComputer from "./components/home/MyComputer.jsx";
 // import DOMPurify from "quill/formats/link.js";
 import DOMPurify from "dompurify";
+import Devices from "./components/home/Devices.jsx";
 
 // Update Notification Component
 const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, downloadData, error }) => {
@@ -183,7 +184,7 @@ function AppRoutes({ path, setPath }) {
         <Route path="/teams"
                element={
                    <ProtectedRoute>
-                       <Team />
+                       <Team path={path} setPath={setPath}/>
                    </ProtectedRoute>
                }
         />
@@ -204,6 +205,7 @@ function AppRoutes({ path, setPath }) {
                }
         />
 
+        <Route path="/devices" element={<Devices path={path} setPath={setPath}/>} />
         <Route path="/image" element={<ImageAnnotator />} />
         <Route path="/annotation/:cat/:fileId" element={<ImageView />} />
 
@@ -243,7 +245,7 @@ function App() {
         const load = async () => {
             // console.log("pathx")
             const pathx = await window.electronAPI.getPath();
-            console.log(pathx)
+            // console.log(pathx)
             setPath(pathx);
         };
 

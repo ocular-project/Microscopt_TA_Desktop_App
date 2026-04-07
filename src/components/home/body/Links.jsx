@@ -263,7 +263,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                                      <>
                                                         My drive
                                                      </>
-                                                ) : path.startsWith("/device") ? (
+                                                ) : path.startsWith("/devices") ? (
                                                      <>
                                                         Devices
                                                     </>
@@ -344,7 +344,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                                          setMessage={setMessage} setFolders={setFolders} setCheckedIds={setCheckedIds}
                                          checkedIds={checkedIds} config={config} links={links} cat={cat} setQuota={setQuota}
                             />
-                        // ) : cat === "device" ? (
+                        // ) : cat === "devices" ? (
                         //     <Button text="Refresh" status="active" onClick={handleRefresh} />
                         ) : null
                     }

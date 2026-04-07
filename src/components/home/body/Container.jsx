@@ -2,8 +2,8 @@ import Header from "./Header.jsx";
 import Links from "./Links.jsx";
 import TableInfo from "./TableInfo.jsx";
 import Table from "./Table.jsx";
-// import Tablex from "./myComputer/Table.jsx";
-// import TableY from "./Devices/Table.jsx";
+// import Tablex from "./myComputer/DeviceTable.jsx";
+// import TableY from "./Devices/DeviceTable.jsx";
 import styles from "../css/popup.module.css"
 import {useEffect, useState} from "react";
 import CreateFolder from "./popUps/CreateFolder.jsx";
@@ -71,6 +71,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                    loader={loader2} links={links} setFolders={setFolders} setMessage={setMessage}
                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} setQuota={setQuota}
             />
+
             <TableInfo cat={cat} systemStatus={systemStatus} config={config}/>
 
             <Table cat={cat} setLoader={setLoader2} folders={folders} setFolders={setFolders}

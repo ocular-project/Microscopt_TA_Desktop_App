@@ -72,10 +72,10 @@ class SimpleAdb {
         return;
       }
 
-      // console.log(`${this.logPrefix} 📱 Found ${devices.length} device(s): ${devices.join(', ')}`);
+      // console.log(`${this.logPrefix} 📱 Found ${devices.length} devices(s): ${devices.join(', ')}`);
 
       for (const deviceId of devices) {
-        // console.log(`${this.logPrefix} 📋 Checking device: ${deviceId}`);
+        // console.log(`${this.logPrefix} 📋 Checking devices: ${deviceId}`);
         const request = await this.pullJsonFromAppStorage(deviceId, this.ANDROID_REQUEST_FILE);
 
         if (request) {
@@ -307,7 +307,7 @@ class SimpleAdb {
     const lines = output.split('\n');
     const devices = [];
 
-    // console.log(`${this.logPrefix} 🔍 Parsing device list...`);
+    // console.log(`${this.logPrefix} 🔍 Parsing devices list...`);
     for (const line of lines) {
       const trimmedLine = line.trim();
       // console.log(`${this.logPrefix} 📄 Line: "${trimmedLine}"`);
@@ -319,7 +319,7 @@ class SimpleAdb {
       const parts = trimmedLine.split(/\s+/);
       if (parts.length >= 2 && parts[1] === 'device') {
         devices.push(parts[0]);
-        // console.log(`${this.logPrefix} ✅ Found device: ${parts[0]}`);
+        // console.log(`${this.logPrefix} ✅ Found devices: ${parts[0]}`);
       }
     }
 
@@ -328,7 +328,7 @@ class SimpleAdb {
 
   // Get the package name of the app
   async getAppPackageName(deviceId) {
-    // console.log(`${this.logPrefix} 📦 Getting package name for device: ${deviceId}`);
+    // console.log(`${this.logPrefix} 📦 Getting package name for devices: ${deviceId}`);
 
     return new Promise((resolve) => {
       const adbProcess = spawn('adb', ['-s', deviceId, 'shell', 'pm', 'list', 'packages', '-3']);
