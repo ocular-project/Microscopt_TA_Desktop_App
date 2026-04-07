@@ -1,0 +1,4 @@
+provider: github
+owner: ocular-project
+repo: Microscopt_TA_Desktop_App
+releaseType: release

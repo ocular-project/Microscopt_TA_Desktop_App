@@ -25,33 +25,66 @@
       "output": "dist_electron"
     },
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
       "icon": "assets/icon.ico",
-      "artifactName": "microscopy-ta-setup-windows-v${version}.${ext}"
+      "artifactName": "microscopy-ta-setup-windows-v${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "default",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
       "icon": "assets/icon.icns",
       "category": "public.app-category.education",
-      "artifactName": "microscopy-ta-installer-mac-v${version}.${ext}"
+      "artifactName": "microscopy-ta-installer-mac-v${version}-${arch}.${ext}"
     },
     "linux": {
       "target": "AppImage",
       "icon": "assets/icon.png",
       "artifactName": "microscopy-ta-installer-linux-v${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ocular-project",
+        "repo": "Microscopt_TA_Desktop_App",
+        "releaseType": "release"
+      }
+    ]
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.2.0",
     "@fvilers/disable-react-devtools": "^1.3.0",
+    "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.1",
     "async-mutex": "^0.5.0",
     "axios": "^1.13.5",
     "concurrently": "^9.2.1",
     "cors": "^2.8.6",
+    "dompurify": "^3.3.3",
     "dotenv": "^17.3.1",
+    "electron-updater": "^6.8.3",
     "lucide-react": "^0.577.0",
     "mongodb": "^7.1.0",
     "nodemon": "^3.1.11",
