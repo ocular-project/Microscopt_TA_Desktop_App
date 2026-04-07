@@ -233,6 +233,20 @@ function App() {
             });
         }
     }, []);
+
+    useEffect(() => {
+        checkADBInstalled()
+    }, []);
+
+    async function checkADBInstalled() {
+        const res = await window.electronAPI.checkAdbInstalled();
+        if (res.success) {
+          console.log("ADB is installed");
+        } else {
+          console.error("Error:", res.error);
+        }
+    }
+
    //
    // useEffect(() => {
    //    window.electronAPI.onUpdateStatus((data) => {

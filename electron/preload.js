@@ -40,5 +40,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     downloadUpdate: () => ipcRenderer.send("download-update"),
     onUpdateStatus: (callback) => ipcRenderer.on("update-status", (_, data) => callback(data)),
     onDownloadProgress: (callback) => ipcRenderer.on("download-progress", (_, data) => callback(data)),
-    openDownloadPage: () => ipcRenderer.send("open-download-page")
+    openDownloadPage: () => ipcRenderer.send("open-download-page"),
+
+    checkAdbInstalled: () => ipcRenderer.invoke('check-adb-installed'),
 })

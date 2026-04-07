@@ -28,6 +28,8 @@ import {
     transferFile,
     transferFiles, updateFiles
 } from './fileManagement.js'
+import ScrcpyManager from "./scrcpy-manager.js";
+import AdbManager from "./adb-manager.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +43,8 @@ autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 let mainWindow
+const adbManager = new AdbManager();
+const scrcpyManager = new ScrcpyManager();
 
 // const gotTheLock = app.requestSingleInstanceLock()
 
@@ -547,14 +551,12 @@ ipcMain.on("open-download-page", () => {
   shell.openExternal("https://github.com/ocular-project/Microscopt_TA_Desktop_App/releases/latest");
 });
 
-// autoUpdater.on("update-downloaded", () => {
-//   dialog.showMessageBox({
-//     title: "Install Updates",
-//     message: "Update downloaded. Restart now?",
-//     buttons: ["Restart", "Later"]
-//   }).then(result => {
-//     if (result.response === 0) {
-//       autoUpdater.quitAndInstall();
-//     }
-//   });
-// });
+
+// Devices
+ipcMain.handle('check-adb-installed', async () => {
+  return await adbManager.checkAdbInstalled();
+});
+
+ipcMain.handle('get-devices', async () => {
+  return await adbManager.getDevices();
+});
