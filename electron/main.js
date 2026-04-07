@@ -49,6 +49,8 @@ app.setVersion(packageJson.version)
 const version= app.getVersion();
 // console.log("APP VERSION:", version);
 
+// new changes
+
 const { autoUpdater } = updater;
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
