@@ -38,7 +38,7 @@ class AdbManager {
   }
 
   async getDevices() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const process = spawn('adb', ['devices', '-l']);
       let output = '';
       let errorOutput = '';
@@ -52,21 +52,35 @@ class AdbManager {
       });
 
       process.on('error', (error) => {
-        reject(new Error(`Failed to execute adb: ${error.message}`));
+        resolve({
+          success: false,
+          error: `Failed to execute adb: ${error.message}`
+        });
       });
 
       process.on('exit', (code) => {
         if (code !== 0) {
-          reject(new Error(`ADB command failed: ${errorOutput}`));
+          resolve({
+            success: false,
+            error: errorOutput || `ADB command failed with code ${code}`
+          });
           return;
         }
 
         try {
           const devices = this.parseDeviceList(output);
           this.devices = devices;
-          resolve(devices);
+
+          resolve({
+            success: true,
+            data: devices
+          });
+
         } catch (error) {
-          reject(error);
+          resolve({
+            success: false,
+            error: error.message
+          });
         }
       });
     });

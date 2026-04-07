@@ -11,7 +11,7 @@ import {handleMessage} from "../../utils/repeating";
 import DriveButtons from "./myComputer/DriveButtons.jsx";
 import {refreshQuota} from "../../utils/files/RepeatingFiles.jsx";
 
-export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config, setQuota }){
+export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config, setQuota, paths }){
 
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -286,7 +286,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                             <>
                                 {
                                     !!checkedIds.length ? (
-                                        <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds}
+                                        <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds} path={paths}
                                                       setMessage={setMessage} setLoader={setLoader} cat={cat}/>
                                     ) : (
                                         <>
@@ -340,7 +340,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                         ) : cat === "team" ? (
                             <Button text="Create Team" status="active" onClick={handleTeamClick} />
                         ) : cat === "computer" ? (
-                            <ButtonLinks setLoader={setLoader} setScreen={setScreen} setIsPop={setIsPop}
+                            <ButtonLinks setLoader={setLoader} setScreen={setScreen} setIsPop={setIsPop} path={paths}
                                          setMessage={setMessage} setFolders={setFolders} setCheckedIds={setCheckedIds}
                                          checkedIds={checkedIds} config={config} links={links} cat={cat} setQuota={setQuota}
                             />

@@ -4,10 +4,10 @@ import {faXmark} from "@fortawesome/free-solid-svg-icons";
 import css from "../../../css/general.module.css";
 import csss from "../myComputer/css/computer.module.css";
 import Button from "../../../utils/Button";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Input from "../myComputer/Input";
 
-export default function Path({ setIsPop, setLoader, setMessage }){
+export default function Path({ setIsPop, setLoader, setMessage, setPaths, paths }){
 
     const [error, setError] = useState(null)
     const [path, setPath] = useState("")
@@ -25,6 +25,7 @@ export default function Path({ setIsPop, setLoader, setMessage }){
             if (result) {
                 setPath("")
                 setIsPop(false)
+                setPaths(path)
             }
             else {
                 setError("Failed to save folder path")
@@ -44,9 +45,9 @@ export default function Path({ setIsPop, setLoader, setMessage }){
                     <h1>Selecting a folder</h1>
                     <p>Please choose the location where you want to save your folders and images.</p>
                 </div>
-                <div className={styles.mainSpan} onClick={handleCancel}>
-                    <FontAwesomeIcon icon={faXmark} />
-                </div>
+                {/*<div className={styles.mainSpan} onClick={handleCancel}>*/}
+                {/*    <FontAwesomeIcon icon={faXmark} />*/}
+                {/*</div>*/}
             </div>
 
             <hr/>
@@ -60,7 +61,8 @@ export default function Path({ setIsPop, setLoader, setMessage }){
             <hr/>
 
             <div className={styles.buttons}>
-                <Button text="Cancel" status="cancel" onClick={handleCancel}/>
+                <div></div>
+                {/*<Button text="Cancel" status="cancel" onClick={handleCancel}/>*/}
                 <Button text="Save Location" status="active" onClick={handleSave} />
             </div>
 

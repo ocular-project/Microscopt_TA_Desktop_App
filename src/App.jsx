@@ -150,7 +150,7 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
   );
 };
 
-function AppRoutes() {
+function AppRoutes({ path, setPath }) {
     return (
         <Routes>
         {
@@ -158,13 +158,13 @@ function AppRoutes() {
                 <>
                     <Route path="/:folderId?"
                            element={
-                               <MyComputer />
+                               <MyComputer path={path} setPath={setPath}/>
                            }
                     />
                     <Route path="/collaboration/:folderId?"
                            element={
                                <ProtectedRoute>
-                                   <Folder />
+                                   <Folder path={path} setPath={setPath}/>
                                </ProtectedRoute>
                            }
                     />
@@ -173,7 +173,7 @@ function AppRoutes() {
                 <Route path="/:folderId?"
                        element={
                            <ProtectedRoute>
-                               <Folder />
+                               <Folder path={path} setPath={setPath}/>
                            </ProtectedRoute>
                        }
                 />
@@ -191,7 +191,7 @@ function AppRoutes() {
         <Route path="/sharedFiles/:folderId?"
                element={
                    <ProtectedRoute>
-                       <Shared />
+                       <Shared path={path} setPath={setPath}/>
                    </ProtectedRoute>
                }
         />
@@ -223,6 +223,7 @@ function App() {
     const [isDownloading, setIsDownloading] = useState(false);
     const [error, setError] = useState(null)
     const [downloadData, setDownloadData] = useState(null)
+    const [path, setPath] = useState(null)
 
     useEffect(() => {
         // Listen for updates from Electron
@@ -238,10 +239,24 @@ function App() {
         checkADBInstalled()
     }, []);
 
+    useEffect(() => {
+        const load = async () => {
+            // console.log("pathx")
+            const pathx = await window.electronAPI.getPath();
+            console.log(pathx)
+            setPath(pathx);
+        };
+
+        load();
+
+    }, []);
+
     async function checkADBInstalled() {
         const res = await window.electronAPI.checkAdbInstalled();
         if (res.success) {
           console.log("ADB is installed");
+          // const res2 = await window.electronAPI.onSettingPath();
+          // console.log(res2)
         } else {
           console.error("Error:", res.error);
         }
@@ -279,7 +294,7 @@ function App() {
           downloadData={downloadData}
           error={error}
         />
-        <AppRoutes />
+        <AppRoutes path={path} setPath={setPath}/>
       </div>
     // </HashRouter>
   )
