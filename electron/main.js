@@ -173,6 +173,7 @@ ipcMain.handle('dialog:openOneImagePicker', async () => {
 
 ipcMain.handle('electron:savePath', (event, folderPath) => {
   savePath(folderPath);
+  simpleAdbJson = new SimpleAdb(mainWindow, folderPath);
   return true;
 });
 

@@ -297,7 +297,7 @@ class SimpleAdb {
       });
 
       adbProcess.on('error', (error) => {
-        console.error(`${this.logPrefix} ❌ ADB devices error:`, error.message);
+        // console.error(`${this.logPrefix} ❌ ADB devices error:`, error.message);
         resolve([]);
       });
     });
@@ -356,7 +356,7 @@ class SimpleAdb {
         }
 
         const defaultPackage = 'com.ug.air.ocular_mta';
-        console.log(`${this.logPrefix} ⚠️ Target package not found, using default: ${defaultPackage}`);
+        // console.log(`${this.logPrefix} ⚠️ Target package not found, using default: ${defaultPackage}`);
         resolve(defaultPackage);
       });
 
