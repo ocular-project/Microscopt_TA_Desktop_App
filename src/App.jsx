@@ -17,6 +17,8 @@ import {configg} from "./components/utils/files/config.js";
 import MyComputer from "./components/home/MyComputer.jsx";
 // import DOMPurify from "quill/formats/link.js";
 import DOMPurify from "dompurify";
+import Devices from "./components/home/Devices.jsx";
+import Adb from "./Adb.jsx";
 
 // Update Notification Component
 const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, downloadData, error }) => {
@@ -47,7 +49,7 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
   };
 
   return (
-    <div className="fixed bottom-8 right-8 w-full max-w-sm z-[9999] animate-in fade-in slide-in-from-bottom-10 duration-500">
+    <div className="fixed bottom-8 right-8 w-full max-w-sm z-[999] animate-in fade-in slide-in-from-bottom-10 duration-500">
       <div className="bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden p-6 border border-black/5 shadow-2xl ring-1 ring-black/5">
         {/* Close Button */}
           {
@@ -150,7 +152,7 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
   );
 };
 
-function AppRoutes() {
+function AppRoutes({ path, setPath }) {
     return (
         <Routes>
         {
@@ -158,13 +160,13 @@ function AppRoutes() {
                 <>
                     <Route path="/:folderId?"
                            element={
-                               <MyComputer />
+                               <MyComputer path={path} setPath={setPath}/>
                            }
                     />
                     <Route path="/collaboration/:folderId?"
                            element={
                                <ProtectedRoute>
-                                   <Folder />
+                                   <Folder path={path} setPath={setPath}/>
                                </ProtectedRoute>
                            }
                     />
@@ -173,7 +175,7 @@ function AppRoutes() {
                 <Route path="/:folderId?"
                        element={
                            <ProtectedRoute>
-                               <Folder />
+                               <Folder path={path} setPath={setPath}/>
                            </ProtectedRoute>
                        }
                 />
@@ -183,7 +185,7 @@ function AppRoutes() {
         <Route path="/teams"
                element={
                    <ProtectedRoute>
-                       <Team />
+                       <Team path={path} setPath={setPath}/>
                    </ProtectedRoute>
                }
         />
@@ -191,7 +193,7 @@ function AppRoutes() {
         <Route path="/sharedFiles/:folderId?"
                element={
                    <ProtectedRoute>
-                       <Shared />
+                       <Shared path={path} setPath={setPath}/>
                    </ProtectedRoute>
                }
         />
@@ -204,6 +206,7 @@ function AppRoutes() {
                }
         />
 
+        <Route path="/devices" element={<Devices path={path} setPath={setPath}/>} />
         <Route path="/image" element={<ImageAnnotator />} />
         <Route path="/annotation/:cat/:fileId" element={<ImageView />} />
 
@@ -223,6 +226,8 @@ function App() {
     const [isDownloading, setIsDownloading] = useState(false);
     const [error, setError] = useState(null)
     const [downloadData, setDownloadData] = useState(null)
+    const [path, setPath] = useState(null)
+    const [adb, setAdb] = useState(false)
 
     useEffect(() => {
         // Listen for updates from Electron
@@ -238,11 +243,25 @@ function App() {
         checkADBInstalled()
     }, []);
 
+    useEffect(() => {
+        const load = async () => {
+            // console.log("pathx")
+            const pathx = await window.electronAPI.getPath();
+            // console.log(pathx)
+            setPath(pathx);
+        };
+
+        load();
+
+    }, []);
+
     async function checkADBInstalled() {
         const res = await window.electronAPI.checkAdbInstalled();
         if (res.success) {
+          setAdb(false)
           console.log("ADB is installed");
         } else {
+          setAdb(true)
           console.error("Error:", res.error);
         }
     }
@@ -269,7 +288,13 @@ function App() {
 
   return (
     // <HashRouter>
-      <div className="min-h-screen">
+      <div className="min-h-screen relative">
+          {
+              adb && (
+                  <Adb />
+              )
+          }
+
         {/*Update Popup Layer*/}
         <UpdatePopup
           updateData={updateInfo}
@@ -279,7 +304,7 @@ function App() {
           downloadData={downloadData}
           error={error}
         />
-        <AppRoutes />
+        <AppRoutes path={path} setPath={setPath}/>
       </div>
     // </HashRouter>
   )

@@ -4,12 +4,12 @@ import {getPath, handleMessage} from "../../../utils/repeating.js";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {useNavigate} from "react-router-dom";
 
-export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage, cat, setScreen, setIsPop }){
+export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage, cat, setScreen, setIsPop, path }){
 
     const navigate = useNavigate();
 
     async function handleDownload() {
-        const path = await getPath();
+        // const path = await getPath();
          if (path) {
              const files = checkedIds.map(check => check.id)
              // if (files.length === 1) {

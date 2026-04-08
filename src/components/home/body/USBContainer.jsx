@@ -2,8 +2,8 @@ import Header from "./Header.jsx";
 import Links from "./Links.jsx";
 import TableInfo from "./TableInfo.jsx";
 import Table from "./Table.jsx";
-import TableUSB from "./USB/Table";
-import Tablex from "./myComputer/Table.jsx";
+import TableUSB from "./USB/DeviceTable";
+import Tablex from "./myComputer/DeviceTable.jsx";
 import styles from "../css/popup.module.css"
 import {useEffect, useState} from "react";
 import CreateFolder from "./popUps/CreateFolder.jsx";

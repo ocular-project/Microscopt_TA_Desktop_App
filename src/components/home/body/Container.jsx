@@ -2,8 +2,8 @@ import Header from "./Header.jsx";
 import Links from "./Links.jsx";
 import TableInfo from "./TableInfo.jsx";
 import Table from "./Table.jsx";
-// import Tablex from "./myComputer/Table.jsx";
-// import TableY from "./Devices/Table.jsx";
+// import Tablex from "./myComputer/DeviceTable.jsx";
+// import TableY from "./Devices/DeviceTable.jsx";
 import styles from "../css/popup.module.css"
 import {useEffect, useState} from "react";
 import CreateFolder from "./popUps/CreateFolder.jsx";
@@ -22,7 +22,7 @@ import Move from "./popUps/Move";
 import DeleteFile from "./popUps/DeleteFile.jsx";
 import Instructions from "./popUps/Instructions.jsx";
 
-export default function Container({ cat, setIsView, isView, message, setMessage, config, quota, setQuota }){
+export default function Container({ cat, setIsView, isView, message, setMessage, config, quota, setQuota, path, setPath }){
 
     const [isPop, setIsPop] = useState(false)
     const [screen, setScreen] = useState({folderCreate: false, teamCreate: false, share: false,
@@ -53,14 +53,25 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
         }
     }, [isPop]);
 
+    useEffect(() => {
+        if (!path) {
+            setScreen(prev => ({...prev, pathCreate: true}))
+            setIsPop(true)
+        }else {
+            setScreen(prev => ({...prev, pathCreate: false}))
+            setIsPop(false)
+        }
+    }, [path]);
+
 
     return (
         <>
             <Header cat={cat} />
-            <Links setScreen={setScreen} setIsPop={setIsPop} cat={cat} setLoader={setLoader2}
+            <Links setScreen={setScreen} setIsPop={setIsPop} cat={cat} setLoader={setLoader2} paths={path}
                    loader={loader2} links={links} setFolders={setFolders} setMessage={setMessage}
                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} setQuota={setQuota}
             />
+
             <TableInfo cat={cat} systemStatus={systemStatus} config={config}/>
 
             <Table cat={cat} setLoader={setLoader2} folders={folders} setFolders={setFolders}
@@ -75,7 +86,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                      <div className={`${css.loader} ${loader ? css.active : ""}`}></div>
                     {
                         screen.pathCreate ? (
-                           <Path setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} config={config} />
+                           <Path setIsPop={setIsPop} setLoader={setLoader} setMessage={setMessage} config={config} setPaths={setPath} paths={path} />
                         ) : screen.folderCreate ? (
                            <CreateFolder setIsPop={setIsPop} setLoader={setLoader} folder={folder} setFolder={setFolder} setFolders={setFolders} setMessage={setMessage} cat={cat} config={config} />
                         ) : screen.teamCreate ? (

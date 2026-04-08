@@ -9,6 +9,8 @@ import {useLocation, useParams} from "react-router-dom";
 import Folders from "./tables/Folders.jsx";
 import Teams from "./tables/Teams.jsx";
 import { fetchTeamsData, refreshQuota } from "../../utils/files/RepeatingFiles.jsx";
+import DeviceTable from "./devices/DeviceTable.jsx";
+import {handleMessage} from "../../utils/repeating.js";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
                                   setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds, quota, setQuota }){
@@ -17,9 +19,46 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
     const location = useLocation()
     const { folderId } = useParams();
     const files = ["folder", "shared", "computer"]
+    const [devices, setDevices] = useState(null)
 
     const isNullOrEmpty = !folders || folders.length === 0
     const isNullOrEmptyTeam = !teams || teams.length === 0
+    const isNullOrEmptyDevices = !devices || devices.length === 0
+
+   //  useEffect(() => {
+   //      if (!window.electronAPI?.onImageTransfer) return;
+   //
+   //      const listener = window.electronAPI.onImageTransfer((data) => {
+   //          handler(data);
+   //      });
+   //
+   //      return () => {
+   //          window.electronAPI.removeImageTransfer(listener);
+   //      };
+   //
+   //  }, []);
+   //
+   // const handler = async (data) => {
+   //      setLoader(true);
+   //
+   //      try {
+   //          const response = await window.electronAPI.getFoldersAndFiles(null);
+   //
+   //          if (!response.success) {
+   //              handleMessage(response.error, "error", setMessage);
+   //              return;
+   //          }
+   //
+   //          setFolders(response.data.folders);
+   //          handleMessage(`Image ${data.filename} saved successfully`, "success", setMessage);
+   //
+   //      } catch (err) {
+   //          const error = err.response?.data?.error || 'An error occurred';
+   //          handleMessage(error, "error", setMessage);
+   //      } finally {
+   //          setLoader(false); // ✅ always stop loader
+   //      }
+   //  };
 
     const fetchData = async () => {
         // console.log("currentPath")
@@ -65,7 +104,8 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
             currentPath.startsWith(excludedPath)
         );
         // console.log(currentPath)
-        if (!isExcludedPath) {
+        // console.log(currentPath)
+        if (!isExcludedPath && currentPath !== "/devices") {
             if (isView.view === false) {
                 fetchData()
             }
@@ -96,8 +136,11 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                     setLoader(false)
                 }
             }
-
             fetchData2()
+        }
+
+        else if(location.pathname.startsWith("/devices")) {
+            fetchData3()
         }
 
     }, [folderId, isView]);
@@ -112,6 +155,33 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
         await fetchTeamsData(setLoader, setTeams, setMessage, setQuota)
         await refreshQuota(setQuota, setMessage, setLoader)
     }
+
+    const fetchData3 = async () => {
+        setLoader(true)
+        try{
+            const response = await window.electronAPI.getConnectedDevices();
+            console.log(response)
+            if (!response.success) {
+                 setError(response.error);
+                 return
+            }
+            setDevices(response.data)
+
+        }catch (err) {
+            const error = err || 'An error occurred'
+            setMessage({show: true, message:  error, status: "error"})
+        }finally {
+            setLoader(false)
+        }
+    }
+
+    useEffect(() => {
+         const currentPath = location.pathname;
+         if (currentPath === "/devices") {
+             const interval = setInterval(fetchData3, 5000)
+             return () => clearInterval(interval)
+         }
+    }, []);
 
     return (
         <div className={styles.main}>
@@ -133,7 +203,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                         }
 
                     </div>
-                ) : (
+                ) : cat === "teams" ? (
                     <div className={styles.main2}>
                         {
                              error ? (
@@ -146,6 +216,21 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                         }
 
                     </div>
+                ) : (
+
+                    <div className={styles.main2}>
+                        {
+                             error ? (
+                                <div className={css.error}></div>
+                            ) : isNullOrEmptyDevices ? (
+                                <div className={css.error}>There are no mobile devices connected</div>
+                            ) : (
+                                <DeviceTable devices={devices}/>
+                             )
+                        }
+
+                    </div>
+
                 )
             }
 

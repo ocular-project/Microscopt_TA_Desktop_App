@@ -6,9 +6,9 @@ import Success from "./body/Success.jsx";
 import FolderOrShared from "./FolderOrShared.jsx";
 // import ImageView from "./annotation/ImageView.jsx";
 
-export default function Shared(){
+export default function Shared({ path, setPath }){
 
     return (
-        <FolderOrShared cat="shared"/>
+        <FolderOrShared cat="shared" path={path} setPath={setPath}/>
     )
 }

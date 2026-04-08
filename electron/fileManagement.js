@@ -92,6 +92,16 @@ export async function addDataJson(dir, newObject) {
             }
         }
 
+        if (newObject.name === "from_mobile"){
+            const myDrive = data.find(item => item.name === "from_mobile")
+            if (myDrive){
+                return {
+                    success: true,
+                    data: myDrive,
+                }
+            }
+        }
+
         if (newObject.name === "shared_files"){
             const sharedFiles = data.find(item => item.name === "shared_files")
             if (sharedFiles){
@@ -451,7 +461,7 @@ export async function getDataJson(filePath, parentId) {
                     ? `${sizeMB.toFixed(2)} MB`
                     : `${(obj.size / 1024).toFixed(2)} KB`;
 
-            console.log(obj._id)
+            // console.log(obj._id)
             const instructions = instArray.find(inst => inst.file._id === obj._id || inst.files.includes(obj._id))
 
             return { ...obj, size, instructions: !!instructions };

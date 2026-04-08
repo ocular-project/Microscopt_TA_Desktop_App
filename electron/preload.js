@@ -37,10 +37,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveInstructions: (instructions) => ipcRenderer.invoke('instructions:saveInstructions', instructions),
 
     onUpdateAvailable: (callback) => ipcRenderer.on("update-available", (_, data) => callback(data)),
+    onSettingPath: (callback) => ipcRenderer.on("set-path", (_, data) => callback(data)),
     downloadUpdate: () => ipcRenderer.send("download-update"),
     onUpdateStatus: (callback) => ipcRenderer.on("update-status", (_, data) => callback(data)),
     onDownloadProgress: (callback) => ipcRenderer.on("download-progress", (_, data) => callback(data)),
     openDownloadPage: () => ipcRenderer.send("open-download-page"),
 
     checkAdbInstalled: () => ipcRenderer.invoke('check-adb-installed'),
+    getConnectedDevices: () => ipcRenderer.invoke('get-devices'),
+
+    // onImageTransfer: (callback) => {
+    //     const listener = (_, data) => callback(data);
+    //     ipcRenderer.on("image-transfer-success", listener);
+    //     return listener; // ✅ return it
+    // },
+    //
+    // removeImageTransfer: (listener) => {
+    //     ipcRenderer.removeListener("image-transfer-success", listener);
+    // }
 })

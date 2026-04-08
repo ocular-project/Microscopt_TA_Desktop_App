@@ -4,7 +4,7 @@ import Container from "./body/Container.jsx";
 import Sidebar from "./Sidebar.jsx";
 import styles from "../css/general.module.css"
 
-export default function FolderOrShared({ cat }) {
+export default function FolderOrShared({ cat, path, setPath }) {
     const [isView, setIsView] = useState({ view: false, files: [], fileId: "" });
     const [message, setMessage] = useState([]);
     const [quota, setQuota] = useState(null);
@@ -19,6 +19,7 @@ export default function FolderOrShared({ cat }) {
             <div className={styles.innerContainer2}>
                 <div className={styles.content}>
                     <Container
+                        path={path} setPath={setPath}
                         cat={cat}
                         setIsView={setIsView}
                         isView={isView}

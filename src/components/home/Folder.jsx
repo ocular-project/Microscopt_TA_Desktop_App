@@ -7,9 +7,9 @@ import {useEffect, useState} from "react";
 import Success from "./body/Success.jsx";
 import FolderOrShared from "./FolderOrShared.jsx";
 
-export default function Folder(){
+export default function Folder({ path, setPath }){
 
     return (
-        <FolderOrShared cat="folder"/>
+        <FolderOrShared cat="folder" path={path} setPath={setPath}/>
     )
 }
