@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import {execSync, spawn} from 'node:child_process';
 import fs from 'fs'
 import path from "path";
 import {loadPath} from "./storage.js";
@@ -274,12 +274,76 @@ class SimpleAdb {
     }
 }
 
+  getAdbPath() {
+    const platform = process.platform;
+
+    try {
+      // 1. Try system PATH first
+      if (platform === 'win32') {
+        const result = execSync('where adb').toString().split('\n')[0].trim();
+        if (result) return result;
+      } else {
+        const result = execSync('which adb').toString().trim();
+        if (result) return result;
+      }
+    } catch (_) {}
+
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+
+    const possiblePaths = [];
+
+    if (platform === 'win32') {
+      possiblePaths.push(
+        'C:\\Android\\Sdk\\platform-tools\\adb.exe',
+        'C:\\Android\\platform-tools\\adb.exe',
+        'C:\\platform-tools\\adb.exe', // ✅ your custom path
+        path.join(process.env.LOCALAPPDATA || '', 'Android\\Sdk\\platform-tools\\adb.exe'),
+        path.join(process.env.USERPROFILE || '', 'AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe')
+      );
+    }
+
+    if (platform === 'darwin') {
+      possiblePaths.push(
+        '/usr/local/bin/adb',
+        '/opt/homebrew/bin/adb',
+        `${home}/Library/Android/sdk/platform-tools/adb`,
+        `${home}/platform-tools/adb` // ✅ your custom path
+      );
+    }
+
+    if (platform === 'linux') {
+      possiblePaths.push(
+        '/usr/bin/adb',
+        '/usr/local/bin/adb',
+        `${home}/Android/Sdk/platform-tools/adb`,
+        `${home}/platform-tools/adb`
+      );
+    }
+
+    for (const p of possiblePaths) {
+      if (p && fs.existsSync(p)) {
+        return p;
+      }
+    }
+
+    return null;
+  }
+
   // Get list of connected devices
   async getConnectedDevices() {
     // console.log(`${this.logPrefix} 🔌 Getting connected devices...`);
 
     return new Promise((resolve, reject) => {
-      const adbProcess = spawn('adb', ['devices', '-l']);
+      const adbPath = this.getAdbPath?.();
+
+      if (!adbPath) {
+          console.error(`${this.logPrefix} ❌ ADB not found`);
+          return resolve([]);
+      }
+
+      const adbProcess = spawn(adbPath, ['devices', '-l']);
+
+      // const adbProcess = spawn('adb', ['devices', '-l']);
       let output = '';
 
       adbProcess.stdout.on('data', (data) => {
@@ -335,7 +399,23 @@ class SimpleAdb {
     // console.log(`${this.logPrefix} 📦 Getting package name for devices: ${deviceId}`);
 
     return new Promise((resolve) => {
-      const adbProcess = spawn('adb', ['-s', deviceId, 'shell', 'pm', 'list', 'packages', '-3']);
+      const adbPath = this.getAdbPath?.();
+
+      if (!adbPath) {
+          console.error(`${this.logPrefix} ❌ ADB not found`);
+          return resolve([]);
+      }
+
+      const adbProcess = spawn(adbPath, [
+        "-s",
+        deviceId,
+        "shell",
+        "pm",
+        "list",
+        "packages",
+        "-3"
+      ]);
+      // const adbProcess = spawn('adb', ['-s', deviceId, 'shell', 'pm', 'list', 'packages', '-3']);
       let output = '';
 
       adbProcess.stdout.on('data', (data) => {
@@ -379,7 +459,15 @@ class SimpleAdb {
       const packageName = await this.getAppPackageName(deviceId);
       // console.log(`${this.logPrefix} 📦 Using package: ${packageName}`);
 
-      const adbProcess = spawn('adb', ['-s', deviceId, 'exec-out', `run-as ${packageName} cat files/${fileName}`]);
+        const adbPath = this.getAdbPath?.();
+
+      if (!adbPath) {
+          console.error(`${this.logPrefix} ❌ ADB not found`);
+          return resolve([]);
+      }
+
+      const adbProcess = spawn(adbPath, ['-s', deviceId, 'exec-out', `run-as ${packageName} cat files/${fileName}`]);
+      // const adbProcess = spawn('adb', ['-s', deviceId, 'exec-out', `run-as ${packageName} cat files/${fileName}`]);
       let output = '';
       let errorOutput = '';
 
@@ -436,7 +524,15 @@ class SimpleAdb {
       // Escape single quotes in JSON for shell command
       const escapedJson = jsonString.replace(/'/g, "'\"'\"'");
 
-      const adbProcess = spawn('adb', ['-s', deviceId, 'shell', `echo '${escapedJson}' | run-as ${packageName} tee files/${fileName} > /dev/null`]);
+      const adbPath = this.getAdbPath?.();
+
+      if (!adbPath) {
+          console.error(`${this.logPrefix} ❌ ADB not found`);
+          return resolve([]);
+      }
+
+      const adbProcess = spawn(adbPath, ['-s', deviceId, 'shell', `echo '${escapedJson}' | run-as ${packageName} tee files/${fileName} > /dev/null`]);
+      // const adbProcess = spawn('adb', ['-s', deviceId, 'shell', `echo '${escapedJson}' | run-as ${packageName} tee files/${fileName} > /dev/null`]);
       let errorOutput = '';
 
       adbProcess.stderr.on('data', (data) => {
@@ -473,7 +569,15 @@ class SimpleAdb {
     return new Promise(async (resolve) => {
       const packageName = await this.getAppPackageName(deviceId);
 
-      const adbProcess = spawn('adb', ['-s', deviceId, 'shell', `run-as ${packageName} rm -f files/${fileName}`]);
+      const adbPath = this.getAdbPath?.();
+
+      if (!adbPath) {
+          console.error(`${this.logPrefix} ❌ ADB not found`);
+          return resolve([]);
+      }
+
+      const adbProcess = spawn(adbPath, ['-s', deviceId, 'shell', `run-as ${packageName} rm -f files/${fileName}`]);
+      // const adbProcess = spawn('adb', ['-s', deviceId, 'shell', `run-as ${packageName} rm -f files/${fileName}`]);
       let errorOutput = '';
 
       adbProcess.stderr.on('data', (data) => {
@@ -686,11 +790,23 @@ class SimpleAdb {
         console.log(`${this.logPrefix} 📁 Dest: ${destPath}`);
 
         // Use adb pull to get the file directly
-        const adbProcess = spawn('adb', [
+        const adbPath = this.getAdbPath?.();
+
+      if (!adbPath) {
+          console.error(`${this.logPrefix} ❌ ADB not found`);
+          return resolve([]);
+      }
+
+      const adbProcess = spawn(adbPath, [
             '-s', deviceId,
             'exec-out',
             `run-as ${packageName} cat ${sourcePath}`
         ]);
+        // const adbProcess = spawn('adb', [
+        //     '-s', deviceId,
+        //     'exec-out',
+        //     `run-as ${packageName} cat ${sourcePath}`
+        // ]);
 
         const writeStream = fs.createWriteStream(destPath);
         let errorOutput = '';
