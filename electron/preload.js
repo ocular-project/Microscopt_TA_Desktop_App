@@ -45,4 +45,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     checkAdbInstalled: () => ipcRenderer.invoke('check-adb-installed'),
     getConnectedDevices: () => ipcRenderer.invoke('get-devices'),
+
+    // onImageTransfer: (callback) => {
+    //     const listener = (_, data) => callback(data);
+    //     ipcRenderer.on("image-transfer-success", listener);
+    //     return listener; // ✅ return it
+    // },
+    //
+    // removeImageTransfer: (listener) => {
+    //     ipcRenderer.removeListener("image-transfer-success", listener);
+    // }
 })

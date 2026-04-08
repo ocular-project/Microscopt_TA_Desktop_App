@@ -10,6 +10,7 @@ import Folders from "./tables/Folders.jsx";
 import Teams from "./tables/Teams.jsx";
 import { fetchTeamsData, refreshQuota } from "../../utils/files/RepeatingFiles.jsx";
 import DeviceTable from "./devices/DeviceTable.jsx";
+import {handleMessage} from "../../utils/repeating.js";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
                                   setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds, quota, setQuota }){
@@ -23,6 +24,41 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
     const isNullOrEmpty = !folders || folders.length === 0
     const isNullOrEmptyTeam = !teams || teams.length === 0
     const isNullOrEmptyDevices = !devices || devices.length === 0
+
+   //  useEffect(() => {
+   //      if (!window.electronAPI?.onImageTransfer) return;
+   //
+   //      const listener = window.electronAPI.onImageTransfer((data) => {
+   //          handler(data);
+   //      });
+   //
+   //      return () => {
+   //          window.electronAPI.removeImageTransfer(listener);
+   //      };
+   //
+   //  }, []);
+   //
+   // const handler = async (data) => {
+   //      setLoader(true);
+   //
+   //      try {
+   //          const response = await window.electronAPI.getFoldersAndFiles(null);
+   //
+   //          if (!response.success) {
+   //              handleMessage(response.error, "error", setMessage);
+   //              return;
+   //          }
+   //
+   //          setFolders(response.data.folders);
+   //          handleMessage(`Image ${data.filename} saved successfully`, "success", setMessage);
+   //
+   //      } catch (err) {
+   //          const error = err.response?.data?.error || 'An error occurred';
+   //          handleMessage(error, "error", setMessage);
+   //      } finally {
+   //          setLoader(false); // ✅ always stop loader
+   //      }
+   //  };
 
     const fetchData = async () => {
         // console.log("currentPath")

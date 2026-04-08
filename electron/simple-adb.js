@@ -34,7 +34,7 @@ class SimpleAdb {
     this.ANDROID_REQUEST_FILE = "electron_request.json";
     this.ANDROID_RESPONSE_FILE = "electron_response.json";
 
-    this.imageStorageDir = path.join(dir, "Microscopy_TA", "folders_and_images");
+    this.imageStorageDir = path.join(dir, "Microscopy_TA", "folders_and_images", "from_mobile");
     this.ensureImageDirectory();
 
     this.isTransferInProgress = false;
@@ -538,7 +538,7 @@ class SimpleAdb {
     // console.log(`${this.logPrefix} 🖼️ Handling direct image transfer from ${deviceId}`);
     // console.log(`${this.logPrefix} 🔍 DEBUG: Full requestData in handleDirectImageTransfer:`, JSON.stringify(requestData, null, 2));
 
-      console.log(this.isTransferInProgress)
+      // console.log(this.isTransferInProgress)
       if (this.isTransferInProgress) {
         console.log(`${this.logPrefix} ⚠️ Transfer already in progress`);
         return {
@@ -557,9 +557,9 @@ class SimpleAdb {
       }, 60000); // 60 seconds max
 
       try {
-        console.log(`${this.logPrefix} 📥 Pulling image from Android...`);
+        // console.log(`${this.logPrefix} 📥 Pulling image from Android...`);
 
-        console.log(transferRequest)
+        // console.log(transferRequest)
         // 📦 3. TRANSFER IMAGE FROM DEVICE
         const success = await this.pullImageFromAndroid(deviceId, transferRequest);
 
@@ -573,8 +573,8 @@ class SimpleAdb {
         }
 
         // 📁 4. SAVE METADATA
-          console.log(transferRequest)
-          console.log(this.imageStorageDir)
+        //   console.log(transferRequest)
+        //   console.log(this.imageStorageDir)
 
         const transferredImage = {
           id: Date.now().toString(),
@@ -593,6 +593,13 @@ class SimpleAdb {
         await this.handleJsonSave(transferredImage);
 
         console.log(`${this.logPrefix} ✅ Image transferred successfully`);
+
+        // console.log("MAIN WINDOW:", this.mainWindow);
+        // console.log("WEBCONTENTS:", this.mainWindow?.webContents);
+
+        // this.mainWindow.webContents.send('image-transfer-success', {
+        //   filename: transferRequest.imageTransfer.filename
+        // });
 
         return {
           success: true,
