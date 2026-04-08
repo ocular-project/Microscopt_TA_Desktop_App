@@ -1,6 +1,8 @@
 import { spawn } from 'node:child_process';
 import fs from 'fs'
 import path from "path";
+import {loadPath} from "./storage.js";
+import {addDataJson, generateObjectId} from "./fileManagement.js";
 
 class SimpleAdb {
   // constructor(mainWindow, folderPath, _id, value) {
@@ -32,10 +34,11 @@ class SimpleAdb {
     this.ANDROID_REQUEST_FILE = "electron_request.json";
     this.ANDROID_RESPONSE_FILE = "electron_response.json";
 
-    this.dir = dir;
-    // this.ensureImageDirectory();
+    this.imageStorageDir = path.join(dir, "Microscopy_TA", "folders_and_images");
+    this.ensureImageDirectory();
 
-    this.activeTransfers = new Set();
+    this.isTransferInProgress = false;
+    this.transferTimeout = null;
 
     // console.log(`${this.logPrefix} Initializing ADB JSON Communication`);
     // console.log(`${this.logPrefix} Request file: ${this.ANDROID_REQUEST_FILE}`);
@@ -131,13 +134,13 @@ class SimpleAdb {
   // Process different types of requests
   async processRequest(request, deviceId) {
     const { method, endpoint, data, imageTransfer } = request;
-    console.log(`${this.logPrefix} ⚙️ Processing ${method} ${endpoint} from ${deviceId}`);
+    // console.log(`${this.logPrefix} ⚙️ Processing ${method} ${endpoint} from ${deviceId}`);
 
-    console.log(`${this.logPrefix} 🔍 DEBUG: Full request object:`, JSON.stringify(request, null, 2));
-    console.log(`${this.logPrefix} 🔍 DEBUG: method:`, method);
-    console.log(`${this.logPrefix} 🔍 DEBUG: endpoint:`, endpoint);
-    console.log(`${this.logPrefix} 🔍 DEBUG: data:`, data);
-    console.log(`${this.logPrefix} 🔍 DEBUG: imageTransfer:`, imageTransfer);
+    // console.log(`${this.logPrefix} 🔍 DEBUG: Full request object:`, JSON.stringify(request, null, 2));
+    // console.log(`${this.logPrefix} 🔍 DEBUG: method:`, method);
+    // console.log(`${this.logPrefix} 🔍 DEBUG: endpoint:`, endpoint);
+    // // console.log(`${this.logPrefix} 🔍 DEBUG: data:`, data);
+    // console.log(`${this.logPrefix} 🔍 DEBUG: imageTransfer:`, imageTransfer);
 
     try {
       switch (method.toUpperCase()) {
@@ -147,7 +150,7 @@ class SimpleAdb {
 
         case 'POST':
           // console.log(`${this.logPrefix} 📤 Handling POST request with data:`, data);
-          console.log(`${this.logPrefix} 📤 Handling POST request with data:`, imageTransfer);
+          // console.log(`${this.logPrefix} 📤 Handling POST request with data:`, imageTransfer);
           return this.handlePost(endpoint, request, deviceId);
 
         default:
@@ -211,8 +214,8 @@ class SimpleAdb {
 
   // Handle POST requests
   handlePost(endpoint, requestData, deviceId) {  // ← Changed parameter name from 'data' to 'requestData'
-    console.log(`${this.logPrefix} 📝 POST ${endpoint}`);
-    console.log(`${this.logPrefix} 🔍 DEBUG: handlePost requestData:`, JSON.stringify(requestData, null, 2));
+    // console.log(`${this.logPrefix} 📝 POST ${endpoint}`);
+    // console.log(`${this.logPrefix} 🔍 DEBUG: handlePost requestData:`, JSON.stringify(requestData, null, 2));
 
     switch (endpoint) {
         case '/messages':
@@ -258,7 +261,7 @@ class SimpleAdb {
             };
 
         case '/images/transfer':
-            console.log(`${this.logPrefix} 🖼️ Image transfer endpoint hit`);
+            // console.log(`${this.logPrefix} 🖼️ Image transfer endpoint hit`);
             return this.handleDirectImageTransfer(requestData, deviceId);  // ← Pass full requestData
 
         default:
@@ -531,163 +534,135 @@ class SimpleAdb {
   }
 
   // New method for direct file transfer
-  async handleDirectImageTransfer(requestData, deviceId) {
-    console.log(`${this.logPrefix} 🖼️ Handling direct image transfer from ${deviceId}`);
-    console.log(`${this.logPrefix} 🔍 DEBUG: Full requestData in handleDirectImageTransfer:`, JSON.stringify(requestData, null, 2));
+  async handleDirectImageTransfer(transferRequest, deviceId) {
+    // console.log(`${this.logPrefix} 🖼️ Handling direct image transfer from ${deviceId}`);
+    // console.log(`${this.logPrefix} 🔍 DEBUG: Full requestData in handleDirectImageTransfer:`, JSON.stringify(requestData, null, 2));
 
-    try {
-        // Now we should have access to imageTransfer
-        const transferRequest = requestData.imageTransfer;
-
-        if (!transferRequest) {
-            console.error(`${this.logPrefix} ❌ No imageTransfer data found in request`);
-            console.error(`${this.logPrefix} 📄 Available keys in requestData:`, Object.keys(requestData));
-            return {
-                success: false,
-                error: 'No image transfer data provided'
-            };
-        }
-
-        console.log(`${this.logPrefix} 📊 Transfer request:`, transferRequest);
-
-        // Validate required fields
-        if (!transferRequest.filename || !transferRequest.mimeType || !transferRequest.fileSize) {
-            console.error(`${this.logPrefix} ❌ Missing required fields:`, transferRequest);
-            return {
-                success: false,
-                error: 'Missing required image transfer fields'
-            };
-        }
-
-        const transferKey = `${deviceId}_${transferRequest.filename}`;
-        if (this.activeTransfers.has(transferKey)) {
-            console.log(`${this.logPrefix} ⚠️ Image transfer already in progress: ${transferRequest.filename}`);
-            return {
-                success: false,
-                error: 'Image transfer already in progress'
-            };
-        }
-
-        // Mark as active transfer
-        this.activeTransfers.add(transferKey);
-
-        // Pull the actual image file from Android
-        try {
-            // Pull the actual image file from Android
-            const success = await this.pullImageFromAndroid(deviceId, transferRequest);
-
-            if (success) {
-                const transferredImage = {
-                    id: Date.now().toString(),
-                    filename: transferRequest.filename,
-                    originalName: transferRequest.originalName,
-                    mimeType: transferRequest.mimeType,
-                    size: transferRequest.fileSize,
-                    savedPath: path.join(this.imageStorageDir, transferRequest.filename),
-                    deviceId: deviceId,
-                    transferredAt: new Date().toISOString()
-                };
-
-                this.data.images.push(transferredImage);
-                await this.handleJsonSave(transferredImage)
-
-                console.log(`${this.logPrefix} ✅ Image transfer completed:`, transferredImage);
-
-                return {
-                    success: true,
-                    message: 'Image transferred successfully',
-                    data: transferredImage
-                };
-            } else {
-                return {
-                    success: false,
-                    error: 'Failed to transfer image file'
-                };
-            }
-        } finally {
-            // Always remove from active transfers
-            this.activeTransfers.delete(transferKey);
-        }
-
-    } catch (error) {
-        console.error(`${this.logPrefix} ❌ Image transfer error:`, error);
+      console.log(this.isTransferInProgress)
+      if (this.isTransferInProgress) {
+        console.log(`${this.logPrefix} ⚠️ Transfer already in progress`);
         return {
-            success: false,
-            error: `Image transfer failed: ${error.message}`
+          success: false,
+          error: 'Transfer already in progress'
         };
-    }
+      }
+
+      this.isTransferInProgress = true;
+
+      this.transferTimeout = setTimeout(() => {
+        console.log(`${this.logPrefix} ⏰ Force releasing stuck transfer lock`);
+
+        this.isTransferInProgress = false;
+        this.transferTimeout = null;
+      }, 60000); // 60 seconds max
+
+      try {
+        console.log(`${this.logPrefix} 📥 Pulling image from Android...`);
+
+        console.log(transferRequest)
+        // 📦 3. TRANSFER IMAGE FROM DEVICE
+        const success = await this.pullImageFromAndroid(deviceId, transferRequest);
+
+        if (!success) {
+          console.log(`${this.logPrefix} ❌ Pull failed`);
+
+          return {
+            success: false,
+            error: 'Failed to pull image from device'
+          };
+        }
+
+        // 📁 4. SAVE METADATA
+          console.log(transferRequest)
+          console.log(this.imageStorageDir)
+
+        const transferredImage = {
+          id: Date.now().toString(),
+          filename: transferRequest.imageTransfer.filename,
+          originalName: transferRequest.imageTransfer.originalName,
+          mimeType: transferRequest.imageTransfer.mimeType,
+          size: transferRequest.imageTransfer.fileSize,
+          savedPath: path.join(this.imageStorageDir, transferRequest.imageTransfer.filename),
+          deviceId,
+          transferredAt: new Date().toISOString()
+        };
+
+        this.data.images.push(transferredImage);
+
+        // 💾 5. PERSIST DATA
+        await this.handleJsonSave(transferredImage);
+
+        console.log(`${this.logPrefix} ✅ Image transferred successfully`);
+
+        return {
+          success: true,
+          message: 'Image transferred successfully',
+          data: transferredImage
+        };
+
+      }
+      catch (error) {
+        console.error(`${this.logPrefix} ❌ Transfer error:`, error);
+
+        return {
+          success: false,
+          error: error.message || 'Unknown error during image transfer'
+        };
+
+      }
+      finally {
+        // 🧹 6. ALWAYS CLEAN UP LOCK
+        this.isTransferInProgress = false;
+
+        if (this.transferTimeout) {
+          clearTimeout(this.transferTimeout);
+          this.transferTimeout = null;
+        }
+
+        console.log(`${this.logPrefix} 🔓 Transfer lock released`);
+      }
 }
 
   async handleJsonSave(transferredImage) {
-      const id = `${Date.now()}${Math.random().toString(36).substr(2, 9)}`
-      const parentPath = [
-          {
-            _id: this._id,
-            name: "From-mobile-app"
-          },
-          {
-            _id: id,
-            name: transferredImage.filename
-          },
-      ]
-
-      const fileSizeInBytes = transferredImage.size;
-      const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
-      const size = `${fileSizeInMB} MB`
-
-        const fileInfo = {
-            _id: id,
+    try {
+        const fileData = {
+            _id: generateObjectId(),
             name: transferredImage.filename,
-            originalName: transferredImage.filename,
-            path: transferredImage.savedPath,
-            parentId: this._id,
-            parentPath: parentPath,
             type: "file",
-            size,
+            mineType: "",
+            parent: null,
+            url: transferredImage.savedPath,
+            path: [],
+            category: "From Mobile",
+            isOnline: false,
+            size: transferredImage.size,
             isAnnotated: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
         };
 
-      const jsonFilePath = path.join(this.folderPath, 'folders_registry.json');
-        let foldersData = {
-            folders: [],
-            lastUpdated: new Date().toISOString()
-        }
+        const dir = loadPath();
+        await addDataJson(dir, fileData);
 
-        try {
-             // Try to read existing JSON file
-            const fileContent = await fs.promises.readFile(jsonFilePath, 'utf8');
-            foldersData = JSON.parse(fileContent);
+    }
+    catch (error) {
+        console.log('Creating new folders registry file' + error);
+    }
 
-            // Ensure folders array exists
-            if (!Array.isArray(foldersData.folders)) {
-                foldersData.folders = [];
-            }
-        }catch (error) {
-            // File doesn't exist or is invalid, use default structure
-            console.log('Creating new folders registry file');
-        }
-
-        // Add new folder info
-        foldersData.folders.push(fileInfo);
-        foldersData.lastUpdated = new Date().toISOString();
-
-        await fs.promises.writeFile(
-            jsonFilePath,
-            JSON.stringify(foldersData, null, 2),
-            'utf8'
-        );
   }
 
   // Pull image file directly from Android internal storage
   async pullImageFromAndroid(deviceId, transferRequest) {
-    console.log(`${this.logPrefix} ⬇️ Pulling image file: ${transferRequest.filename}`);
+    console.log(`${this.logPrefix} ⬇️ Pulling image file: ${transferRequest.imageTransfer.filename}`);
 
     return new Promise(async (resolve) => {
         const packageName = await this.getAppPackageName(deviceId);
-        const sourcePath = `files/images_to_transfer/${transferRequest.filename}`;
-        const destPath = path.join(this.imageStorageDir, transferRequest.filename);
+        console.log(packageName)
+        const sourcePath = `files/images_to_transfer/${transferRequest.imageTransfer.filename}`;
+        console.log(sourcePath)
+        console.log(this.imageStorageDir)
+        const destPath = path.join(this.imageStorageDir, transferRequest.imageTransfer.filename);
+        console.log(destPath)
 
         console.log(`${this.logPrefix} 📦 Package: ${packageName}`);
         console.log(`${this.logPrefix} 📁 Source: ${sourcePath}`);
@@ -723,11 +698,11 @@ class SimpleAdb {
                 console.log(`${this.logPrefix} ✅ Image pulled successfully: ${stats.size} bytes`);
 
                 // Verify file size matches
-                if (stats.size === transferRequest.fileSize) {
+                if (stats.size === transferRequest.imageTransfer.fileSize) {
                     console.log(`${this.logPrefix} ✅ File size verified`);
                     resolve(true);
                 } else {
-                    console.log(`${this.logPrefix} ⚠️ File size mismatch: expected ${transferRequest.fileSize}, got ${stats.size}`);
+                    console.log(`${this.logPrefix} ⚠️ File size mismatch: expected ${transferRequest.imageTransfer.fileSize}, got ${stats.size}`);
                     resolve(true); // Still consider success, might be compression
                 }
             } else {

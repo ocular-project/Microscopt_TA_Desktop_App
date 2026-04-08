@@ -151,7 +151,6 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
   return handleImagesUpload(result.filePaths)
 })
 
-
 ipcMain.handle('dialog:openOneImagePicker', async () => {
 
   const result = await  dialog.showOpenDialog({
