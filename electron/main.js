@@ -181,7 +181,7 @@ ipcMain.handle('electron:getPath', () => {
   return loadPath();
 });
 
-async function createFolder(name, parentId, _id = generateObjectId()) {
+export async function createFolder(name, parentId, _id = generateObjectId()) {
     const dir = loadPath()
     const data = {
         _id,

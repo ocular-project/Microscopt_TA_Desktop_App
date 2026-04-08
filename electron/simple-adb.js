@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from "path";
 import {loadPath} from "./storage.js";
 import {addDataJson, generateObjectId} from "./fileManagement.js";
+import {createFolder} from "./main.js";
 
 class SimpleAdb {
   // constructor(mainWindow, folderPath, _id, value) {
@@ -632,14 +633,23 @@ class SimpleAdb {
 
   async handleJsonSave(transferredImage) {
     try {
+
+        let folder = await createFolder("from_mobile", null)
+        if (!folder?.success) {
+            throw new Error('Folder creation failed');
+        }
+        folder = folder.data
+        const driveId = folder._id
+        const fullPath = path.join(this.imageStorageDir, "from_mobile", transferredImage.filename)
+
         const fileData = {
             _id: generateObjectId(),
             name: transferredImage.filename,
             type: "file",
             mineType: "",
-            parent: null,
-            url: transferredImage.savedPath,
-            path: [],
+            parent: driveId,
+            url: fullPath,
+            path: [driveId],
             category: "From Mobile",
             isOnline: false,
             size: transferredImage.size,

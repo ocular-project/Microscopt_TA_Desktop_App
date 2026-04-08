@@ -92,6 +92,16 @@ export async function addDataJson(dir, newObject) {
             }
         }
 
+        if (newObject.name === "from_mobile"){
+            const myDrive = data.find(item => item.name === "from_mobile")
+            if (myDrive){
+                return {
+                    success: true,
+                    data: myDrive,
+                }
+            }
+        }
+
         if (newObject.name === "shared_files"){
             const sharedFiles = data.find(item => item.name === "shared_files")
             if (sharedFiles){
