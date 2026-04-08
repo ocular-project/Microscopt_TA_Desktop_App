@@ -1,4 +1,5 @@
 import {execSync, spawn} from 'node:child_process';
+import os from 'os';
 import fs from 'fs'
 import path from "path";
 import {loadPath} from "./storage.js";
@@ -511,56 +512,71 @@ class SimpleAdb {
 
   // Push JSON data to Android app internal storage
   async pushJsonToAppStorage(deviceId, fileName, jsonData) {
-    // console.log(`${this.logPrefix} ⬆️ Pushing ${fileName} to ${deviceId}`);
-    // console.log(`${this.logPrefix} 📄 Data to push:`, jsonData);
+      return new Promise(async (resolve, reject) => {
+        try {
+          const packageName = await this.getAppPackageName(deviceId);
+          const adbPath = this.getAdbPath?.();
 
-    return new Promise(async (resolve, reject) => {
-      const packageName = await this.getAppPackageName(deviceId);
-      const jsonString = JSON.stringify(jsonData, null, 2);
+          if (!adbPath) {
+            console.error(`${this.logPrefix} ❌ ADB not found`);
+            return resolve(false);
+          }
 
-      // console.log(`${this.logPrefix} 📦 Using package: ${packageName}`);
-      // console.log(`${this.logPrefix} 📄 JSON string length: ${jsonString.length} characters`);
+          // ✅ 1. Create temp file
+          const tempFilePath = path.join(os.tmpdir(), fileName);
+          const jsonString = JSON.stringify(jsonData, null, 2);
 
-      // Escape single quotes in JSON for shell command
-      const escapedJson = jsonString.replace(/'/g, "'\"'\"'");
+          fs.writeFileSync(tempFilePath, jsonString, 'utf-8');
 
-      const adbPath = this.getAdbPath?.();
+          // ✅ 2. Push to device temp location
+          const pushProcess = spawn(adbPath, [
+            '-s', deviceId,
+            'push',
+            tempFilePath,
+            `/data/local/tmp/${fileName}`
+          ]);
 
-      if (!adbPath) {
-          console.error(`${this.logPrefix} ❌ ADB not found`);
-          return resolve([]);
-      }
+          pushProcess.on('exit', (pushCode) => {
+            if (pushCode !== 0) {
+              console.error(`${this.logPrefix} ❌ adb push failed`);
+              return reject(new Error('adb push failed'));
+            }
 
-      const adbProcess = spawn(adbPath, ['-s', deviceId, 'shell', `echo '${escapedJson}' | run-as ${packageName} tee files/${fileName} > /dev/null`]);
-      // const adbProcess = spawn('adb', ['-s', deviceId, 'shell', `echo '${escapedJson}' | run-as ${packageName} tee files/${fileName} > /dev/null`]);
-      let errorOutput = '';
+            // ✅ 3. Move into app internal storage
+            const moveProcess = spawn(adbPath, [
+              '-s', deviceId,
+              'shell',
+              `run-as ${packageName} cp /data/local/tmp/${fileName} files/${fileName}`
+            ]);
 
-      adbProcess.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
+            moveProcess.on('exit', (moveCode) => {
+              if (moveCode === 0) {
+                // ✅ 4. Cleanup temp file (optional)
+                spawn(adbPath, [
+                  '-s', deviceId,
+                  'shell',
+                  `rm /data/local/tmp/${fileName}`
+                ]);
 
-      adbProcess.on('exit', (code) => {
-        // console.log(`${this.logPrefix} ⬆️ Push command exit code: ${code}`);
+                resolve(true);
+              } else {
+                console.error(`${this.logPrefix} ❌ Failed to move file into app storage`);
+                reject(new Error('move failed'));
+              }
+            });
+          });
 
-        if (errorOutput) {
-          // console.log(`${this.logPrefix} ⚠️ Push stderr: ${errorOutput}`);
+          pushProcess.on('error', (err) => {
+            console.error(`${this.logPrefix} ❌ Push error:`, err.message);
+            reject(err);
+          });
+
+        } catch (err) {
+          console.error(`${this.logPrefix} ❌ Unexpected error:`, err.message);
+          reject(err);
         }
-
-        if (code === 0) {
-          // console.log(`${this.logPrefix} ✅ Successfully pushed ${fileName}`);
-          resolve(true);
-        } else {
-          console.error(`${this.logPrefix} ❌ Failed to push ${fileName}`);
-          reject(new Error('Failed to write file to app storage'));
-        }
       });
-
-      adbProcess.on('error', (error) => {
-        console.error(`${this.logPrefix} ❌ Push process error:`, error.message);
-        reject(error);
-      });
-    });
-  }
+    }
 
   // Delete file from Android app internal storage
   async deleteFileFromAppStorage(deviceId, fileName) {
@@ -705,6 +721,8 @@ class SimpleAdb {
         // this.mainWindow.webContents.send('image-transfer-success', {
         //   filename: transferRequest.imageTransfer.filename
         // });
+
+        console.log(transferredImage)
 
         return {
           success: true,
