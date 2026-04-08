@@ -18,6 +18,7 @@ import MyComputer from "./components/home/MyComputer.jsx";
 // import DOMPurify from "quill/formats/link.js";
 import DOMPurify from "dompurify";
 import Devices from "./components/home/Devices.jsx";
+import Adb from "./Adb.jsx";
 
 // Update Notification Component
 const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, downloadData, error }) => {
@@ -48,7 +49,7 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
   };
 
   return (
-    <div className="fixed bottom-8 right-8 w-full max-w-sm z-[9999] animate-in fade-in slide-in-from-bottom-10 duration-500">
+    <div className="fixed bottom-8 right-8 w-full max-w-sm z-[999] animate-in fade-in slide-in-from-bottom-10 duration-500">
       <div className="bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden p-6 border border-black/5 shadow-2xl ring-1 ring-black/5">
         {/* Close Button */}
           {
@@ -226,6 +227,7 @@ function App() {
     const [error, setError] = useState(null)
     const [downloadData, setDownloadData] = useState(null)
     const [path, setPath] = useState(null)
+    const [adb, setAdb] = useState(false)
 
     useEffect(() => {
         // Listen for updates from Electron
@@ -256,10 +258,10 @@ function App() {
     async function checkADBInstalled() {
         const res = await window.electronAPI.checkAdbInstalled();
         if (res.success) {
+          setAdb(false)
           console.log("ADB is installed");
-          // const res2 = await window.electronAPI.onSettingPath();
-          // console.log(res2)
         } else {
+          setAdb(true)
           console.error("Error:", res.error);
         }
     }
@@ -286,7 +288,13 @@ function App() {
 
   return (
     // <HashRouter>
-      <div className="min-h-screen">
+      <div className="min-h-screen relative">
+          {
+              adb && (
+                  <Adb />
+              )
+          }
+
         {/*Update Popup Layer*/}
         <UpdatePopup
           updateData={updateInfo}
