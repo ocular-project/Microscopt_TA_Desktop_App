@@ -126,7 +126,7 @@ export default function ImageView(){
            // console.log(response)
            if (response.success){
                const data = response.data
-               console.log(data.file)
+               console.log(response)
                setFile(data.file)
                if (!!data.annotators.length){
                    setAnnotators(data.annotators)
@@ -143,6 +143,7 @@ export default function ImageView(){
                 setInstructions(response2.file)
            }
            else {
+               console.log(response)
                handleMessage(response.error, "error", setMessage)
            }
 

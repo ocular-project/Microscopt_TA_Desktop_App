@@ -30,14 +30,13 @@ import {
 } from './fileManagement.js'
 import ScrcpyManager from "./scrcpy-manager.js";
 import AdbManager from "./adb-manager.js";
-import SimpleAdb from "./simple-adb.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.setVersion(packageJson.version)
 const version= app.getVersion();
-// console.log("APP VERSION:", version);
+console.log("APP VERSION:", version);
 
 const { autoUpdater } = updater;
 autoUpdater.autoDownload = false;
@@ -46,7 +45,6 @@ autoUpdater.forceDevUpdateConfig = true;
 let mainWindow
 const adbManager = new AdbManager();
 const scrcpyManager = new ScrcpyManager();
-let simpleAdbJson
 
 // const gotTheLock = app.requestSingleInstanceLock()
 
@@ -95,23 +93,10 @@ async function createWindow() {
 
 app.whenReady().then(() => {
     createWindow()
-
-    mainWindow.webContents.on("did-finish-load", () => {
-        const dir = loadPath();
-        console.log(dir)
-
-        if (dir) {
-            simpleAdbJson = new SimpleAdb(mainWindow, dir);
-        }
-
-        autoUpdater.checkForUpdates();
-    });
+    autoUpdater.checkForUpdates();
 });
 
 app.on("window-all-closed", () => {
-  if (simpleAdbJson) {
-     simpleAdbJson.stopPolling()
-  }
   if (process.platform !== "darwin") {
       app.quit()
   }
@@ -151,6 +136,7 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
   return handleImagesUpload(result.filePaths)
 })
 
+
 ipcMain.handle('dialog:openOneImagePicker', async () => {
 
   const result = await  dialog.showOpenDialog({
@@ -172,7 +158,6 @@ ipcMain.handle('dialog:openOneImagePicker', async () => {
 
 ipcMain.handle('electron:savePath', (event, folderPath) => {
   savePath(folderPath);
-  simpleAdbJson = new SimpleAdb(mainWindow, folderPath);
   return true;
 });
 
@@ -181,7 +166,7 @@ ipcMain.handle('electron:getPath', () => {
   return loadPath();
 });
 
-export async function createFolder(name, parentId, _id = generateObjectId()) {
+async function createFolder(name, parentId, _id = generateObjectId()) {
     const dir = loadPath()
     const data = {
         _id,
@@ -537,7 +522,7 @@ ipcMain.on("download-update", () => {
 });
 
 autoUpdater.on("update-downloaded", () => {
-  // console.log("Update downloaded successfully");
+  console.log("Update downloaded successfully");
 
   mainWindow.webContents.send("update-status", {
     status: "downloaded",
@@ -546,7 +531,7 @@ autoUpdater.on("update-downloaded", () => {
 });
 
 autoUpdater.on("error", (err) => {
-  // console.error("Update error:", err);
+  console.error("Update error:", err);
 
   mainWindow.webContents.send("update-status", {
     status: "error",

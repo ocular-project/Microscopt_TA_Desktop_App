@@ -112,7 +112,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
         }
 
         else if(location.pathname.startsWith("/sharedFiles")){
-            const fetchData2 = async () => {
+            const fetchDataX = async () => {
                 setLoader(true)
                 const parentId = folderId === 'sharedFiles' ? null : folderId;
                 try{
@@ -136,25 +136,33 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                     setLoader(false)
                 }
             }
-            fetchData2()
+            fetchDataX()
         }
 
         else if(location.pathname.startsWith("/devices")) {
             fetchData3()
         }
 
+        else if(location.pathname.startsWith("/teams")) {
+            // console.log(cat)
+            const fetchDataT = async () => {
+                setLoader(true)
+                try{
+                     const response = await axiosInstance.get('teams');
+                    // console.log(response.data);
+                    setTeams(response.data);
+                }catch (err) {
+                    // console.log(err.response)
+                    const error = err.response?.data?.error || 'An error occurred'
+                    setMessage({show: true, message:  error, status: "error"})
+                }finally {
+                    setLoader(false)
+                }
+            }
+            fetchDataT()
+        }
+
     }, [folderId, isView]);
-
-    useEffect(() => {
-         if (location.pathname === "/teams") {
-              fetchData2()
-         }
-    }, []);
-
-    async function fetchData2() {
-        await fetchTeamsData(setLoader, setTeams, setMessage, setQuota)
-        await refreshQuota(setQuota, setMessage, setLoader)
-    }
 
     const fetchData3 = async () => {
         setLoader(true)
@@ -203,7 +211,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                         }
 
                     </div>
-                ) : cat === "teams" ? (
+                ) : cat === "team" ? (
                     <div className={styles.main2}>
                         {
                              error ? (

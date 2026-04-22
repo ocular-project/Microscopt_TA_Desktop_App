@@ -259,7 +259,7 @@ function App() {
         const res = await window.electronAPI.checkAdbInstalled();
         if (res.success) {
           setAdb(false)
-          console.log("ADB is installed");
+          // console.log("ADB is installed");
         } else {
           setAdb(true)
           console.error("Error:", res.error);

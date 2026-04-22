@@ -744,7 +744,7 @@ class SimpleAdb {
         }
         folder = folder.data
         const driveId = folder._id
-        const fullPath = path.join(this.imageStorageDir, "from_mobile", transferredImage.filename)
+        const fullPath = path.join(this.imageStorageDir, transferredImage.filename)
 
         const fileData = {
             _id: generateObjectId(),
