@@ -334,7 +334,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                             </>
                         ) : cat === "shared" ? (
                             !!checkedIds.length && (
-                                <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds}
+                                <DriveButtons checkedIds={checkedIds} setCheckedIds={setCheckedIds} path={paths}
                                               setMessage={setMessage} setLoader={setLoader} cat={cat} setScreen={setScreen} setIsPop={setIsPop}/>
                             )
                         ) : cat === "team" ? (

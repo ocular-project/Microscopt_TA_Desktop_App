@@ -21,7 +21,7 @@ export const fetchTeamsData = async (setLoader, setTeams, setMessage, setQuota) 
 export async function refreshQuota(setQuota, setMessage, setLoader) {
     try {
         const response = await axiosInstance.get('user/quota')
-        console.log(response.data)
+        // console.log(response.data)
         setQuota(response.data)
     }catch (err) {
         console.log(err)
