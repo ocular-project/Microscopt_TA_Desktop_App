@@ -367,6 +367,8 @@ export async function getDataFile(filePath, fileId, cred) {
             }
         }
 
+        console.log(item)
+        console.log(item.url)
         const exists = await  imageExists(item.url)
         if(!exists){
             return {
@@ -907,6 +909,7 @@ export async function updateFiles(fileList) {
 }
 
 async function validateImageExists(filePath) {
+    console.log(filePath)
     const exists = await imageExists(filePath);
 
     if (!exists) {

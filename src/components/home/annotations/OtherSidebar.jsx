@@ -193,6 +193,10 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
     //     console.log(file)
     // }, [file]);
 
+    // useEffect(() => {
+    //     console.log(file)
+    // }, [file]);
+
 
     return (
         <div className={style.container}>
@@ -248,7 +252,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                    </div>
 
                     {
-                        (cat === "computer") && (
+                        (cat === "computer" && file?.isOnline) && (
                             <div className={styles.imgInfo}>
                                 <div className={styles.header} onClick={() => handleChange("sync", !isOpen.sync)}>
                                    <h3 className={styles.title}>Data Synchronisation</h3>

@@ -1,13 +1,15 @@
 import axiosInstance from "./axiosInstance.js";
 import {handleBack, handleMessage} from "../repeating.js";
 
-export const fetchTeamsData = async (setLoader, setTeams, setMessage) => {
+export const fetchTeamsData = async (setLoader, setTeams, setMessage, setQuota) => {
     setLoader(true);
     try {
         const response = await axiosInstance.get('teams');
         // console.log(response.data);
         setTeams(response.data);
+        await refreshQuota(setQuota, setMessage, setLoader)
     } catch (err) {
+        console.log(err);
         console.log(err.response);
         const error = err.response?.data?.error || 'An error occurred'
         setMessage({show: true, message:  error, status: "error"})
@@ -19,7 +21,7 @@ export const fetchTeamsData = async (setLoader, setTeams, setMessage) => {
 export async function refreshQuota(setQuota, setMessage, setLoader) {
     try {
         const response = await axiosInstance.get('user/quota')
-        // console.log(response)
+        // console.log(response.data)
         setQuota(response.data)
     }catch (err) {
         console.log(err)

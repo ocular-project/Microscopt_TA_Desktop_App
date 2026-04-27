@@ -126,7 +126,7 @@ export default function ImageView(){
            // console.log(response)
            if (response.success){
                const data = response.data
-               console.log(data.file)
+               // console.log(response)
                setFile(data.file)
                if (!!data.annotators.length){
                    setAnnotators(data.annotators)
@@ -143,6 +143,7 @@ export default function ImageView(){
                 setInstructions(response2.file)
            }
            else {
+               // console.log(response)
                handleMessage(response.error, "error", setMessage)
            }
 
@@ -219,7 +220,7 @@ export default function ImageView(){
             <div className={styles.innerContainer2}>
                 <Header setIsClosed={setIsClosed} width={width} setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} other={other}
                      setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} cat={cat} setSync={setSync}
-                    setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back}
+                    setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back} file={file}
                 />
                 {
                     cat === 'computer' && (
