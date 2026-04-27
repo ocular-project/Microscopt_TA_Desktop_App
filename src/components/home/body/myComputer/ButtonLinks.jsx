@@ -166,10 +166,10 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
            const resp = await axiosInstance.post("desktop/files", formData)
            // // console.log(resp.data)
            handleMessage(resp.data.message, "success", setMessage)
-           console.log(resp.data.files)
+           // console.log(resp.data.files)
            const resp2 = await window.electronAPI.updateFiles(resp.data.files)
            if (!resp2.success){
-               console.log(resp2.error)
+               // console.log(resp2.error)
                handleMessage(resp2.error, "warning", setMessage)
                return
            }

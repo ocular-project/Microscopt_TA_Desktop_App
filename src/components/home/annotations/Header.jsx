@@ -9,7 +9,7 @@ import {handleBack, handleMessage} from "../../utils/repeating.js";
 import {RiFeedbackLine} from "react-icons/ri";
 import {useNavigate, useParams} from "react-router-dom";
 
-export default function Header({ setIsClosed, width, setZoom, fitImageToViewport, ZOOM_STEP, other, setShare, back,
+export default function Header({ setIsClosed, width, setZoom, fitImageToViewport, ZOOM_STEP, other, setShare, back, file,
                                    setLoader, setAnnotations, annotations, annotators, setMessage, cred, annotator, cat, setSync }){
 
     const [button, setButton] = useState({ save: false, edit: false, share: false, load: false, finalShare: false, feed: false })
@@ -61,7 +61,9 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                        handleMessage(response.error, "error", setMessage)
                        return
                    }
-                   setSync(true)
+                   if (file.isOnline){
+                       setSync(true)
+                   }
                }
                else {
                    await axiosInstance.post('/save-annotations', obj)
