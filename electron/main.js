@@ -548,7 +548,7 @@ autoUpdater.on("download-progress", (progress) => {
 
 // Manual download
 ipcMain.on("open-download-page", () => {
-  shell.openExternal("https://github.com/ocular-project/Microscopt_TA_Desktop_App/releases/latest");
+  shell.openExternal("https://microscopyteachingaid.ocular-project.com/download/69e764bdbaaa263cbcb8c5aa");
 });
 
 
