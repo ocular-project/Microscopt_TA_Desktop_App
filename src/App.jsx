@@ -33,10 +33,11 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
     //     // Fallback for demo
     //     setTimeout(() => window.location.reload(), 1500);
     // }
+
     if (window.electronAPI?.openDownloadPage) {
         window.electronAPI.openDownloadPage();
     } else {
-        window.open("https://github.com/ocular-project/Microscopt_TA_Desktop_App/releases/latest", "_blank");
+        window.open("https://microscopyteachingaid.ocular-project.com/download/69e764bdbaaa263cbcb8c5aa", "_blank");
     }
   };
 
