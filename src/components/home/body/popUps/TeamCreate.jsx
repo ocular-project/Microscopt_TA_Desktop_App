@@ -8,7 +8,10 @@ import css from "../../../css/general.module.css";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 import AutoDiv from "../autoComplete/AutoDiv.jsx";
 import Users from "../autoComplete/Users.jsx";
-import Warning from "../helpers/Warning.jsx";
+import Warning1 from "../helpers/Warning1.jsx";
+import Warning2 from "../helpers/Warning2.jsx";
+import { X, Info, Download, Upload, CheckCircle2, UserPlus, FileSpreadsheet } from 'lucide-react';
+import * as XLSX from "xlsx";
 
 export default function TeamCreate({ setIsPop, setLoader, setTeams, setMessage, setScreen }){
 
@@ -36,18 +39,18 @@ export default function TeamCreate({ setIsPop, setLoader, setTeams, setMessage, 
         }
     }, [activeTab]);
 
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
-        script.async = true;
-        script.onload = () => setXlsxLoaded(true);
-        document.head.appendChild(script);
-        return () => {
-          if (document.head.contains(script)) {
-            document.head.removeChild(script);
-          }
-        };
-    }, []);
+    // useEffect(() => {
+    //     const script = document.createElement('script');
+    //     script.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+    //     script.async = true;
+    //     script.onload = () => setXlsxLoaded(true);
+    //     document.head.appendChild(script);
+    //     return () => {
+    //       if (document.head.contains(script)) {
+    //         document.head.removeChild(script);
+    //       }
+    //     };
+    // }, []);
 
     const handleCancel = () => {
         setTeam({name: "", users: []})
@@ -151,16 +154,16 @@ export default function TeamCreate({ setIsPop, setLoader, setTeams, setMessage, 
     }, [selectedUsers]);
 
     const downloadSample = () => {
-        if (!window.XLSX) return;
+        // if (!window.XLSX) return;
         const data = [
           { "First Name": "John", "Last Name": "Doe", "Email": "john@example.com" },
           { "First Name": "Jane", "Last Name": "Smith", "Email": "jane@example.com" }
         ];
-        const ws = window.XLSX.utils.json_to_sheet(data);
-        const wb = window.XLSX.utils.book_new();
-        window.XLSX.utils.book_append_sheet(wb, ws, "Team Members");
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Team Members");
         ws['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 25 }];
-        window.XLSX.writeFile(wb, "team_members_template.xlsx");
+        XLSX.writeFile(wb, "team_members_template.xlsx");
     }
 
     const handleFileUpload = (e) => {
