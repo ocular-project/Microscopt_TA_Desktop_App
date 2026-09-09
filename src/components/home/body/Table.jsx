@@ -168,7 +168,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
         setLoader(true)
         try{
             const response = await window.electronAPI.getConnectedDevices();
-            console.log(response)
+            // console.log(response)
             if (!response.success) {
                  setError(response.error);
                  return

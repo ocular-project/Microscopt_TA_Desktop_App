@@ -30,6 +30,7 @@ import {
 } from './fileManagement.js'
 import ScrcpyManager from "./scrcpy-manager.js";
 import AdbManager from "./adb-manager.js";
+import SimpleAdb from "./simple-adb.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +46,7 @@ autoUpdater.forceDevUpdateConfig = true;
 let mainWindow
 const adbManager = new AdbManager();
 const scrcpyManager = new ScrcpyManager();
+let simpleAdbJson
 
 // const gotTheLock = app.requestSingleInstanceLock()
 
@@ -93,10 +95,23 @@ async function createWindow() {
 
 app.whenReady().then(() => {
     createWindow()
-    autoUpdater.checkForUpdates();
+    // autoUpdater.checkForUpdates();
+    mainWindow.webContents.on("did-finish-load", () => {
+        const dir = loadPath();
+        console.log(dir)
+
+        if (dir) {
+            simpleAdbJson = new SimpleAdb(mainWindow, dir);
+        }
+
+        autoUpdater.checkForUpdates();
+    });
 });
 
 app.on("window-all-closed", () => {
+   if (simpleAdbJson) {
+     simpleAdbJson.stopPolling()
+  }
   if (process.platform !== "darwin") {
       app.quit()
   }
@@ -166,7 +181,7 @@ ipcMain.handle('electron:getPath', () => {
   return loadPath();
 });
 
-async function createFolder(name, parentId, _id = generateObjectId()) {
+export async function createFolder(name, parentId, _id = generateObjectId()) {
     const dir = loadPath()
     const data = {
         _id,
