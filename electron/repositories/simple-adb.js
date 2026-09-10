@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from "path";
 import {loadPath} from "./storage.js";
 import {addDataJson, generateObjectId} from "./fileManagement.js";
-import {createFolder} from "./main.js";
+import {createFolder} from "../main.js";
 
 class SimpleAdb {
   // constructor(mainWindow, folderPath, _id, value) {

@@ -24,6 +24,12 @@
     "directories": {
       "output": "dist_electron"
     },
+    "extraResources": [
+      {
+        "from": "runtimes/mac-arm64/python",
+        "to": "python"
+      }
+    ],
     "win": {
       "target": [
         {

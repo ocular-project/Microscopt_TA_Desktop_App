@@ -1,3 +1,6 @@
 dist/
 dist_electron/
 node_modules/
+runtimes/
+
+.env

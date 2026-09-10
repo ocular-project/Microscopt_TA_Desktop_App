@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain, dialog, session, protocol, shell} from "electron";
 import updater from "electron-updater";
+import { spawn } from "child_process";
 import path from "path";
 import packageJson from "../package.json" with { type: "json" };
 import fs from 'fs'
 import { fileURLToPath } from "url";
-import { savePath, loadPath } from './storage.js'
+import { savePath, loadPath } from './repositories/storage.js'
 import unzipper from "unzipper"
 import {
     addDataJson,
@@ -27,10 +28,12 @@ import {
     saveFeedback, saveInstructions,
     transferFile,
     transferFiles, updateFiles
-} from './fileManagement.js'
-import ScrcpyManager from "./scrcpy-manager.js";
-import AdbManager from "./adb-manager.js";
-import SimpleAdb from "./simple-adb.js"
+} from './repositories/fileManagement.js'
+import ScrcpyManager from "./repositories/scrcpy-manager.js";
+import AdbManager from "./repositories/adb-manager.js";
+import SimpleAdb from "./repositories/simple-adb.js"
+import PythonRepository from "./repositories/PythonRepository.js";
+import PythonDependencyRepository from "./repositories/PythonDependencyRepository.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,15 +50,19 @@ let mainWindow
 const adbManager = new AdbManager();
 const scrcpyManager = new ScrcpyManager();
 let simpleAdbJson
+const pythonRepository = new PythonRepository();
 
-// const gotTheLock = app.requestSingleInstanceLock()
+const pythonValid = await pythonRepository.isValid();
+if (pythonValid) {
+  const dependencyRepository = new PythonDependencyRepository(
+    pythonRepository
+  );
 
-// if (!gotTheLock) {
-//   app.quit()
-// } else {
-//   // rest of your main.js code goes here
-//   app.whenReady().then(createWindow)
-// }
+  await dependencyRepository.installMissingPackages();
+
+  console.log("Python environment is ready.");
+}
+
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
