@@ -32,7 +32,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, AVAILABLE_MODELS,
               sidebarOpen ? 'w-full md:w-80 lg:w-96' : 'w-0 md:w-0'
             } transition-all duration-300 ease-in-out bg-white border-r border-gray-200 flex flex-col h-full z-20 shrink-0 overflow-hidden shadow-sm`}
         >
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white shadow-xs">
               <div className="flex items-center gap-2">
                 <img src={getAssetPath('images/logo.png')}  alt="" className="w-[40px] h-[45px]" />
                 {/*<ActivityIcon className="w-4 h-4 text-[#F69220] animate-pulse" />*/}
