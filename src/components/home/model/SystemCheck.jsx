@@ -115,6 +115,10 @@ export default function SystemCheck({ setSystemCheck }){
       addLog("[OK] All Python dependencies are installed.");
       setInstallProgress(100);
       setStatus("PACKAGES_OK");
+      setTimeout(() => {
+          handleProceed()
+      }, 500)
+
       return result;
     }
 
@@ -383,6 +387,10 @@ export default function SystemCheck({ setSystemCheck }){
     setTimeout(() => setCopiedLog(false), 2000);
   };
 
+  const handleProceed = () => {
+      setSystemCheck(false)
+  }
+
     return (
         <div className="text-slate-800 font-sans flex flex-col justify-between selection:bg-[#FEF3E7] selection:text-[#F69220]">
             <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -538,7 +546,7 @@ export default function SystemCheck({ setSystemCheck }){
                               <PackageSearch className="w-8 h-8" />
                             </div>
                           </div>
-                          <h2 className="text-xl font-bold text-slate-900 mb-2">Auditing Python Packages</h2>
+                          <h2 className="text-lg font-bold text-slate-900 mb-2">Auditing Python Packages</h2>
                           <p className="text-slate-500 text-sm max-w-md mb-6">
                             Analyzing installed modules in site-packages and verifying version compatibility against application requirements...
                           </p>
@@ -585,13 +593,13 @@ export default function SystemCheck({ setSystemCheck }){
                             </div>
                           </div>
 
-                          <button
-                            onClick={() => alert("Launching application main workspace...")}
-                            className="text-sm px-4 py-3 bg-[#F69220] hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center gap-2 group"
-                          >
-                            Proceed to Image Analysis
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                          </button>
+                          {/*<button*/}
+                          {/*  onClick={handleProceed}*/}
+                          {/*  className="text-sm px-4 py-3 bg-[#F69220] hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center gap-2 group"*/}
+                          {/*>*/}
+                          {/*  Proceed to Image Analysis*/}
+                          {/*  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />*/}
+                          {/*</button>*/}
                         </div>
                     )}
 
@@ -695,7 +703,7 @@ export default function SystemCheck({ setSystemCheck }){
                             All missing Python packages were fetched and verified successfully. Your system is now fully compatible.
                           </p>
                           <button
-                            onClick={() => alert("Starting main application workspace...")}
+                            onClick={handleProceed}
                             className="text-sm px-4 py-3 bg-[#F69220] hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2"
                           >
                             Proceed to Image Analysis <ChevronRight className="w-5 h-5" />

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import Sidebar from "./Sidebar.jsx";
 import SystemCheck from "./SystemCheck.jsx";
+import ImageView from "./ImageView.jsx";
 
 const AVAILABLE_MODELS = [
   {
@@ -106,20 +107,72 @@ export default function ModelAnalyzer(){
 
   const [systemCheck, setSystemCheck] = useState(true)
 
+  useEffect(() => {
+    if(!systemCheck){
+      setSidebarOpen(true)
+    }
+  }, [systemCheck]);
+
     return (
+
         <div className="h-screen w-screen max-h-screen max-w-screen overflow-hidden bg-slate-100 flex flex-col md:flex-row box-border relative select-none">
-            <Sidebar setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} currentImage={currentImage}
-                     AVAILABLE_MODELS={AVAILABLE_MODELS} selectedModel={selectedModel} setSelectedModel={setSelectedModel}
-            />
+          {/* System Check */}
+          <div
+              className={`
+                  absolute inset-0 z-50
+                  transition-all duration-700 ease-in-out
+                  ${systemCheck
+                      ? "opacity-100 translate-x-0 pointer-events-auto"
+                      : "opacity-0 -translate-x-full pointer-events-none"
+                  }
+              `}
+          >
+              <SystemCheck setSystemCheck={setSystemCheck} />
+          </div>
 
-          <main className="flex-1 min-w-0 relative">
-            {
-              systemCheck && (
-                  <SystemCheck setSystemCheck={setSystemCheck}/>
-              )
-            }
-          </main>
+          {/* Application */}
+          <div
+              className={`
+                  flex w-full h-full
+                  transition-all duration-700 ease-in-out
+                  ${systemCheck
+                      ? "opacity-0 translate-x-8"
+                      : "opacity-100 translate-x-0"
+                  }
+              `}
+          >
+              <Sidebar
+                  setSidebarOpen={setSidebarOpen}
+                  sidebarOpen={sidebarOpen}
+                  currentImage={currentImage}
+                  AVAILABLE_MODELS={AVAILABLE_MODELS}
+                  selectedModel={selectedModel}
+                  setSelectedModel={setSelectedModel}
+              />
 
+              <main className="flex-1 min-w-0 relative">
+                  <ImageView />
+              </main>
+          </div>
         </div>
+
+        // <div className="h-screen w-screen max-h-screen max-w-screen overflow-hidden bg-slate-100 flex flex-col md:flex-row box-border relative select-none">
+        //     <Sidebar setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} currentImage={currentImage}
+        //              AVAILABLE_MODELS={AVAILABLE_MODELS} selectedModel={selectedModel} setSelectedModel={setSelectedModel}
+        //     />
+        //
+        //   <main className="flex-1 min-w-0 relative">
+        //     {
+        //       systemCheck ? (
+        //           <SystemCheck setSystemCheck={setSystemCheck}/>
+        //       ) : (
+        //           <div>
+        //             sdfnidsfhihfidohfisdhfiudsfjsdfidfdsddfijsdfdfdfsdfd
+        //           </div>
+        //       )
+        //     }
+        //   </main>
+        //
+        // </div>
     )
 }
