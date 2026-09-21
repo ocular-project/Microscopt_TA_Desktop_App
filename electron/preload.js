@@ -55,4 +55,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // removeImageTransfer: (listener) => {
     //     ipcRenderer.removeListener("image-transfer-success", listener);
     // }
+
+    // Python
+    check: () => ipcRenderer.invoke("python:check"),
+    checkPackages: () => ipcRenderer.invoke("python:check-packages"),
+    checkInternet: () => ipcRenderer.invoke("python:check-internet"),
+    installPackages: (packages) => ipcRenderer.invoke("python:install-packages", packages),
+    onInstallProgress: (callback) => {
+        const listener = (_event, data) => {
+          callback(data);
+        };
+
+        ipcRenderer.on("python:install-progress", listener);
+
+        return () => {
+          ipcRenderer.removeListener(
+            "python:install-progress",
+            listener
+          );
+        };
+    },
 })

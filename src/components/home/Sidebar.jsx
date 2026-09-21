@@ -22,7 +22,7 @@ export default function Sidebar({ cat, config, quota }){
       const isDev = process.env.NODE_ENV === 'development';
 
       return isDev ? `/${relativePath}` : `./${relativePath}`;
-    };
+   };
 
     useEffect(() => {
         const currentPath = location.pathname

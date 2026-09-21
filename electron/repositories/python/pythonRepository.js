@@ -14,6 +14,7 @@ class PythonRepository {
       __dirname,
       "..",
       "..",
+      "..",
       "runtimes",
       "mac-arm64",
       "python",

@@ -19,6 +19,7 @@ import MyComputer from "./components/home/MyComputer.jsx";
 import DOMPurify from "dompurify";
 import Devices from "./components/home/Devices.jsx";
 import Adb from "./Adb.jsx";
+import ModelAnalyzer from "./components/home/model/ModelAnalyzer.jsx";
 
 // Update Notification Component
 const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, downloadData, error }) => {
@@ -156,32 +157,32 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
 function AppRoutes({ path, setPath }) {
     return (
         <Routes>
-        {
-            configg() ? (
-                <>
-                    <Route path="/:folderId?"
-                           element={
-                               <MyComputer path={path} setPath={setPath}/>
-                           }
-                    />
-                    <Route path="/collaboration/:folderId?"
-                           element={
-                               <ProtectedRoute>
-                                   <Folder path={path} setPath={setPath}/>
-                               </ProtectedRoute>
-                           }
-                    />
-                </>
-            ) : (
-                <Route path="/:folderId?"
-                       element={
-                           <ProtectedRoute>
-                               <Folder path={path} setPath={setPath}/>
-                           </ProtectedRoute>
-                       }
-                />
-            )
-        }
+        {/*{*/}
+        {/*    configg() ? (*/}
+        {/*        <>*/}
+        {/*            <Route path="/:folderId?"*/}
+        {/*                   element={*/}
+        {/*                       <MyComputer path={path} setPath={setPath}/>*/}
+        {/*                   }*/}
+        {/*            />*/}
+        {/*            <Route path="/collaboration/:folderId?"*/}
+        {/*                   element={*/}
+        {/*                       <ProtectedRoute>*/}
+        {/*                           <Folder path={path} setPath={setPath}/>*/}
+        {/*                       </ProtectedRoute>*/}
+        {/*                   }*/}
+        {/*            />*/}
+        {/*        </>*/}
+        {/*    ) : (*/}
+        {/*        <Route path="/:folderId?"*/}
+        {/*               element={*/}
+        {/*                   <ProtectedRoute>*/}
+        {/*                       <Folder path={path} setPath={setPath}/>*/}
+        {/*                   </ProtectedRoute>*/}
+        {/*               }*/}
+        {/*        />*/}
+        {/*    )*/}
+        {/*}*/}
 
         <Route path="/teams"
                element={
@@ -217,6 +218,8 @@ function AppRoutes({ path, setPath }) {
 
         <Route path="/forgot_password" element={<Forgot />} />
         <Route path="/reset_password/:userId?" element={<Reset />} />
+
+       <Route path="/" element={<ModelAnalyzer/>}/>
 
     </Routes>
     )

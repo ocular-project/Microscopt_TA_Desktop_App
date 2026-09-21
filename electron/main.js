@@ -29,11 +29,14 @@ import {
     transferFile,
     transferFiles, updateFiles
 } from './repositories/fileManagement.js'
+import https from "https";
+
+import { runInference } from "./repositories/inference.js"
 import ScrcpyManager from "./repositories/scrcpy-manager.js";
 import AdbManager from "./repositories/adb-manager.js";
 import SimpleAdb from "./repositories/simple-adb.js"
-import PythonRepository from "./repositories/PythonRepository.js";
-import PythonDependencyRepository from "./repositories/PythonDependencyRepository.js";
+import PythonRepository from "./repositories/python/pythonRepository.js";
+import PythonDependencyRepository from "./repositories/python/pythonDependencyRepository.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,16 +55,40 @@ const scrcpyManager = new ScrcpyManager();
 let simpleAdbJson
 const pythonRepository = new PythonRepository();
 
-const pythonValid = await pythonRepository.isValid();
-if (pythonValid) {
-  const dependencyRepository = new PythonDependencyRepository(
-    pythonRepository
-  );
-
-  await dependencyRepository.installMissingPackages();
-
-  console.log("Python environment is ready.");
-}
+// const pythonValid = await pythonRepository.isValid();
+// if (pythonValid) {
+//   const dependencyRepository = new PythonDependencyRepository(
+//     pythonRepository
+//   );
+//
+//   await dependencyRepository.installMissingPackages();
+//
+//   console.log("Python environment is ready.");
+//
+//   const inferencePath = path.join(
+//     __dirname,
+//     "..",
+//     "python",
+//     "inference.py"
+//   );
+//
+//   console.log("Inference script:", inferencePath);
+//
+//   const imagePath = "/Users/chodry/Desktop/images.jpg";
+//
+//   try {
+//     const result = await runInference(
+//       pythonRepository.pythonPath,
+//       inferencePath,
+//       imagePath
+//     );
+//
+//     console.log("Python result:", result);
+//   } catch (error) {
+//     console.error("Inference error:", error);
+//   }
+//
+// }
 
 
 async function createWindow() {
@@ -581,4 +608,146 @@ ipcMain.handle('check-adb-installed', async () => {
 
 ipcMain.handle('get-devices', async () => {
   return await adbManager.getDevices();
+});
+
+// Python handlers
+ipcMain.handle("python:check", async () => {
+    // const pythonRepository = new PythonRepository()
+
+    const exists = pythonRepository.exists()
+    console.log(exists)
+
+    if (!exists) {
+        return {
+            exists: false
+        }
+    }
+
+    try {
+        const version = await pythonRepository.getVersion()
+
+        return {
+            exists: true,
+            version
+        }
+    } catch (error) {
+        return {
+            exists: true,
+            version: null,
+            error: error.message
+        }
+    }
+})
+
+ipcMain.handle("python:check-packages", async () => {
+  // const pythonRepository = new PythonRepository();
+
+  if (!pythonRepository.exists()) {
+    return {
+      success: false,
+      error: "Python runtime not found.",
+    };
+  }
+
+  const dependencyRepository = new PythonDependencyRepository(
+    pythonRepository
+  );
+
+  const packages = await dependencyRepository.getPackageStatus();
+
+  const missing = packages.filter(
+    (packageItem) => !packageItem.installed
+  );
+
+  return {
+    success: true,
+    packages,
+    missing,
+    allInstalled: missing.length === 0,
+  };
+});
+
+ipcMain.handle("python:install-packages", async (event, packages) => {
+  // const pythonRepository = new PythonRepository();
+
+  if (!pythonRepository.exists()) {
+    return {
+      success: false,
+      error: "Python runtime not found.",
+    };
+  }
+
+  if (!Array.isArray(packages) || packages.length === 0) {
+    return {
+      success: true,
+      results: [],
+      message: "No packages need to be installed.",
+    };
+  }
+
+  const dependencyRepository = new PythonDependencyRepository(
+    pythonRepository
+  );
+
+  try {
+    const results = await dependencyRepository.installPackages(
+      packages,
+      (progress) => {
+        event.sender.send("python:install-progress", progress);
+      }
+    );
+
+    const failed = results.filter(
+      (result) => result.status === "failed"
+    );
+
+    return {
+      success: failed.length === 0,
+      results,
+      installed: results.filter(
+        (result) => result.status === "success"
+      ),
+      failed,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+});
+
+ipcMain.handle("python:check-internet", async () => {
+  return new Promise((resolve) => {
+    const request = https.get(
+      "https://www.google.com",
+      {
+        timeout: 5000,
+      },
+      (response) => {
+        response.resume();
+
+        resolve({
+          success: response.statusCode >= 200 && response.statusCode < 400,
+          statusCode: response.statusCode,
+        });
+      }
+    );
+
+    request.on("error", (error) => {
+      resolve({
+        success: false,
+        error: error.message,
+      });
+    });
+
+    request.on("timeout", () => {
+      request.destroy();
+
+      resolve({
+        success: false,
+        error: "Internet connection timed out.",
+      });
+    });
+  });
 });
