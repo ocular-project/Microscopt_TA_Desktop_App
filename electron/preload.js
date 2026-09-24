@@ -62,6 +62,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkPackages: () => ipcRenderer.invoke("python:check-packages"),
     checkInternet: () => ipcRenderer.invoke("python:check-internet"),
     installPackages: (packages) => ipcRenderer.invoke("python:install-packages", packages),
+    runInference: (imagePath) => ipcRenderer.invoke("python:run-inference", imagePath),
     onInstallProgress: (callback) => {
         const listener = (_event, data) => {
           callback(data);

@@ -78,11 +78,8 @@ const AVAILABLE_MODELS = [
 
 export default function ModelAnalyzer(){
 
-  const [modalResponse, setModalResponse] = useState(null);
-  const [zoom, setZoom] = useState(1);
 
-  // View Mode state: 'single' or 'grid'
-  const [viewMode, setViewMode] = useState('single');
+  const [zoom, setZoom] = useState(1);
 
   const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0]);
   const [sidebarOpen, setSidebarOpen] = useState(false);

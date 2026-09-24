@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 import { savePath, loadPath } from './repositories/storage.js'
 import unzipper from "unzipper"
 import {
-    addDataJson,
+    addDataJson, convertFilePathToBase64,
     createPhysicalFolder,
     deleteFile,
     generateObjectId,
@@ -38,6 +38,7 @@ import AdbManager from "./repositories/adb-manager.js";
 import SimpleAdb from "./repositories/simple-adb.js"
 import PythonRepository from "./repositories/python/pythonRepository.js";
 import PythonDependencyRepository from "./repositories/python/pythonDependencyRepository.js";
+import PythonInferenceRepository from "./repositories/python/pythonInferenceRepository.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -191,34 +192,7 @@ ipcMain.handle("dialog:openImage", async () => {
 
     const filePath = result.filePaths[0];
 
-    const [buffer, fileStats] = await Promise.all([
-        readFile(filePath),
-        stat(filePath)
-    ]);
-
-    const extension = path
-        .extname(filePath)
-        .toLowerCase()
-        .replace(".", "");
-
-    const mimeTypes = {
-        jpg: "image/jpeg",
-        jpeg: "image/jpeg",
-        png: "image/png",
-        webp: "image/webp",
-        bmp: "image/bmp"
-    };
-
-    const mimeType = mimeTypes[extension] || "application/octet-stream";
-
-    const base64 = buffer.toString("base64");
-
-    return {
-        path: filePath,
-        size: fileStats.size,
-        name: path.basename(filePath),
-        url: `data:${mimeType};base64,${base64}`
-    };
+    return convertFilePathToBase64(filePath)
 });
 
 ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
@@ -236,9 +210,8 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
 
   if (result.canceled) return [];
   // console.log(parentId)
-  return handleImagesUpload(result.filePaths)
+  return await handleImagesUpload(result.filePaths)
 })
-
 
 ipcMain.handle('dialog:openOneImagePicker', async () => {
 
@@ -263,7 +236,6 @@ ipcMain.handle('electron:savePath', (event, folderPath) => {
   savePath(folderPath);
   return true;
 });
-
 
 ipcMain.handle('electron:getPath', () => {
   return loadPath();
@@ -805,3 +777,30 @@ ipcMain.handle("python:check-internet", async () => {
     });
   });
 });
+
+ipcMain.handle("python:run-inference", async (_event, imagePath) => {
+    // const pythonRepository = new PythonRepository();
+
+    if (!pythonRepository.exists()) {
+      return {
+        success: false,
+        error: "Python runtime not found."
+      };
+    }
+
+    try {
+      const inferenceRepository =
+        new PythonInferenceRepository(
+          pythonRepository
+        );
+
+      return await inferenceRepository.runInference(imagePath);
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);

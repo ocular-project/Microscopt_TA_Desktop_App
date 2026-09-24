@@ -1,19 +1,27 @@
 import {
+    AlertTriangleIcon,
+    CheckCircleIcon,
     FileImageIcon, FolderOpenIcon,
     GridIcon,
-    ImageIcon,
+    ImageIcon, LayersIcon,
     Loader2,
-    PanelLeftOpenIcon,
+    PanelLeftOpenIcon, PlayIcon,
     RotateCcwIcon,
-    UploadIcon,
+    UploadIcon, ZapIcon,
     ZoomInIcon,
     ZoomOutIcon
 } from "lucide-react";
 import {useEffect, useLayoutEffect, useRef, useState} from "react";
 import {formatFileSize, selectImage} from "./utils.js";
 
+const SpinnerIcon = ({ className = "w-4 h-4" }) => (
+  <Loader2 className={`animate-spin ${className}`} />
+);
+
 export default function ImageView({ sidebarOpen, activeImageList, setSidebarOpen, selectedModel, currentImage, setCurrentImage, setIsSourceModalOpen, image }){
 
+    const [modalResponse, setModalResponse] = useState(null);
+    const [responseTab, setResponseTab] = useState('visual'); // 'visual' | 'json'
     const [viewMode, setViewMode] = useState('single')
     const [status, setStatus] = useState('idle'); // 'idle' | 'running' | 'batch-seq' | 'batch-parallel' | 'success' | 'error'
     // Batch Processing State
@@ -211,6 +219,54 @@ export default function ImageView({ sidebarOpen, activeImageList, setSidebarOpen
             processImageFile(image);
         }
     }, [image]);
+
+    async function handleRunModel() {
+        if (!currentImage) return;
+        setStatus('running');
+        setModalResponse(null);
+
+        console.log(currentImage)
+        const result = await window.electronAPI.runInference(currentImage.metadata.sourceUrl)
+
+        console.log(result)
+
+        if(!result.success){
+            setStatus('error');
+            setModalResponse({
+              code: 'INFERENCE_ERROR (400)',
+              message: result.error
+            });
+            return
+        }
+
+        setStatus('success');
+        setModalResponse(result);
+
+        // setTimeout(() => {
+        //   const isSuccess = Math.random() > 0.2;
+        //
+        //   if (isSuccess) {
+        //     setStatus('success');
+        //     setModalResponse({
+        //       title: 'Model Execution Complete',
+        //       confidence: selectedModel.accuracy,
+        //       message: `Inference successful. ${selectedModel.name} processed the image and detected key patterns for ${selectedModel.category}.`
+        //     });
+        //   } else {
+        //     setStatus('error');
+        //     setModalResponse({
+        //       code: 'ERR_INFERENCE_TIMEOUT (504)',
+        //       message: 'Failed to process image tensor. The server experienced an unexpected worker timeout.'
+        //     });
+        //   }
+        // }, 1800);
+
+    }
+
+    const closeModal = () => {
+        setStatus('idle');
+        setModalResponse(null);
+    };
     
     return (
         <>
@@ -259,7 +315,7 @@ export default function ImageView({ sidebarOpen, activeImageList, setSidebarOpen
             {/* Batch Processing Indicator Banner */}
             {(status === 'batch-seq' || status === 'batch-parallel') && (
               <div className="absolute top-16 z-30 bg-gray-900/95 text-white backdrop-blur-md px-4 py-2.5 rounded-xl shadow-xl border border-gray-700 flex items-center gap-3 text-xs font-medium animate-bounce">
-                <Loader2 className="w-4 h-4 text-[#F69220] animate-spin" />
+                <SpinnerIcon className="w-4 h-4 text-[#F69220]" />
                 {status === 'batch-seq' ? (
                   <span>Running {selectedModel.name} One by One (Image {batchCurrentIndex} of {activeImageList?.length})</span>
                 ) : (
@@ -369,6 +425,239 @@ export default function ImageView({ sidebarOpen, activeImageList, setSidebarOpen
                       </div>
                     )}
                   </div>
+            )}
+
+            {/* Model Run Control Bar */}
+            <div className="w-full max-w-2xl shrink-0 mt-3 flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <button
+                    onClick={handleRunModel}
+                    disabled={!currentImage || status.startsWith('batch-') || status === 'running'}
+                    className="flex-1 py-2.5 px-4 bg-[#F69220] hover:bg-[#e07f15] disabled:bg-gray-300 text-white font-semibold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    {status === 'running' ? (
+                      <SpinnerIcon className="w-4 h-4 text-white" />
+                    ) : (
+                      <PlayIcon className="w-4 h-4 fill-current" />
+                    )}
+                    {status === 'running' ? `Running...` : `Run on current image`}
+                </button>
+
+                <button
+                    // onClick={handleRunBatchSequential}
+                    disabled={!activeImageList || activeImageList?.length === 0 || status.startsWith('batch-') || status === 'running'}
+                    className="py-2.5 px-3.5 bg-slate-800 hover:bg-slate-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold rounded-xl shadow-md transition-colors flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:cursor-not-allowed shrink-0"
+                    title={`Run model sequentially (one by one) across all ${activeImageList?.length} images`}
+                  >
+                    {status === 'batch-seq' ? (
+                      <SpinnerIcon className="w-4 h-4 text-[#F69220]" />
+                    ) : (
+                      <LayersIcon className="w-4 h-4 text-[#F69220]" />
+                    )}
+                    <span>Run on all (one by one)</span>
+                </button>
+
+                <button
+                    // onClick={handleRunBatchParallel}
+                    disabled={!activeImageList || activeImageList?.length === 0 || status.startsWith('batch-') || status === 'running'}
+                    className="py-2.5 px-3.5 bg-gradient-to-r from-gray-900 to-slate-800 hover:from-black hover:to-slate-900 disabled:opacity-50 text-white font-semibold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:cursor-not-allowed shrink-0 border border-slate-700"
+                    title={`Run model simultaneously on all ${activeImageList?.length} images at once`}
+                  >
+                    {status === 'batch-parallel' ? (
+                      <SpinnerIcon className="w-4 h-4 text-[#F69220]" />
+                    ) : (
+                      <ZapIcon className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    )}
+                    <span>Run on all (at once)</span>
+                  </button>
+            </div>
+
+            {(status === 'success' || status === 'error') && modalResponse && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-gray-100 flex flex-col items-center text-center">
+                  {status === 'success' ? (
+                    <>
+                      <div className="w-12 h-12 rounded-full bg-[#FEF3E7] text-[#F69220] flex items-center justify-center mb-3 border border-[#F69220]/30">
+                        <CheckCircleIcon className="w-6 h-6 text-[#F69220]" />
+                      </div>
+                      <h3 className="text-base font-bold text-gray-900 mb-1">Inference Execution Complete</h3>
+                      <p className="text-xs text-gray-500 font-mono mb-3 truncate max-w-xs" title={modalResponse.image}>
+                        Path: {modalResponse.image}
+                      </p>
+
+                      {/* Response Format View Switcher */}
+                      <div className="w-full flex bg-gray-100 p-1 rounded-xl mb-4 text-xs font-semibold">
+                        <button
+                          onClick={() => setResponseTab('visual')}
+                          className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                            responseTab === 'visual'
+                              ? 'bg-white text-gray-900 shadow-2xs font-bold'
+                              : 'text-gray-500 hover:text-gray-800'
+                          }`}
+                        >
+                          Predictions ({modalResponse.predictions?.length || 0})
+                        </button>
+                        <button
+                          onClick={() => setResponseTab('json')}
+                          className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                            responseTab === 'json'
+                              ? 'bg-white text-gray-900 shadow-2xs font-bold'
+                              : 'text-gray-500 hover:text-gray-800'
+                          }`}
+                        >
+                          Model Output JSON
+                        </button>
+                      </div>
+
+                      {responseTab === 'visual' ? (
+                        <div className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 text-left space-y-3">
+                          {/* Top-1 Callout */}
+                          {modalResponse.predictions?.[0] && (
+                            <div className="p-2.5 bg-[#FEF3E7] border border-[#F69220]/40 rounded-lg flex items-center justify-between">
+                              <div>
+                                <span className="text-[10px] uppercase font-bold text-[#F69220] tracking-wider block">
+                                  Top-1 Classification
+                                </span>
+                                <span className="text-xs font-bold text-gray-900">
+                                  {modalResponse.predictions[0].class}
+                                </span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-sm font-extrabold text-[#F69220]">
+                                  {modalResponse.predictions[0].confidencePercent}%
+                                </span>
+                                <span className="text-[10px] font-mono text-gray-500 block">
+                                  val: {modalResponse.predictions[0].confidence}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Prediction List */}
+                          <div className="space-y-2">
+                            <span className="text-[11px] font-bold text-gray-700 block">
+                              Class Probabilities:
+                            </span>
+                            {modalResponse.predictions?.map((pred, idx) => (
+                              <div key={idx} className="space-y-1">
+                                <div className="flex justify-between text-[11px]">
+                                  <span className="font-medium text-gray-800 truncate pr-2">
+                                    {idx + 1}. {pred.class}
+                                  </span>
+                                  <span className="font-mono text-gray-600 font-semibold shrink-0">
+                                    {pred.confidencePercent}% ({pred.confidence})
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                      idx === 0 ? 'bg-[#F69220]' : 'bg-gray-400'
+                                    }`}
+                                    style={{ width: `${pred.confidencePercent}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full bg-gray-900 text-emerald-400 p-3 rounded-xl mb-4 text-left overflow-x-auto max-h-56 font-mono text-[11px] border border-gray-800 shadow-inner">
+                          <pre>{JSON.stringify(modalResponse, null, 2)}</pre>
+                        </div>
+                      )
+                    }
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-3">
+                        <AlertTriangleIcon className="w-6 h-6 text-rose-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">Server Error</h3>
+                      <p className="text-xs font-mono text-rose-600 font-semibold mb-2">{modalResponse.code}</p>
+                      <div className="w-full bg-rose-50 border border-rose-100 rounded-xl p-3 mb-4 text-left">
+                        <p className="text-xs text-rose-700">{modalResponse.message}</p>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex items-center gap-3 w-full">
+                    {status === 'error' && (
+                      <button
+                        onClick={handleRunModel}
+                        className="flex-1 py-2.5 px-4 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                      >
+                        Retry
+                      </button>
+                    )}
+                    <button
+                      onClick={closeModal}
+                      className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showBatchSummaryModal && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-gray-100 flex flex-col">
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
+                    <div className="flex items-center gap-2">
+                      <LayersIcon className="w-5 h-5 text-[#F69220]" />
+                      <h3 className="text-base font-semibold text-gray-900">Batch Processing Summary</h3>
+                    </div>
+                    <span className="text-xs font-mono bg-[#FEF3E7] text-[#F69220] px-2.5 py-1 rounded-full font-semibold border border-[#F69220]/20">
+                      {selectedModel.name}
+                    </span>
+                  </div>
+
+                  <div className="max-h-60 overflow-y-auto space-y-2 mb-5 pr-1">
+                    {activeImageList.map((imgItem, idx) => {
+                      const res = batchResults[idx];
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            // handleInspectImage(imgItem);
+                            setShowBatchSummaryModal(false);
+                          }}
+                          className="p-2.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between text-xs hover:border-[#F69220] cursor-pointer transition-all"
+                        >
+                          <div className="truncate pr-2">
+                            <div className="font-semibold text-gray-800 truncate">{imgItem.name}</div>
+                            <div className="text-[10px] text-gray-500 font-mono">
+                              {imgItem.isPortrait ? 'Portrait 3:4' : 'Landscape 16:9'} • {imgItem.path}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {res ? (
+                              res.status === 'success' ? (
+                                <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                  <CheckCircleIcon className="w-3.5 h-3.5" /> {res.confidence}
+                                </span>
+                              ) : (
+                                <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                  <AlertTriangleIcon className="w-3.5 h-3.5" /> Failed
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-gray-400 font-mono text-[10px]">Pending</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setShowBatchSummaryModal(false)}
+                    className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                  >
+                    Close Summary
+                  </button>
+                </div>
+              </div>
             )}
 
         </>

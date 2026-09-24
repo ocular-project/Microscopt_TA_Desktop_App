@@ -1,4 +1,4 @@
-import { writeFile, readFile, access, mkdir, rename, rm } from 'fs/promises'
+import {writeFile, readFile, access, mkdir, rename, rm, stat} from 'fs/promises'
 import fs from 'fs/promises'
 import { constants } from 'fs';
 import path from "path";
@@ -1392,4 +1392,35 @@ export async function saveInstructions(instruction) {
             error: `Error: ${error.message}`
         }
     }
+}
+
+export async function convertFilePathToBase64(filePath) {
+    const [buffer, fileStats] = await Promise.all([
+        readFile(filePath),
+        stat(filePath)
+    ]);
+
+    const extension = path
+        .extname(filePath)
+        .toLowerCase()
+        .replace(".", "");
+
+    const mimeTypes = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        bmp: "image/bmp"
+    };
+
+    const mimeType = mimeTypes[extension] || "application/octet-stream";
+
+    const base64 = buffer.toString("base64");
+
+    return {
+        path: filePath,
+        size: fileStats.size,
+        name: path.basename(filePath),
+        url: `data:${mimeType};base64,${base64}`
+    };
 }
