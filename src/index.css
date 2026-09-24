@@ -8,6 +8,7 @@ body {
 
 @theme {
     --color-primary: #F69220;
+    --color-secondary: #FEF3E7;
 }
 
 .ql-editor {

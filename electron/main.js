@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, session, protocol, shell} from "electron";
+import { writeFile, readFile, access, mkdir, rename, rm, stat } from 'fs/promises'
 import updater from "electron-updater";
 import { spawn } from "child_process";
 import path from "path";
@@ -156,16 +157,69 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openDirectory']
-  })
-  if(canceled) {
-    return null;
-  } else {
-    console.log(filePaths[0])
-    return filePaths[0]
-  }
+  const result = await dialog.showOpenDialog({
+        properties: ["openFile"],
+        filters: [
+            {
+                name: "Images",
+                extensions: ["jpg", "jpeg", "png", "webp", "bmp"]
+            }
+        ]
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+        return null;
+    }
+
+    return result.filePaths[0];
 })
+
+ipcMain.handle("dialog:openImage", async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ["openFile"],
+        filters: [
+            {
+                name: "Images",
+                extensions: ["jpg", "jpeg", "png", "webp", "bmp"]
+            }
+        ]
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+        return null;
+    }
+
+    const filePath = result.filePaths[0];
+
+    const [buffer, fileStats] = await Promise.all([
+        readFile(filePath),
+        stat(filePath)
+    ]);
+
+    const extension = path
+        .extname(filePath)
+        .toLowerCase()
+        .replace(".", "");
+
+    const mimeTypes = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        bmp: "image/bmp"
+    };
+
+    const mimeType = mimeTypes[extension] || "application/octet-stream";
+
+    const base64 = buffer.toString("base64");
+
+    return {
+        path: filePath,
+        size: fileStats.size,
+        name: path.basename(filePath),
+        url: `data:${mimeType};base64,${base64}`
+    };
+});
 
 ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
 

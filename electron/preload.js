@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     renameFolder: (object) => ipcRenderer.invoke("fileManagement:renameFolder", object),
     getFoldersAndFiles: (parentId) => ipcRenderer.invoke('fileManagement:getFoldersAndFiles', parentId),
     getFile: (fileId, credentials) => ipcRenderer.invoke('fileManagement:getFile', fileId, credentials),
+    openImage: () => ipcRenderer.invoke("dialog:openImage"),
     deleteFile: (fileId) => ipcRenderer.invoke('fileManagement:deleteFile', fileId),
 
     transferFile: (fileId, type) => ipcRenderer.invoke('fileManagement:transferFile', fileId, type),
