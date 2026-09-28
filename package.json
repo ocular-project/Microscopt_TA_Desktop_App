@@ -7,7 +7,8 @@
 
   "electronmon": {
     "patterns": [
-      "!runtimes/mac-arm64/python/**"
+      "!runtimes/mac-arm64/python/**",
+      "!Contents/Resources/python/**"
     ]
   },
 
@@ -34,7 +35,17 @@
     "extraResources": [
       {
         "from": "runtimes/mac-arm64/python",
-        "to": "python"
+        "to": "python",
+        "filter": [
+          "**/*",
+          "!lib/python3.12/site-packages/**/*",
+          "lib/python3.12/site-packages/pip/**/*",
+          "lib/python3.12/site-packages/pip-*.dist-info/**/*"
+        ]
+      },
+      {
+        "from": "python",
+        "to": "inference"
       }
     ],
     "win": {

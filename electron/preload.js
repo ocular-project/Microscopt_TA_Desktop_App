@@ -58,23 +58,44 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // }
 
     // Python
-    check: () => ipcRenderer.invoke("python:check"),
-    checkPackages: () => ipcRenderer.invoke("python:check-packages"),
-    checkInternet: () => ipcRenderer.invoke("python:check-internet"),
-    installPackages: (packages) => ipcRenderer.invoke("python:install-packages", packages),
-    runInference: (imagePath) => ipcRenderer.invoke("python:run-inference", imagePath),
+    check: () => ipcRenderer.invoke("inference:check"),
+    checkPackages: () => ipcRenderer.invoke("inference:check-packages"),
+    checkInternet: () => ipcRenderer.invoke("inference:check-internet"),
+    installPackages: (packages) => ipcRenderer.invoke("inference:install-packages", packages),
+    runInference: (imagePath) => ipcRenderer.invoke("inference:run-inference", imagePath),
     onInstallProgress: (callback) => {
         const listener = (_event, data) => {
           callback(data);
         };
 
-        ipcRenderer.on("python:install-progress", listener);
+        ipcRenderer.on("inference:install-progress", listener);
 
         return () => {
           ipcRenderer.removeListener(
-            "python:install-progress",
+            "inference:install-progress",
             listener
           );
         };
     },
+
+    // ML Models
+    getModelInfo: () => ipcRenderer.invoke("model:get-info"),
+    downloadModel: () => ipcRenderer.invoke("model:download"),
+    onModelDownloadProgress: (callback) => {
+        const listener = (_event, progress) => {
+            callback(progress);
+        };
+
+        ipcRenderer.on(
+            "model:download-progress",
+            listener
+        );
+
+        return () => {
+            ipcRenderer.removeListener(
+                "model:download-progress",
+                listener
+            );
+        };
+    }
 })

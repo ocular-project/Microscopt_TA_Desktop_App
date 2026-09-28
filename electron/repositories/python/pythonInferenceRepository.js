@@ -1,6 +1,7 @@
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { app } from "electron";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,14 +10,28 @@ class PythonInferenceRepository {
   constructor(pythonRepository) {
     this.pythonRepository = pythonRepository;
 
-    this.inferencePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "..",
-      "python",
-      "inference.py"
+    // Python packages installed outside the bundled runtime.
+    this.packagesPath = path.join(
+      app.getPath("userData"),
+      "python-packages"
     );
+
+    if (!app.isPackaged) {
+      this.inferencePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "python",
+        "inference.py"
+      );
+    } else {
+      this.inferencePath = path.join(
+        process.resourcesPath,
+        "inference",
+        "inference.py"
+      );
+    }
   }
 
   runInference(imagePath) {
@@ -38,6 +53,11 @@ class PythonInferenceRepository {
         {
           env: {
             ...process.env,
+
+            // Allow Python to find packages installed
+            // outside the bundled Python runtime.
+            PYTHONPATH: this.packagesPath,
+
             PYTHONUNBUFFERED: "1"
           }
         }

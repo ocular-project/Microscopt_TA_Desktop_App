@@ -9,16 +9,34 @@ import {
     HardDrive,
     X,
     Laptop,
-    ChevronRight,
+    ChevronRight, CheckIcon, Loader2, AlertTriangleIcon, RefreshCwIcon, CheckCircleIcon, DownloadIcon,
 } from "lucide-react";
 import styles from "../css/sidebar.module.css";
 import {useState} from "react";
 import {selectImage} from "./utils.js";
 
+const SpinnerIcon = ({ className = "w-4 h-4" }) => (
+  <Loader2 className={`animate-spin ${className}`} />
+);
+
 export default function Sidebar({ sidebarOpen, setSidebarOpen, AVAILABLE_MODELS, selectedModel, setSelectedModel, currentImage, image, setIsSourceModalOpen }){
 
     const [collapsedCategories, setCollapsedCategories] = useState({});
     const [error, setError] = useState(null)
+
+    const [downloadStates, setDownloadStates] = useState(() => {
+        const initialState = {};
+        AVAILABLE_MODELS.forEach((m) => {
+          initialState[m.id] = {
+            downloaded: m.downloaded,
+            status: m.downloaded ? 'downloaded' : 'idle',
+            progress: m.downloaded ? 100 : 0,
+            errorMessage: null,
+            successMessage: null
+          };
+        });
+        return initialState;
+    });
 
     const getAssetPath = (relativePath) => {
       const isDev = process.env.NODE_ENV === 'development';
@@ -35,6 +53,62 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, AVAILABLE_MODELS,
 
     const handleStartLoadFlow = () => {
         setIsSourceModalOpen(true);
+    };
+
+    const handleDownloadModel = (modelId, e) => {
+        if (e) e.stopPropagation();
+
+        setDownloadStates((prev) => ({
+          ...prev,
+          [modelId]: {
+            downloaded: false,
+            status: 'downloading',
+            progress: 0,
+            errorMessage: null,
+            successMessage: null
+          }
+        }));
+
+        let currentProgress = 0;
+        const interval = setInterval(() => {
+          currentProgress += Math.floor(Math.random() * 18) + 12;
+          if (currentProgress >= 100) {
+            clearInterval(interval);
+            const isSuccess = Math.random() > 0.15;
+            if (isSuccess) {
+              setDownloadStates((prev) => ({
+                ...prev,
+                [modelId]: {
+                  downloaded: true,
+                  status: 'downloaded',
+                  progress: 100,
+                  errorMessage: null,
+                  successMessage: 'Model downloaded successfully!'
+                }
+              }));
+            } else {
+              setDownloadStates((prev) => ({
+                ...prev,
+                [modelId]: {
+                  downloaded: false,
+                  status: 'error',
+                  progress: 0,
+                  errorMessage: 'Network timeout during weight download.',
+                  successMessage: null
+                }
+              }));
+            }
+          }
+          else {
+            setDownloadStates((prev) => ({
+              ...prev,
+              [modelId]: {
+                ...prev[modelId],
+                progress: Math.min(currentProgress, 95)
+              }
+            }));
+          }
+        }, 280);
     };
 
     return (
@@ -116,8 +190,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, AVAILABLE_MODELS,
                                                         <div className="p-2 space-y-2 bg-white">
                                                             {diseaseModels.map((model) => {
                                                               const isSelected = selectedModel.id === model.id;
+
+                                                              const dlState = downloadStates[model.id] || { downloaded: model.downloaded, status: model.downloaded ? 'downloaded' : 'idle', progress: 0 };
+                                                              const isDownloaded = dlState.downloaded;
+                                                              const isDownloading = dlState.status === 'downloading';
+                                                              const hasError = dlState.status === 'error';
+
                                                               return (
-                                                                <button
+                                                                <div
                                                                   key={model.id}
                                                                   onClick={() => setSelectedModel(model)}
                                                                   className={`w-full text-left p-2.5 rounded-lg border transition-all cursor-pointer ${
@@ -128,20 +208,87 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, AVAILABLE_MODELS,
                                                                 >
                                                                   <div className="flex items-center justify-between mb-1">
                                                                     <span className={`text-xs font-semibold ${isSelected ? 'text-[#F69220]' : 'text-gray-900'}`}>
-                                                                      {model.name}
-                                                                    </span>
-                                                                    <span className="text-[9px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-1.5 py-0.5 rounded shrink-0 ml-1">
-                                                                      {model.badge}
-                                                                    </span>
+                                  {model.name}
+                                </span>
+                                                                    <div className="flex items-center gap-1">
+                                                                      <span className="text-[9px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-1.5 py-0.5 rounded shrink-0">
+                                                                        {model.badge}
+                                                                      </span>
+                                                                      {isDownloaded ? (
+                                                                        <span className="text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5">
+                                                                          <CheckIcon className="w-2.5 h-2.5 text-emerald-600" /> Ready
+                                                                        </span>
+                                                                      ) : (
+                                                                        <span className="text-[9px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded shrink-0">
+                                                                          {model.size}
+                                                                        </span>
+                                                                      )}
+                                                                    </div>
                                                                   </div>
+
                                                                   <p className="text-[11px] text-gray-500 leading-snug line-clamp-2 mb-2">
                                                                     {model.description}
                                                                   </p>
+
                                                                   <div className="flex items-center justify-between text-[10px] font-mono text-gray-400">
                                                                     <span>Accuracy: {model.accuracy}</span>
                                                                     <span className="capitalize">{model.category}</span>
                                                                   </div>
-                                                                </button>
+
+                                                                  {/* Download Status & Action Bar */}
+                                                                  <div className="pt-2 border-t border-gray-100/80">
+                                                                    {isDownloading && (
+                                                                      <div className="space-y-1.5">
+                                                                        <div className="flex items-center justify-between text-[10px] font-semibold text-[#F69220]">
+                                                                          <span className="flex items-center gap-1">
+                                                                            <SpinnerIcon className="w-3 h-3" /> Downloading model weights...
+                                                                          </span>
+                                                                          <span className="font-mono">{dlState.progress}%</span>
+                                                                        </div>
+                                                                        <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                                                          <div
+                                                                            className="bg-[#F69220] h-full rounded-full transition-all duration-300"
+                                                                            style={{ width: `${dlState.progress}%` }}
+                                                                          />
+                                                                        </div>
+                                                                      </div>
+                                                                    )}
+
+                                                                    {hasError && (
+                                                                      <div className="bg-rose-50 border border-rose-200 rounded-lg p-2 text-[10px] text-rose-700 flex items-center justify-between">
+                                                                        <div className="flex items-center gap-1 truncate pr-1">
+                                                                          <AlertTriangleIcon className="w-3.5 h-3.5 shrink-0 text-rose-500" />
+                                                                          <span className="truncate">{dlState.errorMessage || 'Download failed.'}</span>
+                                                                        </div>
+                                                                        <button
+                                                                          onClick={(e) => handleDownloadModel(model.id, e)}
+                                                                          className="py-1 px-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded text-[10px] transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
+                                                                        >
+                                                                          <RefreshCwIcon className="w-2.5 h-2.5" /> Retry
+                                                                        </button>
+                                                                      </div>
+                                                                    )}
+
+                                                                    {isDownloaded && dlState.successMessage && (
+                                                                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-1.5 text-[10px] text-emerald-700 flex items-center gap-1.5 animate-fadeIn">
+                                                                        <CheckCircleIcon className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                                                                        <span>{dlState.successMessage}</span>
+                                                                      </div>
+                                                                    )}
+
+                                                                    {!isDownloaded && !isDownloading && !hasError && (
+                                                                      <button
+                                                                        onClick={(e) => handleDownloadModel(model.id, e)}
+                                                                        className="w-full py-1.5 px-2 bg-slate-900 hover:bg-black text-white text-[11px] font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                                                                      >
+                                                                        <DownloadIcon className="w-3.5 h-3.5 text-[#F69220]" />
+                                                                        <span>Download Model ({model.size})</span>
+                                                                      </button>
+                                                                    )}
+
+                                                                  </div>
+
+                                                                </div>
                                                               );
                                                             })}
                                                         </div>

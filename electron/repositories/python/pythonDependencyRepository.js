@@ -1,4 +1,7 @@
 import { execFile, spawn } from "child_process";
+import { app } from "electron";
+import { mkdir } from "fs/promises";
+import path from "path";
 
 class PythonDependencyRepository {
   constructor(pythonRepository) {
@@ -22,17 +25,63 @@ class PythonDependencyRepository {
     return this.pythonRepository.pythonPath;
   }
 
+  /**
+   * Packages are stored outside the Electron app.
+   *
+   * Development:
+   * ~/Library/Application Support/<app>/python-packages
+   *
+   * Production:
+   * ~/Library/Application Support/Microscopy Teaching Aid/python-packages
+   */
+  get packagesPath() {
+    const packagesPath = path.join(
+      app.getPath("userData"),
+      "python-packages"
+    );
+
+    // console.log("PACKAGES PATH:", packagesPath);
+
+    return packagesPath;
+  }
+
+  /**
+   * Environment used whenever Python needs to access
+   * the externally installed packages.
+   */
+  get pythonEnvironment() {
+    return {
+      ...process.env,
+      PYTHONUNBUFFERED: "1",
+      PYTHONPATH: this.packagesPath
+    };
+  }
+
+  async ensurePackagesDirectory() {
+    await mkdir(this.packagesPath, {
+      recursive: true
+    });
+  }
+
   checkPackage(packageName) {
     return new Promise((resolve) => {
       execFile(
         this.pythonPath,
-        ["-m", "pip", "show", packageName],
+        [
+          "-m",
+          "pip",
+          "show",
+          packageName
+        ],
+        {
+          env: this.pythonEnvironment
+        },
         (error, stdout) => {
           if (error) {
             resolve({
               name: packageName,
               installed: false,
-              version: null,
+              version: null
             });
 
             return;
@@ -49,7 +98,7 @@ class PythonDependencyRepository {
           resolve({
             name: packageName,
             installed: true,
-            version,
+            version
           });
         }
       );
@@ -57,12 +106,14 @@ class PythonDependencyRepository {
   }
 
   async getMissingPackages() {
+    await this.ensurePackagesDirectory();
+
     const missingPackages = [];
 
     for (const packageName of this.requiredPackages) {
-      const installed = await this.checkPackage(packageName);
+      const packageInfo = await this.checkPackage(packageName);
 
-      if (!installed) {
+      if (!packageInfo.installed) {
         missingPackages.push(packageName);
       }
     }
@@ -70,7 +121,9 @@ class PythonDependencyRepository {
     return missingPackages;
   }
 
-  installPackage(packageName, onOutput) {
+  async installPackage(packageName, onOutput) {
+    await this.ensurePackagesDirectory();
+
     return new Promise((resolve, reject) => {
       const childProcess = spawn(
         this.pythonPath,
@@ -79,13 +132,12 @@ class PythonDependencyRepository {
           "pip",
           "install",
           packageName,
-          "--disable-pip-version-check",
+          "--target",
+          this.packagesPath,
+          "--disable-pip-version-check"
         ],
         {
-          env: {
-            ...process.env,
-            PYTHONUNBUFFERED: "1",
-          },
+          env: this.pythonEnvironment
         }
       );
 
@@ -100,7 +152,7 @@ class PythonDependencyRepository {
           type: "log",
           package: packageName,
           stream: "stdout",
-          message,
+          message
         });
       });
 
@@ -113,7 +165,7 @@ class PythonDependencyRepository {
           type: "log",
           package: packageName,
           stream: "stderr",
-          message,
+          message
         });
       });
 
@@ -126,7 +178,7 @@ class PythonDependencyRepository {
           resolve({
             name: packageName,
             status: "success",
-            output,
+            output
           });
         } else {
           reject(
@@ -143,6 +195,8 @@ class PythonDependencyRepository {
     const results = [];
     const total = packages.length;
 
+    await this.ensurePackagesDirectory();
+
     for (let index = 0; index < total; index++) {
       const packageName = packages[index];
 
@@ -152,7 +206,7 @@ class PythonDependencyRepository {
         index: index + 1,
         total,
         progress: Math.round((index / total) * 100),
-        message: `[PIP] Installing ${packageName}...`,
+        message: `[PIP] Installing ${packageName}...`
       });
 
       try {
@@ -172,13 +226,13 @@ class PythonDependencyRepository {
           index: index + 1,
           total,
           progress: Math.round(((index + 1) / total) * 100),
-          message: `[OK] Package ${packageName} installed successfully.`,
+          message: `[OK] Package ${packageName} installed successfully.`
         });
       } catch (error) {
         const result = {
           name: packageName,
           status: "failed",
-          reason: error.message,
+          reason: error.message
         };
 
         results.push(result);
@@ -190,7 +244,7 @@ class PythonDependencyRepository {
           index: index + 1,
           total,
           progress: Math.round(((index + 1) / total) * 100),
-          message: `[FAIL] ${error.message}`,
+          message: `[FAIL] ${error.message}`
         });
       }
     }
@@ -199,16 +253,18 @@ class PythonDependencyRepository {
   }
 
   async getPackageStatus() {
+    await this.ensurePackagesDirectory();
+
     const packages = [];
 
     for (const packageName of this.requiredPackages) {
       const packageInfo = await this.checkPackage(packageName);
+
       packages.push(packageInfo);
     }
 
     return packages;
   }
-
 }
 
 export default PythonDependencyRepository;

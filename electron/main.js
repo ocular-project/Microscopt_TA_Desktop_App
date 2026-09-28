@@ -39,10 +39,12 @@ import SimpleAdb from "./repositories/simple-adb.js"
 import PythonRepository from "./repositories/python/pythonRepository.js";
 import PythonDependencyRepository from "./repositories/python/pythonDependencyRepository.js";
 import PythonInferenceRepository from "./repositories/python/pythonInferenceRepository.js";
+import ModelRepository from "./repositories/model/modelRepository.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.setName("Microscopy Teaching Aid");
 app.setVersion(packageJson.version)
 const version= app.getVersion();
 console.log("APP VERSION:", version);
@@ -52,10 +54,24 @@ autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 let mainWindow
+
+console.log("BEFORE AdbManager");
 const adbManager = new AdbManager();
+console.log("AFTER AdbManager");
+
+console.log("BEFORE ScrcpyManager");
 const scrcpyManager = new ScrcpyManager();
-let simpleAdbJson
+console.log("AFTER ScrcpyManager");
+
+let simpleAdbJson;
+
+console.log("BEFORE PythonRepository");
 const pythonRepository = new PythonRepository();
+console.log("AFTER PythonRepository");
+
+console.log("BEFORE ModelRepository");
+const modelRepository = new ModelRepository();
+console.log("AFTER ModelRepository");
 
 // const pythonValid = await pythonRepository.isValid();
 // if (pythonValid) {
@@ -70,7 +86,7 @@ const pythonRepository = new PythonRepository();
 //   const inferencePath = path.join(
 //     __dirname,
 //     "..",
-//     "python",
+//     "inference",
 //     "inference.py"
 //   );
 //
@@ -637,7 +653,7 @@ ipcMain.handle('get-devices', async () => {
 });
 
 // Python handlers
-ipcMain.handle("python:check", async () => {
+ipcMain.handle("inference:check", async () => {
     // const pythonRepository = new PythonRepository()
 
     const exists = pythonRepository.exists()
@@ -665,7 +681,7 @@ ipcMain.handle("python:check", async () => {
     }
 })
 
-ipcMain.handle("python:check-packages", async () => {
+ipcMain.handle("inference:check-packages", async () => {
   // const pythonRepository = new PythonRepository();
 
   if (!pythonRepository.exists()) {
@@ -693,7 +709,7 @@ ipcMain.handle("python:check-packages", async () => {
   };
 });
 
-ipcMain.handle("python:install-packages", async (event, packages) => {
+ipcMain.handle("inference:install-packages", async (event, packages) => {
   // const pythonRepository = new PythonRepository();
 
   if (!pythonRepository.exists()) {
@@ -719,7 +735,7 @@ ipcMain.handle("python:install-packages", async (event, packages) => {
     const results = await dependencyRepository.installPackages(
       packages,
       (progress) => {
-        event.sender.send("python:install-progress", progress);
+        event.sender.send("inference:install-progress", progress);
       }
     );
 
@@ -743,7 +759,7 @@ ipcMain.handle("python:install-packages", async (event, packages) => {
   }
 });
 
-ipcMain.handle("python:check-internet", async () => {
+ipcMain.handle("inference:check-internet", async () => {
   return new Promise((resolve) => {
     const request = https.get(
       "https://www.google.com",
@@ -778,7 +794,7 @@ ipcMain.handle("python:check-internet", async () => {
   });
 });
 
-ipcMain.handle("python:run-inference", async (_event, imagePath) => {
+ipcMain.handle("inference:run-inference", async (_event, imagePath) => {
     // const pythonRepository = new PythonRepository();
 
     if (!pythonRepository.exists()) {
@@ -804,3 +820,50 @@ ipcMain.handle("python:run-inference", async (_event, imagePath) => {
     }
   }
 );
+
+// Model checks and installs
+ipcMain.handle("model:get-info", async () => {
+    try {
+        return await modelRepository.getModelInfo();
+    } catch (error) {
+        console.error("[MODEL] Failed to get model info:", error);
+
+        throw new Error(
+            `Failed to get model information: ${error.message}`
+        );
+    }
+});
+
+ipcMain.handle("model:download", async (event) => {
+    try {
+        console.log("[MODEL] Download requested from frontend");
+
+        const result = await modelRepository.download(
+            (progress) => {
+                if (!mainWindow || mainWindow.isDestroyed()) {
+                    return;
+                }
+
+                mainWindow.webContents.send(
+                    "model:download-progress",
+                    progress
+                );
+            }
+        );
+
+        return result;
+
+    } catch (error) {
+        console.error(
+            "[MODEL] Download failed:",
+            error
+        );
+
+        throw new Error(
+            `Model download failed: ${error.message}`
+        );
+    }
+});
+
+
+

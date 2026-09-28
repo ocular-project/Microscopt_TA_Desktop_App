@@ -43,7 +43,7 @@ const SCENARIOS = {
   NO_INTERNET: 'NO_INTERNET'
 };
 
-export default function SystemCheck({ setSystemCheck }){
+export default function SystemCheck({ setSystemCheck, systemCheck }){
 
     const [scenario, setScenario] = useState(SCENARIOS.AUTO_INSTALL_PARTIAL_FAIL);
     const [status, setStatus] = useState('CHECKING_PYTHON'); // CHECKING_PYTHON, NO_PYTHON, CHECKING_PACKAGES, PACKAGES_OK, CHECKING_NET, NO_NET, INSTALLING, INSTALL_SUCCESS, INSTALL_FAILED
@@ -294,6 +294,7 @@ export default function SystemCheck({ setSystemCheck }){
       /*
        * STEP 4: Install missing packages returned by checkPackages().
        */
+        // setStatus("INSTALL_FAILED");
       await executeAutoInstall(packageResult.missing);
 
     } catch (error) {
@@ -367,11 +368,12 @@ export default function SystemCheck({ setSystemCheck }){
     }, []);
 
   useEffect(() => {
+    if (!systemCheck) return
     if (diagnosticsStarted.current) return;
 
     diagnosticsStarted.current = true;
     runDiagnostics();
-  }, [runDiagnostics]);
+  }, [runDiagnostics, systemCheck]);
 
     // Auto scroll terminal logs
   useEffect(() => {

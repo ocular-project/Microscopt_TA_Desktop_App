@@ -32,7 +32,9 @@ const AVAILABLE_MODELS = [
     category: 'Malaria',
     badge: 'High Precision',
     description: 'Deep convolutional network trained on thin blood smear microscopy for P. falciparum detection.',
-    accuracy: '98.4%'
+    accuracy: '98.4%',
+    size: '14.2 MB',
+    downloaded: true
   },
   {
     id: 'plasmo-yolo-v8',
@@ -40,7 +42,9 @@ const AVAILABLE_MODELS = [
     category: 'Malaria',
     badge: 'Real-time',
     description: 'Object detection model for rapid counting and bounding box localization of trophozoites and ring forms.',
-    accuracy: '96.8%'
+    accuracy: '96.8%',
+    size: '28.5 MB',
+    downloaded: false
   },
   {
     id: 'tb-cxr-resnet',
@@ -48,7 +52,9 @@ const AVAILABLE_MODELS = [
     category: 'Tuberculosis',
     badge: 'FDA Cleared',
     description: 'Screening model for pulmonary tuberculosis lesions and apical cavitations in chest X-rays.',
-    accuracy: '97.2%'
+    accuracy: '97.2%',
+    size: '48.1 MB',
+    downloaded: false
   },
   {
     id: 'tb-sputum-vit',
@@ -56,7 +62,9 @@ const AVAILABLE_MODELS = [
     category: 'Tuberculosis',
     badge: 'Microscopy',
     description: 'Vision Transformer targeting Ziehl-Neelsen stained sputum smear acid-fast bacilli.',
-    accuracy: '95.9%'
+    accuracy: '95.9%',
+    size: '31.4 MB',
+    downloaded: false
   },
   {
     id: 'cervical-pap-eff',
@@ -64,7 +72,9 @@ const AVAILABLE_MODELS = [
     category: 'Cervical Cancer',
     badge: 'Bethesda Std',
     description: 'Automated classification of Pap smear cytology according to the Bethesda system (LSIL / HSIL).',
-    accuracy: '96.5%'
+    accuracy: '96.5%',
+    size: '22.0 MB',
+    downloaded: false
   },
   {
     id: 'cervical-colpo-densenet',
@@ -72,7 +82,9 @@ const AVAILABLE_MODELS = [
     category: 'Cervical Cancer',
     badge: 'Colposcopy',
     description: 'Evaluates acetowhite epithelium and abnormal vascular patterns in digital colposcopy.',
-    accuracy: '94.8%'
+    accuracy: '94.8%',
+    size: '34.7 MB',
+    downloaded: false
   }
 ];
 
@@ -130,7 +142,7 @@ export default function ModelAnalyzer(){
                   }
               `}
           >
-              <SystemCheck setSystemCheck={setSystemCheck} />
+              <SystemCheck setSystemCheck={setSystemCheck} systemCheck={systemCheck} />
           </div>
 
           {/* Application */}
