@@ -334,7 +334,14 @@ async function accessAnnotationFile(filePath) {
         let data = content ? JSON.parse(content) : []
         if(!Array.isArray(data)) data = [data]
 
-        return data
+        const isEmptyObject = item => item && typeof item === 'object' && !Array.isArray(item) && Object.keys(item).length === 0;
+
+        if (data.length === 0 || (data.length === 1 && isEmptyObject(data[0]))) {
+            data = [];
+            await writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+        }
+
+        return data;
     } catch (err) {
         if (err.code === 'ENOENT') {
           return [];
@@ -430,6 +437,7 @@ export async function getDataJson(filePath, parentId) {
         // 2. Read the file
         const content = await readFile(filePath, 'utf8');
         const instArray = await getArrayObject("Instructions.json")
+        // console.log("Instructions", instArray)
 
         // 3. Handle empty files or invalid JSON
         if (!content.trim()) {
@@ -440,6 +448,8 @@ export async function getDataJson(filePath, parentId) {
         }
 
         const data = JSON.parse(content);
+        // console.log("my data", data)
+        // console.log("parentId", parentId)
 
         // Ensure we always return an array for consistency in your React components
         let dataArray = Array.isArray(data) ? data : [data];
@@ -447,27 +457,50 @@ export async function getDataJson(filePath, parentId) {
             .filter(obj => obj.parent === parentId)
             .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
 
+        // console.log("Result", result)
+
         // const updatedList = result.map(obj =>
         //     obj.type === 'file'
         //     ? { ...obj, size: `${(obj.size / (1024 * 1024)).toFixed(2)} MB` }
         //     : { ...obj, size: "" }
         // )
 
-        const updatedList = result.map(obj => {
-            if (obj.type  !== 'file' || typeof  obj.size !== 'number') {
-                return { ...obj, size: ""}
+        const updatedList = result.map((obj, index) => {
+            try {
+                if (obj.type !== "file" || typeof obj.size !== "number") {
+                    return { ...obj, size: "" };
+                }
+
+                const sizeMB = obj.size / (1024 * 1024);
+
+                const size =
+                    sizeMB >= 0.01
+                        ? `${sizeMB.toFixed(2)} MB`
+                        : `${(obj.size / 1024).toFixed(2)} KB`;
+
+                const instructions = instArray.find(
+                    inst =>
+                        inst.file._id === obj._id ||
+                        inst.files.includes(obj._id)
+                );
+
+                return { ...obj, size, instructions: !!instructions };
+
+            } catch (error) {
+                console.error("Error processing result object:", {
+                    index,
+                    objectId: obj?._id,
+                    objectType: obj?.type,
+                    object: obj,
+                    errorMessage: error.message,
+                    stack: error.stack
+                });
+
+                throw error; // Keep the original failure visible
             }
-            const sizeMB = obj.size / (1024 * 1024)
-            const size =
-                sizeMB >= 0.01
-                    ? `${sizeMB.toFixed(2)} MB`
-                    : `${(obj.size / 1024).toFixed(2)} KB`;
+        });
 
-            // console.log(obj._id)
-            const instructions = instArray.find(inst => inst.file._id === obj._id || inst.files.includes(obj._id))
-
-            return { ...obj, size, instructions: !!instructions };
-        })
+        // console.log("updated list", updatedList)
 
         let currentPath = []
         if (parentId){
@@ -481,6 +514,8 @@ export async function getDataJson(filePath, parentId) {
             }
         }
 
+        // console.log("current path", currentPath)
+
         return {
             success: true,
             data: {
@@ -492,6 +527,7 @@ export async function getDataJson(filePath, parentId) {
 
     }
     catch (error) {
+        console.log(error)
         // Handle "File Not Found" as a soft error (return empty list)
         if (error.code === 'ENOENT') {
             return { success: true, data: [], message: "No database file found yet" };
@@ -1204,7 +1240,7 @@ export async function handleInstructionsDownload(instructionsList){
 
 }
 
-export async function handleBatchAnnotationsDownload(pairs){
+export async function handleBatchAnnotationsDownload(pairs, cred){
     return annotationMutex.runExclusive(async () => {
 
         const dir = loadPath()
@@ -1227,7 +1263,7 @@ export async function handleBatchAnnotationsDownload(pairs){
         // console.log("=========================================")
         // console.log(pairs)
         for (const { object, fileId } of pairs) {
-            applyAnnotations({annoArray, feedbackArray, dataArray}, object, fileId)
+            applyAnnotations({annoArray, feedbackArray, dataArray}, object, fileId, cred)
         }
 
         await Promise.all([
@@ -1243,20 +1279,27 @@ export async function handleBatchAnnotationsDownload(pairs){
     })
 }
 
-function applyAnnotations(state, object, fileId) {
+function applyAnnotations(state, object, fileId, cred) {
     const { annotations, feedback } = object
     const {annoArray, feedbackArray, dataArray} = state
+
+    const isEmptyObject = obj => obj && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length === 0;
 
     for(const anno of annotations) {
         const index = annoArray.findIndex(item => item._id === anno._id)
         if (index !== -1) {
             if(new Date(anno.updatedAt) > new Date(annoArray[index].updatedAt)){
+
+                const existingAnnotator = annoArray[index].annotator;
+                const resolvedAnnotator = isEmptyObject(existingAnnotator) ? { ...cred } : existingAnnotator;
+
                 annoArray[index] = {
                     ...annoArray[index],
                     annotations: anno.annotations,
                     shared_with: anno.shared_with,
                     shared_with_team: anno.shared_with_team,
-                    updatedAt: anno.updatedAt
+                    updatedAt: anno.updatedAt,
+                    annotator: resolvedAnnotator
                 }
             }
         }

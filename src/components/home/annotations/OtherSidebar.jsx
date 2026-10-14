@@ -105,13 +105,17 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                 handleMessage("There are no annotations to download", "warning", setMessage);
                 return
             }
-            const resp = await window.electronAPI.downloadImageAnnotations(data)
+
+            // console.log(data)
+            const resp = await window.electronAPI.downloadImageAnnotations(data, cred)
             // console.log(response.data)
             if (resp.success) {
                 handleMessage(resp.message, "success", setMessage);
                 // navigate(`/annotation/computer/${fileId}`)
-                const response2 = await axiosInstance.get(`/file-instructions/${fileId}`)
+                const response2 = await axiosInstance.get(`/file-instructions/${file._id}`)
+                // console.log(response2)
                 const resp2 = await window.electronAPI.saveInstructions(response2.data.file)
+                // console.log(resp2)
                 if (!resp.success) {
                     handleMessage(resp2.message, "error", setMessage);
                     return
@@ -263,9 +267,9 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                         <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
                                             <span>Download Latest Changes</span>
                                         </div>
-                                        <div className={`${styles.buttons}`} onClick={handleUpload}>
-                                            <span>Upload Changes</span>
-                                        </div>
+                                        {/*<div className={`${styles.buttons}`} onClick={handleUpload}>*/}
+                                        {/*    <span>Upload Changes</span>*/}
+                                        {/*</div>*/}
                                     </div>
                                 </div>
                             </div>
@@ -290,7 +294,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                </div>
                             </div>
 
-                           <hr/>
+                           <hr />
                            <p>Annotation Labels</p>
                            <div>
                                <div className="flex gap-2 justify-between">

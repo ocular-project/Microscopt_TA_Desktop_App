@@ -858,9 +858,9 @@ class SimpleAdb {
       try {
           if (!fs.existsSync(this.imageStorageDir)) {
               fs.mkdirSync(this.imageStorageDir, { recursive: true });
-              console.log(`${this.logPrefix} 📁 Created image directory: ${this.imageStorageDir}`);
+              // console.log(`${this.logPrefix} 📁 Created image directory: ${this.imageStorageDir}`);
           } else {
-              console.log(`${this.logPrefix} 📁 Image directory exists: ${this.imageStorageDir}`);
+              // console.log(`${this.logPrefix} 📁 Image directory exists: ${this.imageStorageDir}`);
           }
       } catch (error) {
           console.error(`${this.logPrefix} ❌ Failed to create image directory:`, error);

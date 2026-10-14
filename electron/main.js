@@ -47,7 +47,7 @@ const __dirname = path.dirname(__filename);
 app.setName("Microscopy Teaching Aid");
 app.setVersion(packageJson.version)
 const version= app.getVersion();
-console.log("APP VERSION:", version);
+// console.log("APP VERSION:", version);
 
 const { autoUpdater } = updater;
 autoUpdater.autoDownload = false;
@@ -405,7 +405,7 @@ function getDateTime() {
     return `${year}-${month}-${day}_${hours}-${minutes}`;
 }
 
-ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
+ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat, cred) => {
     try {
         const dir = loadPath();
         const customDir = path.join(dir, "Microscopy_TA", "folders_and_images");
@@ -509,7 +509,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
             try {
                 const content = await annotationsEntry.buffer();
                 const jsonContent = JSON.parse(content.toString('utf8'));
-                await handleBatchAnnotationsDownload(jsonContent)
+                await handleBatchAnnotationsDownload(jsonContent, cred)
             } catch (err) {
                 console.error('Error reading or parsing annotationData.json:', err.message);
             }
@@ -550,8 +550,8 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
   }
 });
 
-ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair, instructions) => {
-   return await handleBatchAnnotationsDownload([pair])
+ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair, cred) => {
+   return await handleBatchAnnotationsDownload([pair], cred)
     // return await handleAnnotationsDownload(object, fileId)
 })
 

@@ -67,6 +67,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
             let response;
             if (config) {
                 response = await window.electronAPI.getFoldersAndFiles(folderId || null);
+                console.log(response)
                 if (!response.success) {
                      setError(response.error);
                      return
