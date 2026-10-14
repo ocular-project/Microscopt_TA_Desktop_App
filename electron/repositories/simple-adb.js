@@ -666,6 +666,8 @@ class SimpleAdb {
 
         // console.log(transferRequest)
         // 📦 3. TRANSFER IMAGE FROM DEVICE
+        await this.ensureImageDirectory()
+
         const success = await this.pullImageFromAndroid(deviceId, transferRequest);
 
         if (!success) {

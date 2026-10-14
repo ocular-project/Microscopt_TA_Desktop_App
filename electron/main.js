@@ -55,59 +55,23 @@ autoUpdater.forceDevUpdateConfig = true;
 
 let mainWindow
 
-console.log("BEFORE AdbManager");
+// console.log("BEFORE AdbManager");
 const adbManager = new AdbManager();
-console.log("AFTER AdbManager");
+// console.log("AFTER AdbManager");
 
-console.log("BEFORE ScrcpyManager");
+// console.log("BEFORE ScrcpyManager");
 const scrcpyManager = new ScrcpyManager();
-console.log("AFTER ScrcpyManager");
+// console.log("AFTER ScrcpyManager");
 
 let simpleAdbJson;
 
-console.log("BEFORE PythonRepository");
+// console.log("BEFORE PythonRepository");
 const pythonRepository = new PythonRepository();
-console.log("AFTER PythonRepository");
+// console.log("AFTER PythonRepository");
 
-console.log("BEFORE ModelRepository");
+// console.log("BEFORE ModelRepository");
 const modelRepository = new ModelRepository();
-console.log("AFTER ModelRepository");
-
-// const pythonValid = await pythonRepository.isValid();
-// if (pythonValid) {
-//   const dependencyRepository = new PythonDependencyRepository(
-//     pythonRepository
-//   );
-//
-//   await dependencyRepository.installMissingPackages();
-//
-//   console.log("Python environment is ready.");
-//
-//   const inferencePath = path.join(
-//     __dirname,
-//     "..",
-//     "inference",
-//     "inference.py"
-//   );
-//
-//   console.log("Inference script:", inferencePath);
-//
-//   const imagePath = "/Users/chodry/Desktop/images.jpg";
-//
-//   try {
-//     const result = await runInference(
-//       pythonRepository.pythonPath,
-//       inferencePath,
-//       imagePath
-//     );
-//
-//     console.log("Python result:", result);
-//   } catch (error) {
-//     console.error("Inference error:", error);
-//   }
-//
-// }
-
+// console.log("AFTER ModelRepository");
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -123,7 +87,7 @@ async function createWindow() {
   mainWindow.maximize()
 
   // Vite dev server
-  console.log(process.env.NODE_ENV)
+  // console.log(process.env.NODE_ENV)
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:3009');
   } else {
@@ -150,7 +114,7 @@ app.whenReady().then(() => {
     // autoUpdater.checkForUpdates();
     mainWindow.webContents.on("did-finish-load", () => {
         const dir = loadPath();
-        console.log(dir)
+        // console.log(dir)
 
         if (dir) {
             simpleAdbJson = new SimpleAdb(mainWindow, dir);
