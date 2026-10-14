@@ -263,7 +263,8 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                    <span className={`${isOpen.sync ? styles.open : ''} ${styles.icon}`}>▼</span>
                                 </div>
                                 <div className={`${isOpen.sync ? styles.open : ''} ${styles.content}`}>
-                                   <div className={`${styles.toolDiv}`}>
+                                   {/*<div className={`${styles.toolDiv}`}>*/}
+                                   <div>
                                         <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
                                             <span>Download Latest Changes</span>
                                         </div>
