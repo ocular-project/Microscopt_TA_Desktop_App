@@ -38,7 +38,7 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
     if (window.electronAPI?.openDownloadPage) {
         window.electronAPI.openDownloadPage();
     } else {
-        window.open("https://microscopyteachingaid.ocular-project.com/download/69e764bdbaaa263cbcb8c5aa", "_blank");
+        window.open("https://microscopyteachingaid.ocular-project.com/", "_blank");
     }
   };
 
