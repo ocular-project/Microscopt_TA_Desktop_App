@@ -138,14 +138,8 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
-  const result = await dialog.showOpenDialog({
-        properties: ["openFile"],
-        filters: [
-            {
-                name: "Images",
-                extensions: ["jpg", "jpeg", "png", "webp", "bmp"]
-            }
-        ]
+    const result = await dialog.showOpenDialog({
+        properties: ["openDirectory"]
     });
 
     if (result.canceled || result.filePaths.length === 0) {
@@ -153,7 +147,7 @@ ipcMain.handle('dialog:openDirectory', async () => {
     }
 
     return result.filePaths[0];
-})
+});
 
 ipcMain.handle("dialog:openImage", async () => {
     const result = await dialog.showOpenDialog({
