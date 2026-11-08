@@ -1,3 +1,4 @@
+
 import https from 'node:https';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,9 +23,34 @@ class AdbInstaller {
         );
     }
 
-    // -----------------------------
+    // --------------------------------
+    // REPORT PROGRESS
+    // --------------------------------
+
+    reportProgress(callback, step, message, percent = 0) {
+        const progress = {
+            type: 'progress',
+            step,
+            message,
+            percent
+        };
+
+        console.log(`[ADB] ${message}`);
+
+        try {
+            callback?.(progress);
+        } catch (error) {
+            console.error(
+                '[ADB] Progress callback failed:',
+                error.message
+            );
+        }
+    }
+
+    // --------------------------------
     // GET PLATFORM TOOLS URL
-    // -----------------------------
+    // --------------------------------
+
     getDownloadUrl() {
         switch (process.platform) {
             case 'win32':
@@ -38,14 +64,15 @@ class AdbInstaller {
 
             default:
                 throw new Error(
-                    `Unsupported platform: ${process.platform}`
+                    `Unsupported operating system: ${process.platform}`
                 );
         }
     }
 
-    // -----------------------------
+    // --------------------------------
     // GET ADB EXECUTABLE
-    // -----------------------------
+    // --------------------------------
+
     getAdbExecutable(directory = this.installDirectory) {
         const executable = process.platform === 'win32'
             ? 'adb.exe'
@@ -54,9 +81,10 @@ class AdbInstaller {
         return path.join(directory, executable);
     }
 
-    // -----------------------------
+    // --------------------------------
     // CHECK EXISTING INSTALLATION
-    // -----------------------------
+    // --------------------------------
+
     async checkInstallation() {
         const adbPath = this.getAdbExecutable();
 
@@ -69,21 +97,17 @@ class AdbInstaller {
         return result.success;
     }
 
-    // -----------------------------
+    // --------------------------------
     // DOWNLOAD FILE
-    // -----------------------------
-    async downloadFile(url, destination, redirects = 5) {
+    // --------------------------------
+
+    async downloadFile(url, destination, onProgress, redirects = 5) {
         if (redirects < 0) {
-            throw new Error('Too many download redirects');
+            throw new Error('Too many download redirects.');
         }
 
-        await fs.promises.mkdir(
-            path.dirname(destination),
-            { recursive: true }
-        );
-
         const response = await new Promise((resolve, reject) => {
-            https.get(url, (res) => {
+            const request = https.get(url, (res) => {
                 if (
                     res.statusCode >= 300 &&
                     res.statusCode < 400 &&
@@ -114,48 +138,80 @@ class AdbInstaller {
                 }
 
                 resolve({ response: res });
-            }).on('error', reject);
+            });
+
+            request.setTimeout(30000, () => {
+                request.destroy(
+                    new Error('Download timed out. Check your internet connection.')
+                );
+            });
+
+            request.on('error', reject);
         });
 
         if (response.redirect) {
             return this.downloadFile(
                 response.redirect,
                 destination,
+                onProgress,
                 redirects - 1
             );
         }
 
         const res = response.response;
 
-        const totalBytes = Number(res.headers['content-length']) || 0;
+        const totalBytes =
+            Number(res.headers['content-length']) || 0;
+
         let downloadedBytes = 0;
         let lastReportedPercent = -1;
+        let lastReportedMegabytes = 0;
+
+        await fs.promises.mkdir(
+            path.dirname(destination),
+            { recursive: true }
+        );
 
         const progressStream = new Transform({
             transform: (chunk, encoding, callback) => {
                 downloadedBytes += chunk.length;
 
+                const downloadedMB =
+                    downloadedBytes / (1024 * 1024);
+
                 if (totalBytes > 0) {
-                    const percent = Math.floor(
-                        (downloadedBytes / totalBytes) * 100
+                    const percent = Math.min(
+                        100,
+                        Math.floor(
+                            (downloadedBytes / totalBytes) * 100
+                        )
                     );
 
-                    if (
-                        percent !== lastReportedPercent &&
-                        percent % 5 === 0
-                    ) {
+                    if (percent !== lastReportedPercent) {
                         lastReportedPercent = percent;
 
-                        console.log(
-                            `[ADB] Download progress: ${percent}%`
-                        );
+                        onProgress?.({
+                            percent,
+                            downloadedBytes,
+                            totalBytes,
+                            downloadedMB: downloadedMB.toFixed(2),
+                            totalMB: (
+                                totalBytes / (1024 * 1024)
+                            ).toFixed(2)
+                        });
                     }
                 } else if (
-                    downloadedBytes % (5 * 1024 * 1024) < chunk.length
+                    downloadedMB - lastReportedMegabytes >= 1
                 ) {
-                    console.log(
-                        `[ADB] Downloaded ${(downloadedBytes / 1024 / 1024).toFixed(2)} MB`
-                    );
+                    lastReportedMegabytes = Math.floor(downloadedMB);
+
+                    onProgress?.({
+                        percent: null,
+                        downloadedBytes,
+                        totalBytes: 0,
+                        downloadedMB: downloadedMB.toFixed(2),
+                        totalMB: null
+                    });
                 }
 
                 callback(null, chunk);
@@ -169,7 +225,26 @@ class AdbInstaller {
                 fs.createWriteStream(destination)
             );
 
-            console.log('[ADB] Download completed successfully.');
+            if (
+                totalBytes > 0 &&
+                downloadedBytes !== totalBytes
+            ) {
+                throw new Error(
+                    'Downloaded file size does not match the expected size.'
+                );
+            }
+
+            onProgress?.({
+                percent: 100,
+                downloadedBytes,
+                totalBytes,
+                downloadedMB: (
+                    downloadedBytes / (1024 * 1024)
+                ).toFixed(2),
+                totalMB: totalBytes
+                    ? (totalBytes / (1024 * 1024)).toFixed(2)
+                    : null
+            });
 
         } catch (error) {
             await fs.promises.rm(destination, { force: true });
@@ -177,15 +252,26 @@ class AdbInstaller {
         }
     }
 
-    // -----------------------------
+    // --------------------------------
     // VERIFY ADB
-    // -----------------------------
+    // --------------------------------
+
     verifyAdb(adbPath) {
         return new Promise((resolve) => {
-            const proc = spawn(adbPath, ['version']);
+            const proc = spawn(adbPath, ['version'], {
+                windowsHide: true
+            });
 
             let output = '';
             let errorOutput = '';
+            let settled = false;
+
+            const finish = (result) => {
+                if (settled) return;
+
+                settled = true;
+                resolve(result);
+            };
 
             proc.stdout.on('data', (data) => {
                 output += data.toString();
@@ -196,28 +282,30 @@ class AdbInstaller {
             });
 
             proc.on('error', (error) => {
-                resolve({
+                finish({
                     success: false,
                     error: error.message
                 });
             });
 
             proc.on('close', (code) => {
-                resolve({
+                finish({
                     success: code === 0,
                     output: output.trim(),
                     error: code === 0
                         ? null
-                        : errorOutput || `ADB exited with code ${code}`
+                        : errorOutput.trim() ||
+                          `ADB exited with code ${code}`
                 });
             });
         });
     }
 
-    // -----------------------------
+    // --------------------------------
     // INSTALL ADB
-    // -----------------------------
-    async install() {
+    // --------------------------------
+
+    async install({ onProgress } = {}) {
         const stagingDirectory = path.join(
             this.toolsDirectory,
             `platform-tools-staging-${randomUUID()}`
@@ -228,28 +316,28 @@ class AdbInstaller {
             'platform-tools.zip'
         );
 
-        const backupDirectory = `${this.installDirectory}-backup`;
+        const backupDirectory = path.join(
+            this.toolsDirectory,
+            `platform-tools-backup-${randomUUID()}`
+        );
+
+        let backupCreated = false;
 
         try {
-            console.log('\n================================');
-            console.log('       ADB INSTALLATION');
-            console.log('================================\n');
-
-            console.log(`[ADB] Operating system: ${process.platform}`);
-            console.log(`[ADB] Architecture: ${process.arch}`);
-            console.log(`[ADB] Target: ${this.installDirectory}`);
-
-            // 1. Check existing installation
-            console.log('\n[ADB] Checking existing installation...');
+            this.reportProgress(
+                onProgress,
+                'checking',
+                'Checking existing ADB installation...',
+                0
+            );
 
             if (await this.checkInstallation()) {
-                console.log('[ADB] A working installation already exists.');
-
-                const verification = await this.verifyAdb(
-                    this.getAdbExecutable()
+                this.reportProgress(
+                    onProgress,
+                    'complete',
+                    'ADB is already installed and working.',
+                    100
                 );
-
-                console.log(verification.output);
 
                 return {
                     success: true,
@@ -258,8 +346,23 @@ class AdbInstaller {
                 };
             }
 
-            // 2. Prepare directories
-            console.log('\n[ADB] Preparing installation directory...');
+            // 1. Detect operating system
+            this.reportProgress(
+                onProgress,
+                'detecting',
+                `Detecting operating system: ${process.platform} (${process.arch})`,
+                5
+            );
+
+            const downloadUrl = this.getDownloadUrl();
+
+            // 2. Prepare directory
+            this.reportProgress(
+                onProgress,
+                'preparing',
+                'Preparing installation directory...',
+                10
+            );
 
             await fs.promises.mkdir(
                 stagingDirectory,
@@ -267,15 +370,39 @@ class AdbInstaller {
             );
 
             // 3. Download
-            const downloadUrl = this.getDownloadUrl();
+            this.reportProgress(
+                onProgress,
+                'download',
+                'Connecting to Google servers...',
+                12
+            );
 
-            console.log('\n[ADB] Starting Platform Tools download...');
-            console.log(`[ADB] Source: ${downloadUrl}`);
+            await this.downloadFile(
+                downloadUrl,
+                zipPath,
+                (progress) => {
+                    const percent = progress.percent;
 
-            await this.downloadFile(downloadUrl, zipPath);
+                    this.reportProgress(
+                        onProgress,
+                        'download',
+                        percent === null
+                            ? `Downloaded ${progress.downloadedMB} MB`
+                            : `Downloading Platform Tools: ${percent}% (${progress.downloadedMB} MB / ${progress.totalMB} MB)`,
+                        percent === null
+                            ? 12
+                            : 12 + Math.floor(percent * 0.53)
+                    );
+                }
+            );
 
             // 4. Extract
-            console.log('\n[ADB] Extracting Platform Tools...');
+            this.reportProgress(
+                onProgress,
+                'extracting',
+                'Extracting Android Platform Tools...',
+                67
+            );
 
             await extract(zipPath, {
                 dir: stagingDirectory
@@ -296,19 +423,39 @@ class AdbInstaller {
                 );
             }
 
-            console.log('[ADB] Extraction completed.');
+            this.reportProgress(
+                onProgress,
+                'extracting',
+                'Platform Tools extracted successfully.',
+                75
+            );
 
-            // 5. Set executable permissions
+            // 5. Permissions
             if (process.platform !== 'win32') {
-                console.log('\n[ADB] Setting executable permissions...');
+                this.reportProgress(
+                    onProgress,
+                    'permissions',
+                    'Setting ADB executable permissions...',
+                    80
+                );
 
-                await fs.promises.chmod(extractedAdb, 0o755);
+                await fs.promises.chmod(
+                    extractedAdb,
+                    0o755
+                );
             }
 
-            // 6. Verify before replacing installation
-            console.log('\n[ADB] Verifying downloaded ADB...');
+            // 6. Verify before installation
+            this.reportProgress(
+                onProgress,
+                'verification',
+                'Verifying downloaded ADB executable...',
+                85
+            );
 
-            const verification = await this.verifyAdb(extractedAdb);
+            const verification = await this.verifyAdb(
+                extractedAdb
+            );
 
             if (!verification.success) {
                 throw new Error(
@@ -318,28 +465,26 @@ class AdbInstaller {
 
             console.log(verification.output);
 
-            // 7. Replace installation atomically
-            console.log('\n[ADB] Installing Platform Tools...');
+            // 7. Replace installation
+            this.reportProgress(
+                onProgress,
+                'installation',
+                'Installing Platform Tools into application directory...',
+                90
+            );
 
             await fs.promises.mkdir(
                 this.toolsDirectory,
                 { recursive: true }
             );
 
-            await fs.promises.rm(backupDirectory, {
-                recursive: true,
-                force: true
-            });
-
-            const hadExistingDirectory = fs.existsSync(
-                this.installDirectory
-            );
-
-            if (hadExistingDirectory) {
+            if (fs.existsSync(this.installDirectory)) {
                 await fs.promises.rename(
                     this.installDirectory,
                     backupDirectory
                 );
+
+                backupCreated = true;
             }
 
             try {
@@ -348,23 +493,25 @@ class AdbInstaller {
                     this.installDirectory
                 );
             } catch (error) {
-                if (hadExistingDirectory) {
+                if (backupCreated) {
                     await fs.promises.rename(
                         backupDirectory,
                         this.installDirectory
                     );
+
+                    backupCreated = false;
                 }
 
                 throw error;
             }
 
-            await fs.promises.rm(backupDirectory, {
-                recursive: true,
-                force: true
-            });
-
             // 8. Final verification
-            console.log('\n[ADB] Performing final verification...');
+            this.reportProgress(
+                onProgress,
+                'verification',
+                'Performing final ADB verification...',
+                95
+            );
 
             const finalAdbPath = this.getAdbExecutable();
 
@@ -374,16 +521,31 @@ class AdbInstaller {
 
             if (!finalVerification.success) {
                 throw new Error(
-                    `Final verification failed: ${finalVerification.error}`
+                    `Final ADB verification failed: ${finalVerification.error}`
                 );
             }
 
-            console.log(finalVerification.output);
+            // Remove old backup only after successful verification
+            if (backupCreated) {
+                await fs.promises.rm(
+                    backupDirectory,
+                    {
+                        recursive: true,
+                        force: true
+                    }
+                );
 
-            console.log('\n================================');
-            console.log('   ADB INSTALLATION SUCCESSFUL');
-            console.log('================================');
-            console.log(`[ADB] Executable: ${finalAdbPath}\n`);
+                backupCreated = false;
+            }
+
+            this.reportProgress(
+                onProgress,
+                'complete',
+                'ADB installation completed successfully!',
+                100
+            );
+
+            console.log(finalVerification.output);
 
             return {
                 success: true,
@@ -392,8 +554,48 @@ class AdbInstaller {
             };
 
         } catch (error) {
-            console.error('\n[ADB] INSTALLATION FAILED');
-            console.error(error);
+            console.error(
+                '[ADB] Installation error:',
+                error
+            );
+
+            // Restore previous installation if possible
+            if (
+                backupCreated &&
+                fs.existsSync(backupDirectory)
+            ) {
+                try {
+                    if (fs.existsSync(this.installDirectory)) {
+                        await fs.promises.rm(
+                            this.installDirectory,
+                            {
+                                recursive: true,
+                                force: true
+                            }
+                        );
+                    }
+
+                    await fs.promises.rename(
+                        backupDirectory,
+                        this.installDirectory
+                    );
+
+                    backupCreated = false;
+
+                } catch (restoreError) {
+                    console.error(
+                        '[ADB] Backup restoration failed:',
+                        restoreError
+                    );
+                }
+            }
+
+            this.reportProgress(
+                onProgress,
+                'error',
+                'ADB installation failed.',
+                0
+            );
 
             return {
                 success: false,
@@ -401,11 +603,40 @@ class AdbInstaller {
             };
 
         } finally {
-            await fs.promises.rm(stagingDirectory, {
-                recursive: true,
-                force: true
+            await fs.promises.rm(
+                stagingDirectory,
+                {
+                    recursive: true,
+                    force: true
+                }
+            ).catch((error) => {
+                console.error(
+                    '[ADB] Temporary directory cleanup failed:',
+                    error.message
+                );
             });
         }
+    }
+
+    async checkInternetConnection() {
+        return new Promise((resolve) => {
+            const request = https.get(
+                'https://dl.google.com',
+                (response) => {
+                    response.resume();
+                    resolve(true);
+                }
+            );
+
+            request.setTimeout(8000, () => {
+                request.destroy();
+                resolve(false);
+            });
+
+            request.on('error', () => {
+                resolve(false);
+            });
+        });
     }
 }
 

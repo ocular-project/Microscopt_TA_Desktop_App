@@ -59,7 +59,21 @@ autoUpdater.forceDevUpdateConfig = true;
 let mainWindow
 
 // console.log("BEFORE AdbManager");
-const adbManager = new AdbManager();
+// const adbManager = new AdbManager();
+let adbInstaller = null;
+let adbManager = null;
+
+let adbInstallationInProgress = false;
+
+let adbState = {
+    status: 'checking',
+    message: 'Checking ADB installation...',
+    step: 'check',
+    percent: 0,
+    error: null,
+    logs: []
+};
+
 // console.log("AFTER AdbManager");
 
 // console.log("BEFORE ScrcpyManager");
@@ -114,20 +128,34 @@ async function createWindow() {
 
 app.whenReady().then(async () => {
 
-    await initializeAdb()
+    console.log('[APP] Electron application starting...');
+
+    adbInstaller = new AdbInstaller(app);
+
+    adbManager = new AdbManager(
+        adbInstaller.getAdbExecutable()
+    );
+
+    registerAdbHandlers();
 
     createWindow()
+
     // autoUpdater.checkForUpdates();
-    mainWindow.webContents.on("did-finish-load", () => {
-        const dir = loadPath();
-        // console.log(dir)
+    if(mainWindow) {
+        mainWindow.webContents.once('did-finish-load', async () => {
+            console.log('[APP] React renderer loaded.');
+            console.log('[APP] Starting ADB initialization...');
 
-        if (dir) {
-            simpleAdbJson = new SimpleAdb(mainWindow, dir);
-        }
+            const dir = loadPath();
 
-        autoUpdater.checkForUpdates();
-    });
+            // await initializeAdb()
+            if (dir) {
+                simpleAdbJson = new SimpleAdb(mainWindow, dir);
+            }
+
+            autoUpdater.checkForUpdates();
+        });
+    }
 });
 
 app.on("window-all-closed", () => {
@@ -143,76 +171,16 @@ app.on('activate', () => {
   if (mainWindow === null) createWindow();
 });
 
-
-async function initializeAdb() {
-    console.log('\n[APP] Initializing Android Debug Bridge...');
-
-    const installer = new AdbInstaller(app);
-
-    const adbManager = new AdbManager(
-        installer.getAdbExecutable()
-    );
-
-    // 1. Check whether ADB is already available
-    console.log('[APP] Checking whether ADB is installed...');
-
-    console.log('[APP] FORCING ADB INSTALLATION TEST...');
-
-    const installation = await installer.install();
-
-    if (!installation.success) {
-        console.error(
-            '[APP] ADB installation failed:',
-            installation.error
-        );
-
-        return;
+ipcMain.on('app:close', () => {
+    if (simpleAdbJson) {
+         simpleAdbJson.stopPolling()
     }
+    app.quit();
+});
 
-    console.log('[APP] Installation completed.');
-    console.log('[APP] Installed ADB:', installation.adbPath);
-
-    // const check = await adbManager.checkAdbInstalled();
-    //
-    // if (check.success) {
-    //     console.log('[APP] ADB is already available.');
-    //     console.log(
-    //         `[APP] Using: ${adbManager.getAdbPath()}`
-    //     );
-    // } else {
-    //     console.log('[APP] ADB was not found or could not run.');
-    //     console.log('[APP] Starting automatic installation...');
-    //
-    //     // 2. Install ADB
-    //     const installation = await installer.install();
-    //
-    //     if (!installation.success) {
-    //         console.error(
-    //             '[APP] ADB installation failed:',
-    //             installation.error
-    //         );
-    //
-    //         return;
-    //     }
-    //
-    //     console.log('[APP] Installation completed.');
-    // }
-
-    // 3. Verify using the actual AdbManager
-    console.log('\n[APP] Performing final ADB manager check...');
-
-    const finalCheck = await adbManager.checkAdbInstalled();
-
-    if (!finalCheck.success) {
-        console.error('[APP] ADB is still not working.');
-
-        return;
-    }
-
-    console.log('[APP] ADB is ready!');
-    console.log(`[APP] ADB path: ${adbManager.getAdbPath()}`);
-}
-
+ipcMain.handle('adb:check-internet', async () => {
+    return await adbInstaller.checkInternetConnection();
+});
 
 ipcMain.handle('dialog:openDirectory', async () => {
     const result = await dialog.showOpenDialog({
@@ -899,6 +867,230 @@ ipcMain.handle("model:download", async (event) => {
         );
     }
 });
+
+
+// ------------------------------------
+// ADB STATUS MANAGEMENT
+// ------------------------------------
+
+function updateAdbState({
+    status,
+    message,
+    step,
+    percent,
+    error = null
+}) {
+    adbState = {
+        ...adbState,
+        status,
+        message,
+        step,
+        percent,
+        error
+    };
+
+    const log = {
+        timestamp: new Date().toISOString(),
+        status,
+        step,
+        message,
+        percent,
+        error
+    };
+
+    adbState.logs = [
+        ...adbState.logs,
+        log
+    ].slice(-100);
+
+    console.log(`[ADB] ${message}`);
+
+    if (error) {
+        console.error(`[ADB ERROR] ${error}`);
+    }
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(
+            'adb:status-changed',
+            adbState
+        );
+    }
+}
+
+// ------------------------------------
+// ADB INSTALLATION
+// ------------------------------------
+
+async function initializeAdb() {
+    if (adbInstallationInProgress) {
+        return {
+            success: false,
+            error: 'ADB installation is already running.'
+        };
+    }
+
+    adbInstallationInProgress = true;
+
+    try {
+        updateAdbState({
+            status: 'checking',
+            step: 'check',
+            message: 'Checking whether ADB is installed...',
+            percent: 0
+        });
+
+        // Check existing ADB installation
+        // const check = await adbManager.checkAdbInstalled();
+        //
+        // if (check.success) {
+        //     updateAdbState({
+        //         status: 'ready',
+        //         step: 'complete',
+        //         message: 'ADB is already installed and working.',
+        //         percent: 100
+        //     });
+        //
+        //     console.log(
+        //         `[APP] Using ADB: ${adbManager.getAdbPath()}`
+        //     );
+        //
+        //     return {
+        //         success: true,
+        //         adbPath: adbManager.getAdbPath(),
+        //         alreadyInstalled: true
+        //     };
+        // }
+
+        // ADB missing: installation required
+        updateAdbState({
+            status: 'installing',
+            step: 'download',
+            message: 'ADB was not found. Preparing Platform Tools download...',
+            percent: 0
+        });
+
+        console.log('[APP] Starting automatic ADB installation...');
+
+        // The installer must support this callback for detailed
+        // progress events. See the note after the code.
+        const installation = await adbInstaller.install({
+            onProgress: (progress) => {
+                updateAdbState({
+                    status: 'installing',
+                    step: progress.step,
+                    message: progress.message,
+                    percent: progress.percent ?? 0
+                });
+            }
+        });
+
+        if (!installation.success) {
+            throw new Error(
+                installation.error || 'ADB installation failed.'
+            );
+        }
+
+        // Verify using AdbManager
+        updateAdbState({
+            status: 'installing',
+            step: 'verification',
+            message: 'Verifying ADB installation...',
+            percent: 95
+        });
+
+        const finalCheck = await adbManager.checkAdbInstalled();
+
+        if (!finalCheck.success) {
+            throw new Error(
+                finalCheck.error || 'ADB verification failed.'
+            );
+        }
+
+        updateAdbState({
+            status: 'ready',
+            step: 'complete',
+            message: 'ADB installation completed successfully.',
+            percent: 100
+        });
+
+        console.log(
+            `[APP] ADB ready: ${adbManager.getAdbPath()}`
+        );
+
+        return {
+            success: true,
+            adbPath: adbManager.getAdbPath(),
+            alreadyInstalled: false
+        };
+
+    } catch (error) {
+        updateAdbState({
+            status: 'error',
+            step: adbState.step,
+            message: 'ADB installation failed.',
+            error: error.message
+        });
+
+        return {
+            success: false,
+            error: error.message
+        };
+
+    } finally {
+        adbInstallationInProgress = false;
+    }
+}
+
+// ------------------------------------
+// IPC HANDLERS
+// ------------------------------------
+
+function registerAdbHandlers() {
+
+    // Get current installation state
+    ipcMain.handle('adb:get-status', () => {
+        return adbState;
+    });
+
+    // Retry installation
+    ipcMain.handle('adb:retry-install', async () => {
+        if (adbInstallationInProgress) {
+            return {
+                success: false,
+                error: 'ADB installation is already running.'
+            };
+        }
+
+        return initializeAdb();
+    });
+
+    // Check ADB
+    ipcMain.handle('adb:check', async () => {
+        return adbManager.checkAdbInstalled();
+    });
+
+    // Get connected devices
+    // ipcMain.handle('adb:get-devices', async () => {
+    //     return adbManager.getDevices();
+    // });
+
+    // Execute ADB version check
+    ipcMain.handle('adb:get-version', async () => {
+        return adbManager.getAdbVersion();
+    });
+
+    ipcMain.handle('adb:start-install', async () => {
+        return await initializeAdb();
+    });
+
+    // Check device shell access
+    // ipcMain.handle(
+    //     'adb:check-device',
+    //     async (_event, deviceId) => {
+    //         return adbManager.enableUsbDebugging(deviceId);
+    //     }
+    // );
+}
 
 
 

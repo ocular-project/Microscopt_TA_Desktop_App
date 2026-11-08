@@ -20,6 +20,172 @@ import DOMPurify from "dompurify";
 import Devices from "./components/home/Devices.jsx";
 import Adb from "./Adb.jsx";
 import ModelAnalyzer from "./components/home/model/ModelAnalyzer.jsx";
+import { TriangleAlert, Globe, Download, Loader2 } from "lucide-react";
+
+// --------------------------------------------------
+// ADB SETUP POPUP
+// --------------------------------------------------
+
+
+const AdbSetupPopup = ({
+    status,
+    onRetry,
+    onDismiss
+}) => {
+    if (
+        !status ||
+        !['checking-internet', 'installing', 'error'].includes(status.status)
+    ) {
+        return null;
+    }
+
+    const isChecking = status.status === 'checking-internet';
+    const isInstalling = status.status === 'installing';
+    const isError = status.status === 'error';
+
+    const percent = Math.min(100, Math.max(0, status.percent || 0));
+
+    return (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+                {/* Close button: only available on error */}
+                {/*{isError && (*/}
+                {/*    <button*/}
+                {/*        onClick={onDismiss}*/}
+                {/*        className="absolute right-4 top-4 text-slate-400 hover:text-slate-700"*/}
+                {/*        aria-label="Close"*/}
+                {/*    >*/}
+                {/*        ✕*/}
+                {/*    </button>*/}
+                {/*)}*/}
+
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                    <div className={`rounded-xl p-3 ${
+                        isError
+                          ? 'bg-red-50 text-red-600'
+                          : 'bg-secondary text-primary'
+                    }`}>
+                        {isError ? (
+                            <TriangleAlert />
+
+                        ) : isChecking ? (
+                            <Globe />
+                            // <span className="text-2xl">🌐</span>
+                        ) : (
+                            <Download />
+                            // <span className="text-2xl">⬇</span>
+                        )}
+                    </div>
+
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-900">
+                            {isChecking
+                                ? 'Checking Internet Connection'
+                                : isInstalling
+                                    ? 'Setting up Android Debug Bridge'
+                                    : 'ADB Installation Failed'}
+                        </h3>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                            {isChecking
+                                ? 'Checking whether the download servers are reachable.'
+                                : isInstalling
+                                    ? 'Preparing your Android device connection environment.'
+                                    : 'We could not complete the ADB installation.'}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Internet checking */}
+                {isChecking && (
+                    <div className="mt-7 rounded-lg bg-secondary p-4">
+                        <div className="flex items-center gap-3">
+                            <Loader2 className="h-7 w-7 animate-spin text-primary"/>
+                            {/*<div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600" />*/}
+
+                            <p className="text-xs text-primary">
+                                {status.message || 'Checking internet connectivity...'}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Installation progress */}
+                {isInstalling && (
+                    <div className="mt-7 space-y-4">
+                        <div>
+                            <div className="mb-2 flex items-center justify-between">
+                                <span className="text-xs font-semibold text-slate-700">
+                                    {status.step || 'Installing'}
+                                </span>
+
+                                <span className="text-xs font-semibold text-primary">
+                                    {percent}%
+                                </span>
+                            </div>
+
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                    className="h-full rounded-full bg-primary transition-all duration-300"
+                                    style={{ width: `${percent}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="rounded-lg bg-slate-50 p-3">
+                            <p className="text-xs leading-relaxed text-slate-600">
+                                {status.message || 'Please wait while installation completes.'}
+                            </p>
+                        </div>
+
+                        <p className="text-center text-[10px] text-slate-400">
+                            Please do not close the application during installation.
+                        </p>
+                    </div>
+                )}
+
+                {/* Error */}
+                {isError && (
+                    <div className="mt-6 space-y-4">
+                        <div className="rounded-lg border border-red-100 bg-red-50 p-4">
+                            <p className="text-xs font-semibold text-red-700">
+                                Error details
+                            </p>
+
+                            <p className="mt-2 break-words text-xs leading-relaxed text-red-600">
+                                {status.error || status.message || 'An unexpected error occurred.'}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3 items-center justify-between">
+                            <button
+                                onClick={onDismiss}
+                                className="rounded-lg w-full bg-slate-100 px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                            >
+                                Dismiss
+                            </button>
+
+                            <button
+                                onClick={onRetry}
+                                className="rounded-lg w-full bg-primary px-4 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                            >
+                                Retry
+                            </button>
+
+                        </div>
+
+                        <p className="text-center text-[10px] text-slate-400">
+                            Check your internet connection and try again.
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 
 // Update Notification Component
 const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, downloadData, error }) => {
@@ -231,73 +397,253 @@ function App() {
     const [error, setError] = useState(null)
     const [downloadData, setDownloadData] = useState(null)
     const [path, setPath] = useState(null)
-    const [adb, setAdb] = useState(false)
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [internetChecked, setInternetChecked] = useState(false);
+    // const [adb, setAdb] = useState(false)
+
+    const [adbStatus, setAdbStatus] = useState({
+        status: 'checking',
+        message: 'Checking Android Debug Bridge...',
+        percent: 0
+    });
+
+    const [adbDismissed, setAdbDismissed] = useState(false);
+
+    useEffect(() => {
+        const handleOnline = () => {
+            console.log('[NETWORK] Internet connection detected.');
+            setIsOnline(true);
+        };
+
+        const handleOffline = () => {
+            console.log('[NETWORK] Internet connection lost.');
+            setIsOnline(false);
+        };
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
+    const checkInternetConnection = async () => {
+        try {
+            const response = await fetch(
+                'https://dl.google.com',
+                {
+                    method: 'HEAD',
+                    cache: 'no-store',
+                    signal: AbortSignal.timeout(8000)
+                }
+            );
+
+            return response.ok;
+        } catch (error) {
+            console.error('[NETWORK] Internet check failed:', error);
+            return false;
+        }
+    };
 
     useEffect(() => {
         // Listen for updates from Electron
-        if (window.electronAPI && window.electronAPI.onUpdateAvailable) {
-            window.electronAPI.onUpdateAvailable((data) => {
-                // console.log('Update received:', data);
-                setUpdateInfo(data);
-            });
-        }
+        if (!window.electronAPI?.onUpdateAvailable) return;
+
+        const unsubscribe = window.electronAPI.onUpdateAvailable((data) => {
+            setUpdateInfo(data);
+        });
+
+        return () => {
+            if (typeof unsubscribe === 'function') {
+                unsubscribe();
+            }
+        };
     }, []);
 
     useEffect(() => {
-        // checkADBInstalled()
+        const adbAPI = window.electronAPI?.adb;
+
+        if (!adbAPI) return;
+
+        const unsubscribe = adbAPI.onStatusChanged((data) => {
+            console.log('[REACT ADB UPDATE]', data);
+            setAdbStatus(data);
+        });
+
+        return () => {
+            unsubscribe?.();
+        };
     }, []);
 
     useEffect(() => {
-        const load = async () => {
-            // console.log("pathx")
-            const pathx = await window.electronAPI.getPath();
-            // console.log(pathx)
-            setPath(pathx);
+        let mounted = true;
+
+        const initializeAdb = async () => {
+            try {
+                const adbAPI = window.electronAPI?.adb;
+
+                if (!adbAPI) return;
+
+                // First retrieve the current ADB state.
+                const currentStatus = await adbAPI.getStatus();
+
+                if (!mounted) return;
+
+                if (currentStatus?.status === 'ready') {
+                    setAdbStatus(currentStatus);
+                    return;
+                }
+
+                // setAdbStatus(currentStatus);
+                setAdbStatus({
+                    status: 'checking-internet',
+                    step: 'Checking connectivity',
+                    message: 'Checking internet connection before downloading Android Platform Tools...',
+                    percent: 0
+                });
+
+                // ADB is already ready. No installation required.
+                if (currentStatus.status === 'ready') return;
+
+                // Check internet connectivity.
+                console.log('[NETWORK] Checking internet connection...');
+
+                const connected = await window.electronAPI.checkInternet();
+
+                if (!mounted) return;
+
+                setInternetChecked(true);
+                setIsOnline(connected);
+
+                if (!connected) {
+                    setAdbStatus({
+                        status: 'error',
+                        step: 'Internet connection required',
+                        message: 'An internet connection is required to download Android Platform Tools.',
+                        error: 'Unable to reach Google download servers. Please check your internet connection and retry.'
+                    });
+
+                    return;
+                }
+
+                // Internet is available. Start ADB installation.
+                setAdbStatus({
+                    status: 'installing',
+                    step: 'Starting installation',
+                    message: 'Preparing Android SDK Platform Tools...',
+                    percent: 0
+                });
+
+                console.log('[ADB] Starting installation...');
+
+                const result = await adbAPI.startInstall();
+
+                if (!mounted) return;
+
+                if (result && result.success === false) {
+                    setAdbStatus({
+                        status: 'error',
+                        step: 'Installation failed',
+                        message: 'ADB installation could not be completed.',
+                        error: result.error || 'Unknown installation error.'
+                    });
+                }
+
+
+            } catch (error) {
+                console.error('[ADB] Initialization failed:', error);
+
+                if (mounted) {
+                    setAdbStatus({
+                        status: 'error',
+                        message: 'ADB initialization failed.',
+                        error: error.message
+                    });
+                }
+            }
         };
 
-        load();
+        initializeAdb();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const loadPath = async () => {
+            try {
+                if (!window.electronAPI?.getPath) return;
+
+                const pathx = await window.electronAPI.getPath();
+                setPath(pathx);
+            } catch (err) {
+                console.error('[APP] Could not retrieve application path:', err);
+            }
+        };
+
+        loadPath();
 
     }, []);
 
-    async function checkADBInstalled() {
-        const res = await window.electronAPI.checkAdbInstalled();
-        if (res.success) {
-          setAdb(false)
-          // console.log("ADB is installed");
-        } else {
-          setAdb(true)
-          console.error("Error:", res.error);
-        }
-    }
+    // async function checkADBInstalled() {
+    //     const res = await window.electronAPI.checkAdbInstalled();
+    //     if (res.success) {
+    //       setAdb(false)
+    //       // console.log("ADB is installed");
+    //     } else {
+    //       setAdb(true)
+    //       console.error("Error:", res.error);
+    //     }
+    // }
 
-   //
-   // useEffect(() => {
-   //    window.electronAPI.onUpdateStatus((data) => {
-   //      if (data.status === "downloaded") {
-   //        setIsDownloading(false);
-   //      }
-   //
-   //      if (data.status === "error") {
-   //        setIsDownloading(false);
-   //        setError(data.message);
-   //      }
-   //    });
-   // }, []);
-   //
-   // useEffect(() => {
-   //    window.electronAPI.onDownloadProgress((data) => {
-   //      setDownloadData(data);
-   //    });
-   // }, []);
+   const retryAdbInstallation = async () => {
+        setAdbDismissed(false);
+
+        const connected = await checkInternetConnection();
+
+        setIsOnline(connected);
+
+        if (!connected) {
+            setAdbStatus({
+                status: 'error',
+                step: 'Internet connection required',
+                message: 'Please connect to the internet.',
+                error: 'Unable to reach Google download servers. Please check your internet connection and retry.'
+            });
+
+            return;
+        }
+
+        try {
+            await window.electronAPI.adb.retryInstall();
+        } catch (error) {
+            setAdbStatus({
+                status: 'error',
+                message: 'ADB installation failed.',
+                error: error.message
+            });
+        }
+    };
+
+   const showAdbPopup =
+    !adbDismissed &&
+    ['checking-internet', 'installing', 'error'].includes(adbStatus.status);
 
   return (
     // <HashRouter>
       <div className="min-h-screen relative">
-          {
-              adb && (
-                  <Adb />
-              )
-          }
+
+           {/* ADB Installation Popup */}
+            {showAdbPopup && (
+                <AdbSetupPopup
+                    status={adbStatus}
+                    onRetry={retryAdbInstallation}
+                    onDismiss={() => window.electronAPI.closeApp()}
+                />
+            )}
 
         {/*Update Popup Layer*/}
         <UpdatePopup

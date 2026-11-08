@@ -3,6 +3,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 console.log("✅ Preload loaded");
 
 contextBridge.exposeInMainWorld('electronAPI', {
+    closeApp: () => ipcRenderer.send('app:close'),
+    checkInternet: () => ipcRenderer.invoke('adb:check-internet'),
+
     selectFolder: () => ipcRenderer.invoke('dialog:openDirectory'),
     selectImages: (parentId) => ipcRenderer.invoke('dialog:openImagePicker', parentId),
     selectImage: () => ipcRenderer.invoke('dialog:openOneImagePicker'),
@@ -97,5 +100,63 @@ contextBridge.exposeInMainWorld('electronAPI', {
                 listener
             );
         };
+    },
+
+    adb: {
+
+        // Get current ADB installation state
+        getStatus: () => {
+            return ipcRenderer.invoke('adb:get-status');
+        },
+
+        // Listen for installation progress and status changes
+        onStatusChanged: (callback) => {
+            const listener = (_event, data) => {
+                callback(data);
+            };
+
+            ipcRenderer.on(
+                'adb:status-changed',
+                listener
+            );
+
+            // Return cleanup function
+            return () => {
+                ipcRenderer.removeListener(
+                    'adb:status-changed',
+                    listener
+                );
+            };
+        },
+
+        // Retry installation
+        retryInstall: () => {
+            return ipcRenderer.invoke('adb:retry-install');
+        },
+
+        startInstall: () => ipcRenderer.invoke('adb:start-install')
+
+        // Check ADB installation
+        // check: () => {
+        //     return ipcRenderer.invoke('adb:check');
+        // },
+
+        // Get connected Android devices
+        // getDevices: () => {
+        //     return ipcRenderer.invoke('adb:get-devices');
+        // },
+
+        // Get ADB version
+        // getVersion: () => {
+        //     return ipcRenderer.invoke('adb:get-version');
+        // },
+
+        // Check device shell access
+        // checkDevice: (deviceId) => {
+        //     return ipcRenderer.invoke(
+        //         'adb:check-device',
+        //         deviceId
+        //     );
+        // }
     }
 })
