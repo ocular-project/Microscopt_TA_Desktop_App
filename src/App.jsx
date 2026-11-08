@@ -244,7 +244,7 @@ function App() {
     }, []);
 
     useEffect(() => {
-        checkADBInstalled()
+        // checkADBInstalled()
     }, []);
 
     useEffect(() => {

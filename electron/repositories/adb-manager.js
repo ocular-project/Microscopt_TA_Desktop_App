@@ -1,240 +1,334 @@
-import { spawn } from 'node:child_process';
-import { execSync } from 'node:child_process';
-import path from 'path';
-import fs from 'fs';
+
+import { spawn, execSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
 
 class AdbManager {
-  constructor() {
-    this.devices = [];
-  }
-
-  // -----------------------------
-  // ADB PATH RESOLVER
-  // -----------------------------
-  getAdbPath() {
-    const platform = process.platform;
-
-    try {
-      // 1. Try system PATH first
-      if (platform === 'win32') {
-        const result = execSync('where adb').toString().split('\n')[0].trim();
-        if (result) return result;
-      } else {
-        const result = execSync('which adb').toString().trim();
-        if (result) return result;
-      }
-    } catch (_) {}
-
-    const home = process.env.HOME || process.env.USERPROFILE || '';
-
-    const possiblePaths = [];
-
-    if (platform === 'win32') {
-      possiblePaths.push(
-        'C:\\Android\\Sdk\\platform-tools\\adb.exe',
-        'C:\\Android\\platform-tools\\adb.exe',
-        'C:\\platform-tools\\adb.exe', // ✅ your custom path
-        path.join(process.env.LOCALAPPDATA || '', 'Android\\Sdk\\platform-tools\\adb.exe'),
-        path.join(process.env.USERPROFILE || '', 'AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe')
-      );
+    constructor(managedAdbPath = null) {
+        this.devices = [];
+        this.managedAdbPath = managedAdbPath;
     }
 
-    if (platform === 'darwin') {
-      possiblePaths.push(
-        '/usr/local/bin/adb',
-        '/opt/homebrew/bin/adb',
-        `${home}/Library/Android/sdk/platform-tools/adb`,
-        `${home}/platform-tools/adb` // ✅ your custom path
-      );
-    }
+    // -----------------------------
+    // ADB PATH RESOLVER
+    // -----------------------------
+    getAdbPath() {
+        const platform = process.platform;
 
-    if (platform === 'linux') {
-      possiblePaths.push(
-        '/usr/bin/adb',
-        '/usr/local/bin/adb',
-        `${home}/Android/Sdk/platform-tools/adb`,
-        `${home}/platform-tools/adb`
-      );
-    }
-
-    for (const p of possiblePaths) {
-      if (p && fs.existsSync(p)) {
-        return p;
-      }
-    }
-
-    return null;
-  }
-
-  // -----------------------------
-  // CHECK ADB
-  // -----------------------------
-  async checkAdbInstalled() {
-    return new Promise((resolve) => {
-      const adbPath = this.getAdbPath();
-
-      if (!adbPath) {
-        return resolve({
-          success: false,
-          error: 'ADB not found on system (install or set platform-tools path)'
-        });
-      }
-
-      const proc = spawn(adbPath, ['version']);
-
-      let resolved = false;
-
-      proc.on('error', (error) => {
-        if (!resolved) {
-          resolved = true;
-          resolve({
-            success: false,
-            error: error.message || 'ADB failed to run'
-          });
+        // 1. Prefer application-managed ADB
+        if (
+            this.managedAdbPath &&
+            fs.existsSync(this.managedAdbPath)
+        ) {
+            return this.managedAdbPath;
         }
-      });
 
-      proc.on('exit', (code) => {
-        if (!resolved) {
-          resolved = true;
+        // 2. Check system PATH
+        try {
+            if (platform === 'win32') {
+                const result = execSync('where adb', {
+                    encoding: 'utf8',
+                    windowsHide: true,
+                    stdio: ['ignore', 'pipe', 'ignore']
+                }).split(/\r?\n/)[0].trim();
 
-          resolve({
-            success: code === 0,
-            error: code === 0 ? null : `ADB exited with code ${code}`
-          });
+                if (result && fs.existsSync(result)) {
+                    return result;
+                }
+            } else {
+                const result = execSync('which adb', {
+                    encoding: 'utf8',
+                    stdio: ['ignore', 'pipe', 'ignore']
+                }).trim();
+
+                if (result && fs.existsSync(result)) {
+                    return result;
+                }
+            }
+        } catch (_) {
+            // ADB is not available through system PATH
         }
-      });
-    });
-  }
 
-  // -----------------------------
-  // GET DEVICES
-  // -----------------------------
-  async getDevices() {
-    return new Promise((resolve) => {
-      const adbPath = this.getAdbPath();
+        // 3. Check common installation directories
+        const home =
+            process.env.HOME ||
+            process.env.USERPROFILE ||
+            '';
 
-      if (!adbPath) {
-        return resolve({
-          success: false,
-          error: 'ADB not found on system'
+        const possiblePaths = [];
+
+        if (platform === 'win32') {
+            possiblePaths.push(
+                'C:\\Android\\Sdk\\platform-tools\\adb.exe',
+                'C:\\Android\\platform-tools\\adb.exe',
+                'C:\\platform-tools\\adb.exe',
+                path.join(
+                    process.env.LOCALAPPDATA || '',
+                    'Android',
+                    'Sdk',
+                    'platform-tools',
+                    'adb.exe'
+                ),
+                path.join(
+                    home,
+                    'AppData',
+                    'Local',
+                    'Android',
+                    'Sdk',
+                    'platform-tools',
+                    'adb.exe'
+                )
+            );
+        }
+
+        if (platform === 'darwin') {
+            possiblePaths.push(
+                '/usr/local/bin/adb',
+                '/opt/homebrew/bin/adb',
+                path.join(
+                    home,
+                    'Library',
+                    'Android',
+                    'sdk',
+                    'platform-tools',
+                    'adb'
+                ),
+                path.join(
+                    home,
+                    'platform-tools',
+                    'adb'
+                )
+            );
+        }
+
+        if (platform === 'linux') {
+            possiblePaths.push(
+                '/usr/bin/adb',
+                '/usr/local/bin/adb',
+                path.join(
+                    home,
+                    'Android',
+                    'Sdk',
+                    'platform-tools',
+                    'adb'
+                ),
+                path.join(
+                    home,
+                    'platform-tools',
+                    'adb'
+                )
+            );
+        }
+
+        for (const adbPath of possiblePaths) {
+            if (adbPath && fs.existsSync(adbPath)) {
+                return adbPath;
+            }
+        }
+
+        return null;
+    }
+
+    // -----------------------------
+    // EXECUTE ADB COMMAND
+    // -----------------------------
+    executeAdb(args = [], deviceId = null) {
+        return new Promise((resolve) => {
+            const adbPath = this.getAdbPath();
+
+            if (!adbPath) {
+                return resolve({
+                    success: false,
+                    error: 'ADB not found on system.'
+                });
+            }
+
+            const commandArgs = deviceId
+                ? ['-s', deviceId, ...args]
+                : args;
+
+            const proc = spawn(adbPath, commandArgs, {
+                windowsHide: true
+            });
+
+            let output = '';
+            let errorOutput = '';
+            let resolved = false;
+
+            const finish = (result) => {
+                if (resolved) return;
+
+                resolved = true;
+                resolve(result);
+            };
+
+            proc.stdout.on('data', (data) => {
+                output += data.toString();
+            });
+
+            proc.stderr.on('data', (data) => {
+                errorOutput += data.toString();
+            });
+
+            proc.on('error', (error) => {
+                finish({
+                    success: false,
+                    error: `Failed to execute ADB: ${error.message}`
+                });
+            });
+
+            proc.on('close', (code) => {
+                finish({
+                    success: code === 0,
+                    code,
+                    output: output.trim(),
+                    error: code === 0
+                        ? null
+                        : errorOutput.trim() ||
+                          `ADB exited with code ${code}`
+                });
+            });
         });
-      }
+    }
 
-      const proc = spawn(adbPath, ['devices', '-l']);
+    // -----------------------------
+    // CHECK ADB INSTALLATION
+    // -----------------------------
+    async checkAdbInstalled() {
+        const result = await this.executeAdb(['version']);
 
-      let output = '';
-      let errorOutput = '';
+        return {
+            success: result.success,
+            error: result.error,
+            version: result.output || null
+        };
+    }
 
-      proc.stdout.on('data', (data) => {
-        output += data.toString();
-      });
+    // -----------------------------
+    // GET DEVICES
+    // -----------------------------
+    async getDevices() {
+        const result = await this.executeAdb([
+            'devices',
+            '-l'
+        ]);
 
-      proc.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      proc.on('error', (error) => {
-        resolve({
-          success: false,
-          error: `Failed to execute adb: ${error.message}`
-        });
-      });
-
-      proc.on('exit', (code) => {
-        if (code !== 0) {
-          return resolve({
-            success: false,
-            error: errorOutput || `ADB command failed with code ${code}`
-          });
+        if (!result.success) {
+            return {
+                success: false,
+                error: result.error
+            };
         }
 
         try {
-          const devices = this.parseDeviceList(output);
-          this.devices = devices;
+            const devices = this.parseDeviceList(result.output);
 
-          resolve({
-            success: true,
-            data: devices
-          });
+            this.devices = devices;
+
+            return {
+                success: true,
+                data: devices
+            };
+
         } catch (error) {
-          resolve({
-            success: false,
-            error: error.message
-          });
+            return {
+                success: false,
+                error: error.message
+            };
         }
-      });
-    });
-  }
-
-  // -----------------------------
-  // PARSE DEVICES
-  // -----------------------------
-  parseDeviceList(output) {
-    const lines = output.split('\n');
-    const devices = [];
-
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-
-      if (!trimmedLine || trimmedLine.startsWith('List of devices')) {
-        continue;
-      }
-
-      const parts = trimmedLine.split(/\s+/);
-      if (parts.length >= 2) {
-        const deviceId = parts[0];
-        const status = parts[1];
-
-        if (status === 'device') {
-          let model = null;
-          let product = null;
-          let manufacturer = null;
-
-          const modelMatch = trimmedLine.match(/model:([^\s]+)/);
-          const productMatch = trimmedLine.match(/product:([^\s]+)/);
-          const manufacturerMatch = trimmedLine.match(/manufacturer:([^\s]+)/);
-
-          if (modelMatch) model = modelMatch[1].replace(/_/g, ' ');
-          if (productMatch) product = productMatch[1];
-          if (manufacturerMatch) manufacturer = manufacturerMatch[1];
-
-          devices.push({
-            id: deviceId,
-            status,
-            model,
-            product,
-            manufacturer,
-            name: model || deviceId,
-            fullInfo: trimmedLine
-          });
-        }
-      }
     }
 
-    return devices;
-  }
+    // -----------------------------
+    // PARSE DEVICES
+    // -----------------------------
+    parseDeviceList(output) {
+        const lines = output.split(/\r?\n/);
+        const devices = [];
 
-  // -----------------------------
-  // USB DEBUGGING CHECK
-  // -----------------------------
-  async enableUsbDebugging(deviceId) {
-    return new Promise((resolve) => {
-      const adbPath = this.getAdbPath();
+        for (const line of lines) {
+            const trimmedLine = line.trim();
 
-      if (!adbPath) {
-        return resolve(false);
-      }
+            if (
+                !trimmedLine ||
+                trimmedLine.startsWith('List of devices')
+            ) {
+                continue;
+            }
 
-      const proc = spawn(adbPath, ['-s', deviceId, 'shell', 'echo', 'test']);
+            const parts = trimmedLine.split(/\s+/);
 
-      proc.on('error', () => resolve(false));
+            if (parts.length < 2) continue;
 
-      proc.on('exit', (code) => {
-        resolve(code === 0);
-      });
-    });
-  }
+            const deviceId = parts[0];
+            const status = parts[1];
+
+            // Only include authorized and connected devices
+            if (status !== 'device') continue;
+
+            const modelMatch = trimmedLine.match(/model:([^\s]+)/);
+            const productMatch = trimmedLine.match(/product:([^\s]+)/);
+            const manufacturerMatch = trimmedLine.match(
+                /manufacturer:([^\s]+)/
+            );
+
+            const model = modelMatch
+                ? modelMatch[1].replace(/_/g, ' ')
+                : null;
+
+            const product = productMatch
+                ? productMatch[1]
+                : null;
+
+            const manufacturer = manufacturerMatch
+                ? manufacturerMatch[1]
+                : null;
+
+            devices.push({
+                id: deviceId,
+                status,
+                model,
+                product,
+                manufacturer,
+                name: model || deviceId,
+                fullInfo: trimmedLine
+            });
+        }
+
+        return devices;
+    }
+
+    // -----------------------------
+    // USB DEBUGGING / CONNECTION CHECK
+    // -----------------------------
+    async enableUsbDebugging(deviceId) {
+        if (!deviceId) return false;
+
+        const result = await this.executeAdb(
+            ['shell', 'echo', 'test'],
+            deviceId
+        );
+
+        return result.success && result.output === 'test';
+    }
+
+    // -----------------------------
+    // GET ADB VERSION
+    // -----------------------------
+    async getAdbVersion() {
+        const result = await this.executeAdb(['version']);
+
+        if (!result.success) {
+            return {
+                success: false,
+                error: result.error
+            };
+        }
+
+        return {
+            success: true,
+            version: result.output
+        };
+    }
 }
 
 export default AdbManager;

@@ -35,6 +35,7 @@ import https from "https";
 import { runInference } from "./repositories/inference.js"
 import ScrcpyManager from "./repositories/scrcpy-manager.js";
 import AdbManager from "./repositories/adb-manager.js";
+import AdbInstaller from "./repositories/adbInstaller.js";
 import SimpleAdb from "./repositories/simple-adb.js"
 import PythonRepository from "./repositories/python/pythonRepository.js";
 import PythonDependencyRepository from "./repositories/python/pythonDependencyRepository.js";
@@ -111,7 +112,10 @@ async function createWindow() {
 
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+
+    await initializeAdb()
+
     createWindow()
     // autoUpdater.checkForUpdates();
     mainWindow.webContents.on("did-finish-load", () => {
@@ -138,6 +142,77 @@ app.on("window-all-closed", () => {
 app.on('activate', () => {
   if (mainWindow === null) createWindow();
 });
+
+
+async function initializeAdb() {
+    console.log('\n[APP] Initializing Android Debug Bridge...');
+
+    const installer = new AdbInstaller(app);
+
+    const adbManager = new AdbManager(
+        installer.getAdbExecutable()
+    );
+
+    // 1. Check whether ADB is already available
+    console.log('[APP] Checking whether ADB is installed...');
+
+    console.log('[APP] FORCING ADB INSTALLATION TEST...');
+
+    const installation = await installer.install();
+
+    if (!installation.success) {
+        console.error(
+            '[APP] ADB installation failed:',
+            installation.error
+        );
+
+        return;
+    }
+
+    console.log('[APP] Installation completed.');
+    console.log('[APP] Installed ADB:', installation.adbPath);
+
+    // const check = await adbManager.checkAdbInstalled();
+    //
+    // if (check.success) {
+    //     console.log('[APP] ADB is already available.');
+    //     console.log(
+    //         `[APP] Using: ${adbManager.getAdbPath()}`
+    //     );
+    // } else {
+    //     console.log('[APP] ADB was not found or could not run.');
+    //     console.log('[APP] Starting automatic installation...');
+    //
+    //     // 2. Install ADB
+    //     const installation = await installer.install();
+    //
+    //     if (!installation.success) {
+    //         console.error(
+    //             '[APP] ADB installation failed:',
+    //             installation.error
+    //         );
+    //
+    //         return;
+    //     }
+    //
+    //     console.log('[APP] Installation completed.');
+    // }
+
+    // 3. Verify using the actual AdbManager
+    console.log('\n[APP] Performing final ADB manager check...');
+
+    const finalCheck = await adbManager.checkAdbInstalled();
+
+    if (!finalCheck.success) {
+        console.error('[APP] ADB is still not working.');
+
+        return;
+    }
+
+    console.log('[APP] ADB is ready!');
+    console.log(`[APP] ADB path: ${adbManager.getAdbPath()}`);
+}
+
 
 ipcMain.handle('dialog:openDirectory', async () => {
     const result = await dialog.showOpenDialog({
