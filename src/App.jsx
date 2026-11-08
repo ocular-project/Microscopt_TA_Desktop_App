@@ -19,6 +19,7 @@ import MyComputer from "./components/home/MyComputer.jsx";
 import DOMPurify from "dompurify";
 import Devices from "./components/home/Devices.jsx";
 import Adb from "./Adb.jsx";
+import ModelAnalyzer from "./components/home/model/ModelAnalyzer.jsx";
 
 // Update Notification Component
 const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, downloadData, error }) => {
@@ -37,7 +38,7 @@ const UpdatePopup = ({ updateData, onDismiss, isDownloading, setIsDownloading, d
     if (window.electronAPI?.openDownloadPage) {
         window.electronAPI.openDownloadPage();
     } else {
-        window.open("https://microscopyteachingaid.ocular-project.com/download/69e764bdbaaa263cbcb8c5aa", "_blank");
+        window.open("https://microscopyteachingaid.ocular-project.com/", "_blank");
     }
   };
 
@@ -217,6 +218,8 @@ function AppRoutes({ path, setPath }) {
 
         <Route path="/forgot_password" element={<Forgot />} />
         <Route path="/reset_password/:userId?" element={<Reset />} />
+
+       {/*<Route path="/" element={<ModelAnalyzer/>}/>*/}
 
     </Routes>
     )

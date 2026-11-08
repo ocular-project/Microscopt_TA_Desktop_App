@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from "path";
 import {loadPath} from "./storage.js";
 import {addDataJson, generateObjectId} from "./fileManagement.js";
-import {createFolder} from "./main.js";
+import {createFolder} from "../main.js";
 
 class SimpleAdb {
   // constructor(mainWindow, folderPath, _id, value) {
@@ -682,6 +682,8 @@ class SimpleAdb {
 
         // console.log(transferRequest)
         // 📦 3. TRANSFER IMAGE FROM DEVICE
+        await this.ensureImageDirectory()
+
         const success = await this.pullImageFromAndroid(deviceId, transferRequest);
 
         if (!success) {
@@ -874,9 +876,9 @@ class SimpleAdb {
       try {
           if (!fs.existsSync(this.imageStorageDir)) {
               fs.mkdirSync(this.imageStorageDir, { recursive: true });
-              console.log(`${this.logPrefix} 📁 Created image directory: ${this.imageStorageDir}`);
+              // console.log(`${this.logPrefix} 📁 Created image directory: ${this.imageStorageDir}`);
           } else {
-              console.log(`${this.logPrefix} 📁 Image directory exists: ${this.imageStorageDir}`);
+              // console.log(`${this.logPrefix} 📁 Image directory exists: ${this.imageStorageDir}`);
           }
       } catch (error) {
           console.error(`${this.logPrefix} ❌ Failed to create image directory:`, error);

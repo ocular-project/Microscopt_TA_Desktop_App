@@ -4,6 +4,7 @@ import {getPath, handleMessage} from "../../../utils/repeating.js";
 import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
+import {getUserData} from "../../../utils/files/RepeatingFiles.jsx";
 
 export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, setMessage, cat, setScreen, setIsPop, path }){
 
@@ -34,7 +35,10 @@ export default function DriveButtons({ setCheckedIds, checkedIds, setLoader, set
                  // window.URL.revokeObjectURL(url)
                  const buffer = await response.data.arrayBuffer()
                  // console.log(cat)
-                 const result = await window.electronAPI.saveZip(buffer, cat)
+
+                 const cred = getUserData("credentials")
+
+                 const result = await window.electronAPI.saveZip(buffer, cat, cred)
                  if (result.success) {
                      handleMessage(result.message, "success", setMessage);
                      navigate(`/${result.folderId}`)

@@ -226,7 +226,7 @@
 
 .toolDiv {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 50%;
     gap: 5px;
     margin-left: -10px;
     margin-right: -10px;

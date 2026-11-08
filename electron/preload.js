@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     renameFolder: (object) => ipcRenderer.invoke("fileManagement:renameFolder", object),
     getFoldersAndFiles: (parentId) => ipcRenderer.invoke('fileManagement:getFoldersAndFiles', parentId),
     getFile: (fileId, credentials) => ipcRenderer.invoke('fileManagement:getFile', fileId, credentials),
+    openImage: () => ipcRenderer.invoke("dialog:openImage"),
     deleteFile: (fileId) => ipcRenderer.invoke('fileManagement:deleteFile', fileId),
 
     transferFile: (fileId, type) => ipcRenderer.invoke('fileManagement:transferFile', fileId, type),
@@ -29,9 +30,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     downloadFile: (url) => ipcRenderer.invoke('fileDownload:downloadFile', url),
     downloadZippedFile: (url) => ipcRenderer.invoke('fileDownload:downloadZippedFile', url),
-    saveZip: (buffer, cat) => ipcRenderer.invoke("fileDownload:saveZip", buffer, cat),
+    saveZip: (buffer, cat, cred) => ipcRenderer.invoke("fileDownload:saveZip", buffer, cat, cred),
 
-    downloadImageAnnotations: (pair) => ipcRenderer.invoke('fileDownload:downloadImageAnnotations', pair),
+    downloadImageAnnotations: (pair, cred) => ipcRenderer.invoke('fileDownload:downloadImageAnnotations', pair, cred),
 
     getInstructions: (fileId) => ipcRenderer.invoke('instructions:getInstructions', fileId),
     saveInstructions: (instructions) => ipcRenderer.invoke('instructions:saveInstructions', instructions),
@@ -55,4 +56,46 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // removeImageTransfer: (listener) => {
     //     ipcRenderer.removeListener("image-transfer-success", listener);
     // }
+
+    // Python
+    check: () => ipcRenderer.invoke("inference:check"),
+    checkPackages: () => ipcRenderer.invoke("inference:check-packages"),
+    checkInternet: () => ipcRenderer.invoke("inference:check-internet"),
+    installPackages: (packages) => ipcRenderer.invoke("inference:install-packages", packages),
+    runInference: (imagePath) => ipcRenderer.invoke("inference:run-inference", imagePath),
+    onInstallProgress: (callback) => {
+        const listener = (_event, data) => {
+          callback(data);
+        };
+
+        ipcRenderer.on("inference:install-progress", listener);
+
+        return () => {
+          ipcRenderer.removeListener(
+            "inference:install-progress",
+            listener
+          );
+        };
+    },
+
+    // ML Models
+    getModelInfo: () => ipcRenderer.invoke("model:get-info"),
+    downloadModel: () => ipcRenderer.invoke("model:download"),
+    onModelDownloadProgress: (callback) => {
+        const listener = (_event, progress) => {
+            callback(progress);
+        };
+
+        ipcRenderer.on(
+            "model:download-progress",
+            listener
+        );
+
+        return () => {
+            ipcRenderer.removeListener(
+                "model:download-progress",
+                listener
+            );
+        };
+    }
 })

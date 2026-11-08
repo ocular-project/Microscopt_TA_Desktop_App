@@ -1,13 +1,15 @@
 import { app, BrowserWindow, ipcMain, dialog, session, protocol, shell} from "electron";
+import { writeFile, readFile, access, mkdir, rename, rm, stat } from 'fs/promises'
 import updater from "electron-updater";
+import { spawn } from "child_process";
 import path from "path";
 import packageJson from "../package.json" with { type: "json" };
 import fs from 'fs'
 import { fileURLToPath } from "url";
-import { savePath, loadPath } from './storage.js'
+import { savePath, loadPath } from './repositories/storage.js'
 import unzipper from "unzipper"
 import {
-    addDataJson,
+    addDataJson, convertFilePathToBase64,
     createPhysicalFolder,
     deleteFile,
     generateObjectId,
@@ -27,35 +29,51 @@ import {
     saveFeedback, saveInstructions,
     transferFile,
     transferFiles, updateFiles
-} from './fileManagement.js'
-import ScrcpyManager from "./scrcpy-manager.js";
-import AdbManager from "./adb-manager.js";
-import SimpleAdb from "./simple-adb.js"
+} from './repositories/fileManagement.js'
+import https from "https";
+
+import { runInference } from "./repositories/inference.js"
+import ScrcpyManager from "./repositories/scrcpy-manager.js";
+import AdbManager from "./repositories/adb-manager.js";
+import SimpleAdb from "./repositories/simple-adb.js"
+import PythonRepository from "./repositories/python/pythonRepository.js";
+import PythonDependencyRepository from "./repositories/python/pythonDependencyRepository.js";
+import PythonInferenceRepository from "./repositories/python/pythonInferenceRepository.js";
+import ModelRepository from "./repositories/model/modelRepository.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.setName("Microscopy Teaching Aid");
 app.setVersion(packageJson.version)
 const version= app.getVersion();
-console.log("APP VERSION:", version);
+// console.log("APP VERSION:", version);
+
+// new changes for me
 
 const { autoUpdater } = updater;
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 let mainWindow
+
+// console.log("BEFORE AdbManager");
 const adbManager = new AdbManager();
+// console.log("AFTER AdbManager");
+
+// console.log("BEFORE ScrcpyManager");
 const scrcpyManager = new ScrcpyManager();
-let simpleAdbJson
+// console.log("AFTER ScrcpyManager");
 
-// const gotTheLock = app.requestSingleInstanceLock()
+let simpleAdbJson;
 
-// if (!gotTheLock) {
-//   app.quit()
-// } else {
-//   // rest of your main.js code goes here
-//   app.whenReady().then(createWindow)
-// }
+// console.log("BEFORE PythonRepository");
+const pythonRepository = new PythonRepository();
+// console.log("AFTER PythonRepository");
+
+// console.log("BEFORE ModelRepository");
+const modelRepository = new ModelRepository();
+// console.log("AFTER ModelRepository");
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -71,7 +89,7 @@ async function createWindow() {
   mainWindow.maximize()
 
   // Vite dev server
-  console.log(process.env.NODE_ENV)
+  // console.log(process.env.NODE_ENV)
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:3009');
   } else {
@@ -98,7 +116,7 @@ app.whenReady().then(() => {
     // autoUpdater.checkForUpdates();
     mainWindow.webContents.on("did-finish-load", () => {
         const dir = loadPath();
-        console.log(dir)
+        // console.log(dir)
 
         if (dir) {
             simpleAdbJson = new SimpleAdb(mainWindow, dir);
@@ -122,16 +140,36 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openDirectory']
-  })
-  if(canceled) {
-    return null;
-  } else {
-    console.log(filePaths[0])
-    return filePaths[0]
-  }
-})
+    const result = await dialog.showOpenDialog({
+        properties: ["openDirectory"]
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+        return null;
+    }
+
+    return result.filePaths[0];
+});
+
+ipcMain.handle("dialog:openImage", async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ["openFile"],
+        filters: [
+            {
+                name: "Images",
+                extensions: ["jpg", "jpeg", "png", "webp", "bmp"]
+            }
+        ]
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+        return null;
+    }
+
+    const filePath = result.filePaths[0];
+
+    return convertFilePathToBase64(filePath)
+});
 
 ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
 
@@ -148,9 +186,8 @@ ipcMain.handle('dialog:openImagePicker', async (event, parentId) => {
 
   if (result.canceled) return [];
   // console.log(parentId)
-  return handleImagesUpload(result.filePaths)
+  return await handleImagesUpload(result.filePaths)
 })
-
 
 ipcMain.handle('dialog:openOneImagePicker', async () => {
 
@@ -175,7 +212,6 @@ ipcMain.handle('electron:savePath', (event, folderPath) => {
   savePath(folderPath);
   return true;
 });
-
 
 ipcMain.handle('electron:getPath', () => {
   return loadPath();
@@ -365,7 +401,7 @@ function getDateTime() {
     return `${year}-${month}-${day}_${hours}-${minutes}`;
 }
 
-ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
+ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat, cred) => {
     try {
         const dir = loadPath();
         const customDir = path.join(dir, "Microscopy_TA", "folders_and_images");
@@ -469,7 +505,7 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
             try {
                 const content = await annotationsEntry.buffer();
                 const jsonContent = JSON.parse(content.toString('utf8'));
-                await handleBatchAnnotationsDownload(jsonContent)
+                await handleBatchAnnotationsDownload(jsonContent, cred)
             } catch (err) {
                 console.error('Error reading or parsing annotationData.json:', err.message);
             }
@@ -510,8 +546,8 @@ ipcMain.handle('fileDownload:saveZip', async (_, buffer, cat) => {
   }
 });
 
-ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair, instructions) => {
-   return await handleBatchAnnotationsDownload([pair])
+ipcMain.handle('fileDownload:downloadImageAnnotations', async (event, pair, cred) => {
+   return await handleBatchAnnotationsDownload([pair], cred)
     // return await handleAnnotationsDownload(object, fileId)
 })
 
@@ -575,3 +611,219 @@ ipcMain.handle('check-adb-installed', async () => {
 ipcMain.handle('get-devices', async () => {
   return await adbManager.getDevices();
 });
+
+// Python handlers
+ipcMain.handle("inference:check", async () => {
+    // const pythonRepository = new PythonRepository()
+
+    const exists = pythonRepository.exists()
+    console.log(exists)
+
+    if (!exists) {
+        return {
+            exists: false
+        }
+    }
+
+    try {
+        const version = await pythonRepository.getVersion()
+
+        return {
+            exists: true,
+            version
+        }
+    } catch (error) {
+        return {
+            exists: true,
+            version: null,
+            error: error.message
+        }
+    }
+})
+
+ipcMain.handle("inference:check-packages", async () => {
+  // const pythonRepository = new PythonRepository();
+
+  if (!pythonRepository.exists()) {
+    return {
+      success: false,
+      error: "Python runtime not found.",
+    };
+  }
+
+  const dependencyRepository = new PythonDependencyRepository(
+    pythonRepository
+  );
+
+  const packages = await dependencyRepository.getPackageStatus();
+
+  const missing = packages.filter(
+    (packageItem) => !packageItem.installed
+  );
+
+  return {
+    success: true,
+    packages,
+    missing,
+    allInstalled: missing.length === 0,
+  };
+});
+
+ipcMain.handle("inference:install-packages", async (event, packages) => {
+  // const pythonRepository = new PythonRepository();
+
+  if (!pythonRepository.exists()) {
+    return {
+      success: false,
+      error: "Python runtime not found.",
+    };
+  }
+
+  if (!Array.isArray(packages) || packages.length === 0) {
+    return {
+      success: true,
+      results: [],
+      message: "No packages need to be installed.",
+    };
+  }
+
+  const dependencyRepository = new PythonDependencyRepository(
+    pythonRepository
+  );
+
+  try {
+    const results = await dependencyRepository.installPackages(
+      packages,
+      (progress) => {
+        event.sender.send("inference:install-progress", progress);
+      }
+    );
+
+    const failed = results.filter(
+      (result) => result.status === "failed"
+    );
+
+    return {
+      success: failed.length === 0,
+      results,
+      installed: results.filter(
+        (result) => result.status === "success"
+      ),
+      failed,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+});
+
+ipcMain.handle("inference:check-internet", async () => {
+  return new Promise((resolve) => {
+    const request = https.get(
+      "https://www.google.com",
+      {
+        timeout: 5000,
+      },
+      (response) => {
+        response.resume();
+
+        resolve({
+          success: response.statusCode >= 200 && response.statusCode < 400,
+          statusCode: response.statusCode,
+        });
+      }
+    );
+
+    request.on("error", (error) => {
+      resolve({
+        success: false,
+        error: error.message,
+      });
+    });
+
+    request.on("timeout", () => {
+      request.destroy();
+
+      resolve({
+        success: false,
+        error: "Internet connection timed out.",
+      });
+    });
+  });
+});
+
+ipcMain.handle("inference:run-inference", async (_event, imagePath) => {
+    // const pythonRepository = new PythonRepository();
+
+    if (!pythonRepository.exists()) {
+      return {
+        success: false,
+        error: "Python runtime not found."
+      };
+    }
+
+    try {
+      const inferenceRepository =
+        new PythonInferenceRepository(
+          pythonRepository
+        );
+
+      return await inferenceRepository.runInference(imagePath);
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+);
+
+// Model checks and installs
+ipcMain.handle("model:get-info", async () => {
+    try {
+        return await modelRepository.getModelInfo();
+    } catch (error) {
+        console.error("[MODEL] Failed to get model info:", error);
+
+        throw new Error(
+            `Failed to get model information: ${error.message}`
+        );
+    }
+});
+
+ipcMain.handle("model:download", async (event) => {
+    try {
+        console.log("[MODEL] Download requested from frontend");
+
+        const result = await modelRepository.download(
+            (progress) => {
+                if (!mainWindow || mainWindow.isDestroyed()) {
+                    return;
+                }
+
+                mainWindow.webContents.send(
+                    "model:download-progress",
+                    progress
+                );
+            }
+        );
+
+        return result;
+
+    } catch (error) {
+        console.error(
+            "[MODEL] Download failed:",
+            error
+        );
+
+        throw new Error(
+            `Model download failed: ${error.message}`
+        );
+    }
+});
+
+
+

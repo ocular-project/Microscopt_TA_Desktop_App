@@ -1,9 +1,17 @@
 {
   "name": "microscopy_teaching_aid",
   "private": true,
-  "version": "2026.1.2",
+  "version": "2026.1.3",
   "type": "module",
   "main": "electron/main.js",
+
+  "electronmon": {
+    "patterns": [
+      "!runtimes/mac-arm64/python/**",
+      "!Contents/Resources/python/**"
+    ]
+  },
+
   "scripts": {
     "start": "cross-env NODE_ENV=development concurrently \"npm:dev\" \"npm:electron:wait\"",
     "dev": "vite",
@@ -24,6 +32,22 @@
     "directories": {
       "output": "dist_electron"
     },
+    "extraResources": [
+      {
+        "from": "runtimes/mac-arm64/python",
+        "to": "python",
+        "filter": [
+          "**/*",
+          "!lib/python3.12/site-packages/**/*",
+          "lib/python3.12/site-packages/pip/**/*",
+          "lib/python3.12/site-packages/pip-*.dist-info/**/*"
+        ]
+      },
+      {
+        "from": "python",
+        "to": "inference"
+      }
+    ],
     "win": {
       "target": [
         {
