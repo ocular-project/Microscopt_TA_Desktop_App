@@ -34,7 +34,7 @@ import https from "https";
 
 import { runInference } from "./repositories/inference.js"
 import ScrcpyManager from "./repositories/scrcpy-manager.js";
-import AdbManager from "./repositories/adb-manager.js";
+import AdbManager from "./repositories/adbManager.js";
 import AdbInstaller from "./repositories/adbInstaller.js";
 import SimpleAdb from "./repositories/simple-adb.js"
 import PythonRepository from "./repositories/python/pythonRepository.js";
@@ -940,26 +940,26 @@ async function initializeAdb() {
         });
 
         // Check existing ADB installation
-        // const check = await adbManager.checkAdbInstalled();
-        //
-        // if (check.success) {
-        //     updateAdbState({
-        //         status: 'ready',
-        //         step: 'complete',
-        //         message: 'ADB is already installed and working.',
-        //         percent: 100
-        //     });
-        //
-        //     console.log(
-        //         `[APP] Using ADB: ${adbManager.getAdbPath()}`
-        //     );
-        //
-        //     return {
-        //         success: true,
-        //         adbPath: adbManager.getAdbPath(),
-        //         alreadyInstalled: true
-        //     };
-        // }
+        const check = await adbManager.checkAdbInstalled();
+
+        if (check.success) {
+            updateAdbState({
+                status: 'ready',
+                step: 'complete',
+                message: 'ADB is already installed and working.',
+                percent: 100
+            });
+
+            console.log(
+                `[APP] Using ADB: ${adbManager.getAdbPath()}`
+            );
+
+            return {
+                success: true,
+                adbPath: adbManager.getAdbPath(),
+                alreadyInstalled: true
+            };
+        }
 
         // ADB missing: installation required
         updateAdbState({

@@ -486,17 +486,44 @@ function App() {
 
                 if (!adbAPI) return;
 
-                // First retrieve the current ADB state.
-                const currentStatus = await adbAPI.getStatus();
+                console.log('[ADB] Checking installation...');
+
+                const adbCheck = await adbAPI.check();
 
                 if (!mounted) return;
 
-                if (currentStatus?.status === 'ready') {
-                    setAdbStatus(currentStatus);
+                if (adbCheck?.success) {
+                    console.log('[ADB] ADB is already installed.');
+
+                    const currentStatus = await adbAPI.getStatus();
+
+                    if (!mounted) return;
+
+                    setAdbStatus({
+                        ...currentStatus,
+                        status: 'ready',
+                        message: 'Android Debug Bridge is ready.',
+                        percent: 100
+                    });
+
                     return;
                 }
 
+                // First retrieve the current ADB state.
+                // const currentStatus = await adbAPI.getStatus();
+
+                // if (!mounted) return;
+                //
+                // if (currentStatus?.status === 'ready') {
+                //     setAdbStatus(currentStatus);
+                //     return;
+                // }
+
                 // setAdbStatus(currentStatus);
+
+                console.log('[ADB] ADB is not installed.');
+                console.log('[NETWORK] Checking internet connection...');
+
                 setAdbStatus({
                     status: 'checking-internet',
                     step: 'Checking connectivity',
@@ -505,7 +532,7 @@ function App() {
                 });
 
                 // ADB is already ready. No installation required.
-                if (currentStatus.status === 'ready') return;
+                // if (currentStatus.status === 'ready') return;
 
                 // Check internet connectivity.
                 console.log('[NETWORK] Checking internet connection...');

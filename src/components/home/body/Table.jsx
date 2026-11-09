@@ -13,7 +13,8 @@ import DeviceTable from "./devices/DeviceTable.jsx";
 import {handleMessage} from "../../utils/repeating.js";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
-                                  setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds, quota, setQuota }){
+                                  setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds,
+                                  quota, setQuota }){
 
     const [error, setError] = useState(null)
     const location = useLocation()
