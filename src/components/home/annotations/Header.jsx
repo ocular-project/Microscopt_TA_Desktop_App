@@ -8,9 +8,11 @@ import axiosInstance from "../../utils/files/axiosInstance.js";
 import {handleBack, handleMessage} from "../../utils/repeating.js";
 import {RiFeedbackLine} from "react-icons/ri";
 import {useNavigate, useParams} from "react-router-dom";
+import { ArrowLeft } from 'lucide-react';
 
 export default function Header({ setIsClosed, width, setZoom, fitImageToViewport, ZOOM_STEP, other, setShare, back, file,
-                                   setLoader, setAnnotations, annotations, annotators, setMessage, cred, annotator, cat, setSync }){
+                                   setLoader, setAnnotations, annotations, annotators, setMessage, cred, annotator, cat,
+                                   setSync, onAction }){
 
     const [button, setButton] = useState({ save: false, edit: false, share: false, load: false, finalShare: false, feed: false })
      const navigate = useNavigate()
@@ -74,7 +76,8 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                }, 1000)
                // handleBack(navigate)
            }catch (err) {
-               console.log(err.response)
+               console.log(file)
+               console.log(err)
                const error = err.response.data.error
                handleMessage(error, "error", setMessage)
            }finally {
@@ -149,110 +152,152 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
     const zoomOut = () => setZoom((z) => Math.max(z - ZOOM_STEP, 0.1));
     const resetZoom = () => fitImageToViewport();
 
-    return (
-        <div className={styles.main}>
-            <div className="flex items-center justify-left gap-2">
-                {/*<div>*/}
-                <BsLayoutSidebar className={`${styles.sidebarIcon} ${width <= 768 ? styles.visible : ''}`} onClick={() => setIsClosed(false)}/>
-                {/*</div>*/}
-                <div className="flex-1 grid gap-2" style={{ gridTemplateColumns: "70% 1fr" }}>
-                     <div className="flex justify-start items-center">
-                         {
-                             !back && (
-                                 <>
-                                     {
-                                        other ? (
-                                            <>
-                                                <div
-                                                    style={{ padding: '5px 10px' }}
-                                                     className={`flex justify-center items-center gap-2 rounded
-                                                        ${!button.feed
-                                                          ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                          : "hover:bg-primary hover:text-white cursor-pointer"
-                                                    }`}
-                                                    onClick={button.feed ? handleSave2 : undefined}>
-                                                        <RiFeedbackLine />
-                                                        <span className="text-[12px] hidden lg:inline">Save Feedback</span>
-                                                </div>
-                                            </>
+    // cat === "computer" ? (
 
-                                        ) : (
-                                            <>
-                                                {
-                                                    cat === "computer" ? (
-                                                         <div
-                                                                style={{ padding: '5px 10px' }}
-                                                                className={`flex justify-center items-center gap-2 rounded border border-gray-300
-                                                                    ${!button.save 
-                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
-                                                                }`}
-                                                                onClick={button.save ? handleSave : undefined}>
-                                                                    <IoSaveOutline />
-                                                                    <span className="text-[12px] hidden lg:inline">Save Annotations Locally</span>
-                                                         </div>
-                                                    ) : (
-                                                        <>
-                                                            <div
-                                                                style={{ padding: '5px 10px' }}
-                                                                className={`flex justify-center items-center gap-2 rounded border border-gray-300
-                                                                    ${!button.save 
-                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
-                                                                }`}
-                                                                onClick={button.save ? handleSave : undefined}>
-                                                                    <IoSaveOutline />
-                                                                    <span className="text-[12px] hidden lg:inline">Save Annotations</span>
-                                                           </div>
-                                                           <div
-                                                                style={{ padding: '5px 10px' }}
-                                                                 className={`flex justify-center items-center gap-2 rounded
-                                                                    ${!button.share
-                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
-                                                                }`}
-                                                                onClick={button.share ? handleShare : undefined}>
-                                                                    <IoSettingsOutline />
-                                                                    <span className="text-[12px] hidden lg:inline">Edit Access</span>
-                                                           </div>
-                                                           <div
-                                                                style={{ padding: '5px 10px' }}
-                                                                 className={`flex justify-center items-center gap-2 rounded
-                                                                    ${!button.share
-                                                                      ? "text-gray-500 cursor-not-allowed opacity-60" 
-                                                                      : "hover:bg-primary hover:text-white cursor-pointer"
-                                                                }`}
-                                                                 onClick={button.share ? handleShare : undefined}>
-                                                                    <IoShareSocialOutline />
-                                                                    <span className="text-[12px] hidden lg:inline">Share Annotations</span>
-                                                            </div>
-                                                        </>
-                                                    )
-                                                }
-                                            </>
-                                        )
-                                    }
-                                 </>
-                             )
-                         }
-                    </div>
-                     <div className="flex justify-end items-center">
-                        <div style={{ padding: '5px 10px' }} className="px-5 flex justify-center items-center gap-2 hover:bg-primary rounded hover:text-white cursor-pointer" onClick={zoomOut}>
-                            <GoZoomOut />
-                            <span className="text-[12px] hidden lg:inline">Zoom out</span>
-                        </div>
-                        <div
-                            style={{ padding: '5px 10px' }}
-                            className="px-5 flex justify-center items-center gap-2 hover:bg-primary rounded hover:text-white cursor-pointer "
-                            onClick={zoomIn}>
-                                <GoZoomIn />
-                                <span className="text-[12px] hidden lg:inline">Zoom in</span>
-                        </div>
-                        <div style={{ padding: '5px 10px' }} className="px-5 flex justify-center items-center gap-2 hover:bg-primary rounded hover:text-white cursor-pointer" onClick={resetZoom}>
-                            <TbZoomReset />
-                            <span className="text-[12px] hidden lg:inline">Reset Zoom</span>
-                        </div>
-                    </div>
+    return (
+        <div className="flex h-16 w-full min-w-0 items-center border-b border-slate-200 bg-white px-3 shadow-sm">
+
+            {/* Sidebar toggle */}
+            <div
+                onClick={() => handleBack(navigate)}
+                className="flex shrink-0 items-center justify-start gap-2 rounded border border-gray-300 mr-5 px-2 py-1 text-xs font-medium cursor-pointer hover:border-gray-500"
+            >
+                <ArrowLeft size={16}/>
+                <span>Back</span>
+                {/*<BsLayoutSidebar*/}
+                {/*    className={`cursor-pointer text-xl text-slate-600 transition hover:text-blue-600 ${*/}
+                {/*        width <= 768 ? styles.visible : ""*/}
+                {/*    }`}*/}
+                {/*    onClick={() => setIsClosed(false)}*/}
+                {/*/>*/}
+            </div>
+
+            {/* Header actions */}
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+
+                {/* Left actions */}
+                <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+
+                    {
+                         !back && (
+                             <>
+                                 {
+                                    other ? (
+                                        <div
+                                            style={{ padding: '5px 10px' }}
+                                             className={`flex justify-center items-center gap-2 rounded
+                                                ${!button.feed
+                                                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                                                  : "hover:bg-primary hover:text-white cursor-pointer"
+                                            }`}
+                                            onClick={button.feed ? handleSave2 : undefined}>
+                                                <RiFeedbackLine />
+                                                <span className="text-sm hidden lg:inline">Save Feedback</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {
+                                                cat === "computer" ? (
+                                                    <div
+                                                            style={{ padding: '5px 10px' }}
+                                                            className={`flex justify-center items-center gap-2 rounded border border-gray-300
+                                                                ${!button.save
+                                                                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                                                                  : "hover:bg-primary hover:text-white cursor-pointer"
+                                                            }`}
+                                                            onClick={button.save ? handleSave : undefined}>
+                                                                <IoSaveOutline />
+                                                                <span className="text-sm hidden lg:inline">Save Annotations Locally</span>
+                                                       </div>
+                                                ) : (
+                                                    <>
+                                                        <div
+                                                            style={{ padding: '5px 10px' }}
+                                                            className={`flex justify-center items-center gap-2 rounded border border-gray-300
+                                                                ${!button.save
+                                                                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                                                                  : "hover:bg-primary hover:text-white cursor-pointer"
+                                                            }`}
+                                                            onClick={button.save ? handleSave : undefined}>
+                                                                <IoSaveOutline />
+                                                                <span className="text-sm hidden lg:inline">Save Annotations</span>
+                                                       </div>
+                                                       <div
+                                                            style={{ padding: '5px 10px' }}
+                                                             className={`flex justify-center items-center gap-2 rounded
+                                                                ${!button.share
+                                                                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                                                                  : "hover:bg-primary hover:text-white cursor-pointer"
+                                                            }`}
+                                                            onClick={button.share ? handleShare : undefined}>
+                                                                <IoSettingsOutline />
+                                                                <span className="text-sm hidden lg:inline">Edit Access</span>
+                                                       </div>
+                                                       <div
+                                                            style={{ padding: '5px 10px' }}
+                                                             className={`flex justify-center items-center gap-2 rounded
+                                                                ${!button.share
+                                                                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                                                                  : "hover:bg-primary hover:text-white cursor-pointer"
+                                                            }`}
+                                                             onClick={button.share ? handleShare : undefined}>
+                                                    <IoShareSocialOutline />
+                                                    <span className="text-sm hidden lg:inline">Share Annotations</span>
+                                            </div>
+                                                    </>
+                                                )
+                                            }
+
+                                        </>
+                                    )
+                                }
+                             </>
+                         )
+                     }
+
+                </div>
+
+                {/* Right actions: zoom */}
+                <div className="flex shrink-0 items-center gap-1">
+                    {/*{*/}
+                    {/*    annotations.length > 0 && (*/}
+                    {/*       <div*/}
+                    {/*            style={{ padding: '5px 10px' }}*/}
+                    {/*            className={`flex justify-center items-center gap-2 rounded border border-gray-300 hover:bg-primary hover:text-white cursor-pointer*/}
+                    {/*                `}*/}
+                    {/*            onClick={onAction}>*/}
+                    {/*                <IoSaveOutline />*/}
+                    {/*                <span className="text-sm hidden lg:inline">Export Annotated Image</span>*/}
+                    {/*       </div>*/}
+                    {/*    )*/}
+                    {/*}*/}
+                    <button
+                        type="button"
+                        onClick={zoomOut}
+                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-primary"
+                    >
+                        <GoZoomOut className="text-lg" />
+                        <span className="hidden lg:inline">Zoom out</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={zoomIn}
+                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-primary"
+                    >
+                        <GoZoomIn className="text-lg" />
+                        <span className="hidden lg:inline">Zoom in</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={resetZoom}
+                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-primary"
+                    >
+                        <TbZoomReset className="text-lg" />
+                        <span className="hidden lg:inline">Reset</span>
+                    </button>
+
                 </div>
             </div>
         </div>

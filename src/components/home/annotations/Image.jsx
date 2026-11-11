@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import {GoZoomIn} from "react-icons/go";
 
 const HANDLE_SIZE = 8;
-const MIN_BOX_SIZE = 0.01;
+const MIN_BOX_SIZE = 0.002;
 const POINTER_SIZE = 20;
 
 function clamp(val, min, max) {
@@ -14,7 +14,7 @@ function clamp(val, min, max) {
 
 export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setImageSize, imageRef, imageSize, ZOOM_STEP,
                                   labels, fitImageToViewport, setAnnotations, annotations, cred, feed, visual,
-                                  setIsClosed, width, containerRe, cat, containerRef }){
+                                  setIsClosed, width, containerRe, cat, containerRef, setSharedAction }){
 
      const [selectedIndex, setSelectedIndex] = useState(null);
      const [action, setAction] = useState(null); // 'draw', 'move', 'resize'
@@ -24,7 +24,7 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
      const [feedbackLabel, setFeedbackLabel] = useState("");
 
      const canvasRef = useRef(null);
-     // const containerRef = useRef(null);
+     const stageRef = useRef(null);
 
     // Utility: get normalized coords inside canvas
      const getNormalizedCoordinates = (e) => {
@@ -39,17 +39,20 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
        const px = x * ctx.canvas.width;
        const py = y * ctx.canvas.height;
 
+       const getPointerSize = () => POINTER_SIZE / zoom;
+       const size = getPointerSize()
+
        ctx.fillStyle = isSelected ? '#00ff00' : strokeColor;
        ctx.strokeStyle = '#ffffff';
-       ctx.lineWidth = 2;
+       ctx.lineWidth = 2 / zoom;
 
        ctx.beginPath();
        // Create cursor pointer shape
        ctx.moveTo(px, py); // tip
-       ctx.lineTo(px, py + POINTER_SIZE); // bottom of shaft
-       ctx.lineTo(px + POINTER_SIZE * 0.4, py + POINTER_SIZE * 0.7); // right side
-       ctx.lineTo(px + POINTER_SIZE * 0.6, py + POINTER_SIZE * 0.7); // arrow right
-       ctx.lineTo(px + POINTER_SIZE * 0.3, py + POINTER_SIZE * 0.45); // arrow inner
+       ctx.lineTo(px, py + size); // bottom of shaft
+       ctx.lineTo(px + size * 0.4, py + size * 0.7);
+       ctx.lineTo(px + size * 0.6, py + size * 0.7);
+       ctx.lineTo(px + size * 0.3, py + size * 0.45);
        ctx.closePath();
 
        ctx.fill();
@@ -58,15 +61,18 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
 
      // Check if point is inside pointer
      const pointInPointer = (px, py, pointer) => {
-       const pointerPx = pointer.x * canvasRef.current.width;
-       const pointerPy = pointer.y * canvasRef.current.height;
+        const getPointerSize = () => POINTER_SIZE / zoom;
+        const size = getPointerSize();
 
-       return (
-         px >= pointerPx &&
-         px <= pointerPx + POINTER_SIZE * 0.6 &&
-         py >= pointerPy &&
-         py <= pointerPy + POINTER_SIZE
-       );
+        const pointerPx = pointer.x * canvasRef.current.width;
+        const pointerPy = pointer.y * canvasRef.current.height;
+
+        return (
+            px >= pointerPx &&
+            px <= pointerPx + size * 0.6 &&
+            py >= pointerPy &&
+            py <= pointerPy + size
+        );
      };
 
      // Draw resize handles on selected box
@@ -88,13 +94,21 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
        ];
 
        if (!feed) {
+
+          const handleSize = HANDLE_SIZE / zoom;
+
           ctx.fillStyle = "white";
           ctx.strokeStyle = "black";
           handles.forEach((h) => {
             const px = h.x * ctx.canvas.width;
             const py = h.y * ctx.canvas.height;
             ctx.beginPath();
-            ctx.rect(px - HANDLE_SIZE / 2, py - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+            ctx.rect(
+                px - handleSize / 2,
+                py - handleSize / 2,
+                handleSize,
+                handleSize
+            );
             ctx.fill();
             ctx.stroke();
           });
@@ -105,11 +119,19 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
 
      // Find if point is on a handle
      const getHandleUnderPoint = (handles, px, py) => {
-       return handles.find((h) => {
-         const hx = h.x * canvasRef.current.width;
-         const hy = h.y * canvasRef.current.height;
-         return px >= hx - HANDLE_SIZE && px <= hx + HANDLE_SIZE && py >= hy - HANDLE_SIZE && py <= hy + HANDLE_SIZE;
-       });
+       const handleSize = HANDLE_SIZE / zoom;
+
+        return handles.find((h) => {
+            const hx = h.x * canvasRef.current.width;
+            const hy = h.y * canvasRef.current.height;
+
+            return (
+                px >= hx - handleSize &&
+                px <= hx + handleSize &&
+                py >= hy - handleSize &&
+                py <= hy + handleSize
+            );
+        });
      };
 
      // Check if point inside box
@@ -131,7 +153,8 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
        if (!canvas) return;
        const ctx = canvas.getContext("2d");
        ctx.clearRect(0, 0, canvas.width, canvas.height);
-       ctx.font = `14px Arial`;
+       const labelFontSize = 14 / zoom;
+       ctx.font = `${labelFontSize}px Arial`;
        ctx.textBaseline = "top";
 
        annotations.forEach((annotation, i) => {
@@ -157,14 +180,15 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
 
              ctx.fillStyle = strokeColor;
              const text = annotation.label;
-             const padding = 4;
+             const padding = 4 / zoom;
              const textWidth = ctx.measureText(text).width;
-             const textHeight = 16;
-             const labelY = py + POINTER_SIZE + 5; // Position below the pointer
+             const textHeight = 18 / zoom;
+             const getPointerSize = () => POINTER_SIZE / zoom;
+             const labelY = py + getPointerSize() + (5 / zoom); // Position below the pointer
 
              ctx.fillRect(px - textWidth/2, labelY, textWidth + padding * 2, textHeight);
              ctx.fillStyle = "white";
-             ctx.fillText(text, px - textWidth/2 + padding, labelY + 2);
+             ctx.fillText(text, px - textWidth/2 + padding, labelY + (2 / zoom));
            }
          } else {
            // Draw box (existing logic)
@@ -175,18 +199,18 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
            const height = Math.abs(y2 - y1) * canvas.height;
 
            ctx.strokeStyle = strokeColor;
-           ctx.lineWidth = 2;
+           ctx.lineWidth = 2 / zoom;
            ctx.strokeRect(left, top, width, height);
 
            if (label) {
              ctx.fillStyle = strokeColor;
              const text = label;
-             const padding = 4;
+             const padding = 4 / zoom;
              const textWidth = ctx.measureText(text).width;
-             const textHeight = 16;
+             const textHeight = 18 / zoom;
              ctx.fillRect(left, top - textHeight, textWidth + padding * 2, textHeight);
              ctx.fillStyle = "white";
-             ctx.fillText(text, left + padding, top - textHeight + 2);
+             ctx.fillText(text, left + padding, top - textHeight + (2 / zoom));
            }
 
            if (i === selectedIndex) {
@@ -212,9 +236,13 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
 
      const handleMouseDown = (e) => {
        if (!canvasRef.current) return;
-       const rect = canvasRef.current.getBoundingClientRect();
-       const px = e.clientX - rect.left;
-       const py = e.clientY - rect.top;
+
+       const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+
+        // Convert screen coordinates to canvas internal coordinates
+        const px = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const py = (e.clientY - rect.top) * (canvas.height / rect.height);
 
        // Check for resize handles first (only for selected boxes)
        if (selectedIndex !== null) {
@@ -453,160 +481,252 @@ export default function Image({ loader, file, SIDEBAR_WIDTH, zoom, setZoom, setI
      }, [fitImageToViewport]);
 
      useEffect(() => {
-       if (!imageSize.width || !imageSize.height) return;
-       const canvas = canvasRef.current;
-       const img = imageRef.current;
-       if (!canvas || !img) return;
+        if (!imageSize.width || !imageSize.height) return;
 
-       const width = imageSize.width * zoom;
-       const height = imageSize.height * zoom;
+        const canvas = canvasRef.current;
+        const img = imageRef.current;
 
-       canvas.width = width;
-       canvas.height = height;
+        if (!canvas || !img) return;
 
-       // img.style.width = `${width}px`;
-       // img.style.height = `${height}px`;
-        img.style.transform = `scale(${zoom})`;
-        img.style.transformOrigin = "top left";
+        const displayWidth = imageSize.width * zoom;
+        const displayHeight = imageSize.height * zoom;
 
-       redrawCanvas();
-     }, [zoom, imageSize, redrawCanvas]);
+        // Keep the canvas coordinate system based on original image dimensions.
+        canvas.width = imageSize.width;
+        canvas.height = imageSize.height;
+
+        // Give both elements exactly the same displayed dimensions.
+        img.style.width = `${displayWidth}px`;
+        img.style.height = `${displayHeight}px`;
+        img.style.maxWidth = "none";
+        img.style.transform = "none";
+
+        canvas.style.width = `${displayWidth}px`;
+        canvas.style.height = `${displayHeight}px`;
+
+        redrawCanvas();
+
+    }, [zoom, imageSize, redrawCanvas]);
+
+     const exportAnnotatedImage = () => {
+        const image = imageRef.current;
+        const annotationCanvas = canvasRef.current;
+
+        if (!image || !annotationCanvas || !image.complete) {
+            console.error("Image or annotation canvas is not ready.");
+            return;
+        }
+
+        // Create an off-screen canvas at the original image resolution.
+        const exportCanvas = document.createElement("canvas");
+
+        exportCanvas.width = image.naturalWidth;
+        exportCanvas.height = image.naturalHeight;
+
+        const ctx = exportCanvas.getContext("2d");
+
+        // Draw the original image.
+        ctx.drawImage(
+            image,
+            0,
+            0,
+            exportCanvas.width,
+            exportCanvas.height
+        );
+
+        // Draw annotations over the original image.
+        ctx.drawImage(
+            annotationCanvas,
+            0,
+            0,
+            exportCanvas.width,
+            exportCanvas.height
+        );
+
+        // Generate PNG.
+        exportCanvas.toBlob((blob) => {
+            if (!blob) {
+                console.error("Failed to generate annotated image.");
+                return;
+            }
+
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "mta_annotated-image.png";
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            URL.revokeObjectURL(url);
+        }, "image/png");
+    };
+
+    useEffect(() => {
+        setSharedAction(() => exportAnnotatedImage);
+    }, [setSharedAction]);
 
     return (
-        <div className={styles.innerContainer3} ref={containerRef}>
-            <div style={{ position: "relative" }}>
-           <img
-             ref={imageRef}
-             src={file?.url}
-             alt="Image Loading..."
-             onLoad={fitImageToViewport}
-             draggable={false}
-             style={{ display: "block", userSelect: "none" }}
-           />
-           <canvas
-             ref={canvasRef}
-             style={{
-               position: "absolute",
-               top: 0,
-               left: 0,
-               cursor:
-                 action === "resize"
-                   ? "nwse-resize"
-                   : action === "move"
-                   ? "move"
-                   : "crosshair",
-               userSelect: "none",
-             }}
-             onMouseDown={handleMouseDown}
-             onMouseMove={handleMouseMove}
-             onMouseUp={handleMouseUp}
-             onMouseLeave={handleMouseUp}
-           />
+        <div
+            className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-slate-100"
+            ref={containerRef}
+        >
 
-       {selectedIndex !== null && (() => {
-         const annotation = annotations[selectedIndex];
-         if (!annotation) return null;
+            <div className="relative min-h-0 min-w-0 flex-1 overflow-auto overscroll-contain">
+                <div ref={stageRef} className="relative w-max min-w-0 shrink-0">
+                    <img
+                        ref={imageRef}
+                        src={file?.url}
+                        alt="Image being annotated"
+                        onLoad={fitImageToViewport}
+                        className="block max-w-none select-none"
+                    />
 
-         let left, top;
-         if (annotation.type === 'pointer') {
-           left = annotation.x * imageSize.width * zoom;
-           top = annotation.y * imageSize.height * zoom + POINTER_SIZE + 5;
-         } else {
-           left = Math.min(annotation.x1, annotation.x2) * imageSize.width * zoom;
-           top = Math.max(annotation.y1, annotation.y2) * imageSize.height * zoom + 5;
-         }
+                    <canvas
+                        ref={canvasRef}
+                        className="absolute left-0 top-0 select-none"
+                        style={{
+                            cursor:
+                                action === "resize"
+                                    ? "nwse-resize"
+                                    : action === "move"
+                                    ? "move"
+                                    : "crosshair",
+                        }}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                    />
 
-         return (
-           <div
-             style={{
-               position: "absolute",
-               left,
-               top,
-               background: "rgba(255,255,255,0.9)",
-               padding: "10px",
-               borderRadius: 5,
-               boxShadow: "0 0 5px rgba(0,0,0,0.3)",
-               zIndex: 10,
-               userSelect: "auto",
-             }}
-           >
-               {
-                    labels.some(item => item.trim() === '') ? (
-                        <input
-                           type="text"
-                           value={inputLabel}
-                           onChange={handleLabelChange}
-                           className={styles.input}
-                           autoFocus
-                           placeholder={`Enter ${annotation.type || 'box'} label`}
-                           disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}
-                         />
-                    ) : (
-                       <select
-                           name="labels"
-                           className={styles.input}
-                           onChange={handleLabelChange}
-                           required disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}>
-                           <option value="">-- Select box label --</option>
-                           {
-                               labels.map((label, index) => (
-                                   <option key={index} value={label}>{label}</option>
-                               ))
-                           }
-                       </select>
-                    )
-               }
+                    {selectedIndex !== null && (() => {
+                        const annotation = annotations[selectedIndex];
+                        const canvas = canvasRef.current;
+                        const stage = stageRef.current;
 
-             {/*<input*/}
-             {/*  type="text"*/}
-             {/*  value={inputLabel}*/}
-             {/*  onChange={handleLabelChange}*/}
-             {/*  className={styles.input}*/}
-             {/*  autoFocus*/}
-             {/*  placeholder={`Enter ${annotation.type || 'box'} label`}*/}
-             {/*  disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}*/}
-             {/*/>*/}
-             {
-               feed ? (
-                   feedbackLabel && (
-                      <div>
-                       <input
-                         type="text"
-                         value={feedbackLabel}
-                         className={styles.input}
-                         style={{ marginTop: '10px' }}
-                         disabled
-                       />
-                     </div>
-                   )
-               ) : (
-                    annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id ? (
-                       <div>
-                           <input
-                           type="text"
-                           value={feedbackLabel}
-                           onChange={handleFeedbackLabelChange}
-                           className={styles.input}
-                           style={{ marginTop: '10px' }}
-                           autoFocus
-                           placeholder={`Enter your feedback`}
-                         />
-                         <div className={`${style.delete}`} onClick={handleDelete2}>
-                            <span>Delete Feedback</span>
-                        </div>
-                       </div>
-                   ) : (
-                       <div className={`${style.delete}`} onClick={handleDelete}>
-                      <span>Delete</span>
-                  </div>
-                   )
-               )
-             }
-           </div>
-         );
-       })()}
-     </div>
+                        if (!annotation || !canvas || !stage) return null;
+
+                        const canvasRect = canvas.getBoundingClientRect();
+                        const stageRect = stage.getBoundingClientRect();
+
+                        // Account for CSS scaling between the stage's layout
+                        // dimensions and its actual rendered dimensions.
+                        const scaleX = stageRect.width / stage.offsetWidth || 1;
+                        const scaleY = stageRect.height / stage.offsetHeight || 1;
+
+                        let left;
+                        let top;
+
+                        if (annotation.type === "pointer") {
+                            // Position relative to the pointer annotation.
+                            left =
+                                (canvasRect.left - stageRect.left) / scaleX +
+                                annotation.x * canvasRect.width / scaleX;
+
+                            top =
+                                (canvasRect.top - stageRect.top) / scaleY +
+                                annotation.y * canvasRect.height / scaleY +
+                                POINTER_SIZE + 5;
+
+                        } else {
+                            // Position relative to the actual bottom-left
+                            // corner of the selected bounding box.
+                            left =
+                                (canvasRect.left - stageRect.left) / scaleX +
+                                Math.min(annotation.x1, annotation.x2) *
+                                    canvasRect.width / scaleX;
+
+                            top =
+                                (canvasRect.top - stageRect.top) / scaleY +
+                                Math.max(annotation.y1, annotation.y2) *
+                                    canvasRect.height / scaleY +
+                                8;
+                        }
+
+                         return (
+                           <div
+                           style={{
+                                position: "absolute",
+                                left: `${left}px`,
+                                top: `${top}px`,
+                                zIndex: 1000,
+                                background: "#fff",
+                                padding: '10px'
+                            }}
+                           >
+                               {
+                                    labels.some(item => item.trim() === '') ? (
+                                        <input
+                                           type="text"
+                                           value={inputLabel}
+                                           onChange={handleLabelChange}
+                                           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                                           autoFocus
+                                           placeholder={`Enter ${annotation.type || 'box'} label`}
+                                           disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}
+                                         />
+                                    ) : (
+                                       <select
+                                           name="labels"
+                                           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                                           onChange={handleLabelChange}
+                                           required disabled={(annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id) || feed}>
+                                           <option value="">-- Select box label --</option>
+                                           {
+                                               labels.map((label, index) => (
+                                                   <option key={index} value={label}>{label}</option>
+                                               ))
+                                           }
+                                       </select>
+                                    )
+                               }
+
+                             {
+                               feed ? (
+                                   feedbackLabel && (
+                                      <div>
+                                       <input
+                                         type="text"
+                                         value={feedbackLabel}
+                                         className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                                         style={{ marginTop: '10px' }}
+                                         disabled
+                                       />
+                                     </div>
+                                   )
+                               ) : (
+                                    annotation.owner && annotation.owner !== "" && annotation.owner !== cred._id ? (
+                                       <div>
+                                           <input
+                                           type="text"
+                                           value={feedbackLabel}
+                                           onChange={handleFeedbackLabelChange}
+                                           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                                           style={{ marginTop: '10px' }}
+                                           autoFocus
+                                           placeholder={`Enter your feedback`}
+                                         />
+                                         <div className="mt-2 cursor-pointer border border-red-200 rounded-lg px-3 py-2 text-center text-xs font-semibold text-red-600 transition hover:text-white hover:bg-red-600"
+                                              onClick={handleDelete2}>
+                                            <span>Delete Feedback</span>
+                                        </div>
+                                       </div>
+                                   ) : (
+                                       <div className="mt-2 cursor-pointer border border-red-200 rounded-lg px-3 py-2 text-center text-xs font-semibold text-red-600 transition hover:text-white hover:bg-red-600"
+                                            onClick={handleDelete}>
+                                      <span>Delete</span>
+                                  </div>
+                                   )
+                               )
+                             }
+                           </div>
+                         );
+                       })()}
+                </div>
+            </div>
+
         </div>
-
     )
 }

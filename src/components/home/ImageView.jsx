@@ -63,6 +63,9 @@ export default function ImageView(){
 
     const { cat, fileId } = useParams();
 
+    const [filename, setFilename] = useState('');
+    const [triggerAction, setTriggerAction] = useState(null);
+
     useEffect(() => {
         const handleResize = () => setWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
@@ -206,36 +209,41 @@ export default function ImageView(){
     }, [feedback]);
 
     return (
-        <div className={styles.container}>
-            <div className={`${styles.innerContainer1} ${isClosed ? styles.closed : ''}`} style={{ width: SIDEBAR_WIDTH }}>
+        <>
+            <div className="flex h-dvh w-full flex-col overflow-hidden bg-slate-100 relative">
+                <header className="z-30 w-full shrink-0">
+                    <Header setIsClosed={setIsClosed} width={width} setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} other={other}
+                         setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader}
+                        setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back}
+                        onAction={triggerAction} cat={cat} file={file}
+                    />
+                </header>
 
-                <OtherSidebar setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP}
-                      setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} instructions={instructions} setInstruct={setInstruct}
-                              setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} setLabels={setLabels} setInstructions={setInstructions}
-                              setBack={setBack} back={back} feedback={feedback} setFeedback={setFeedback} selected={selected} setSelected={setSelected}
-                              setShare={setShare} setAccess={setAccess} setOther={setOther} other={other} annotator={annotator} setAnnotator={setAnnotator}
-                              setFeed={setFeed} setVisual={setVisual} visual={visual} file={file} setIsClosed={setIsClosed} width={width} setLabel={setLabel} cat={cat}
-                />
+                <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden relative">
+                    <aside className="h-full w-[290px] shrink-0 overflow-hidden border-r border-slate-200 bg-white">
+                        <OtherSidebar setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP}
+                              setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} instructions={instructions} setInstruct={setInstruct}
+                                      setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} setLabels={setLabels}
+                                      setBack={setBack} back={back} feedback={feedback} setFeedback={setFeedback} selected={selected} setSelected={setSelected}
+                                      setShare={setShare} setAccess={setAccess} setOther={setOther} other={other} annotator={annotator} setAnnotator={setAnnotator}
+                                      setFeed={setFeed} setVisual={setVisual} visual={visual} file={file} setIsClosed={setIsClosed} width={width} setLabel={setLabel}
+                                      setFilename={setFilename} filename={filename} label={label} labels={labels} cat={cat}
+                        />
+                    </aside>
+
+                    <div className={`${css.loader} ${loader ? css.active : ""}`}></div>
+
+                    <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                        <Image loader={loader} file={file} SIDEBAR_WIDTH={SIDEBAR_WIDTH} zoom={zoom} setZoom={setZoom} imageRef={imageRef} containerRef={containerRef}
+                            imageSize={imageSize} setImageSize={setImageSize} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} labels={labels}
+                            setAnnotations={setAnnotations} annotations={annotations} cred={cred} feed={feed} visual={visual} setIsClosed={setIsClosed} width={width}
+                            setSharedAction={setTriggerAction} cat={cat}
+                        />
+                    </main>
+                </div>
             </div>
-            <div className={styles.innerContainer2}>
-                <Header setIsClosed={setIsClosed} width={width} setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} other={other}
-                     setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} cat={cat} setSync={setSync}
-                    setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back} file={file}
-                />
-                {
-                    cat === 'computer' && (
-                        <div className={styles.strip}>
-                            <p>All your annotations will be saved on your machine</p>
-                        </div>
-                    )
-                }
-                <div className={`${css.loader} ${loader ? css.active : ""}`}></div>
-                <Image loader={loader} file={file} SIDEBAR_WIDTH={SIDEBAR_WIDTH} zoom={zoom} setZoom={setZoom} imageRef={imageRef} containerRef={containerRef}
-                    imageSize={imageSize} setImageSize={setImageSize} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} labels={labels} cat={cat}
-                    setAnnotations={setAnnotations} annotations={annotations} cred={cred} feed={feed} visual={visual} setIsClosed={setIsClosed} width={width}
-                />
-            </div>
-            {
+
+             {
                 share && (
                     <Share setShare={setShare} share={share} setMessage={setMessage} file={file} access={access} annotations={annotations} cred={cred} />
                 )
@@ -264,13 +272,6 @@ export default function ImageView(){
                     <Instructions setInstruct={setInstruct} setInstructions={setInstructions} instructions={instructions} setMessage={setMessage} file={file} cred={cred} cat={cat}/>
                 )
             }
-
-            {
-                label && (
-                    <Labels setLabel={setLabel} setMessage={setMessage} labels={labels} setLabels={setLabels}/>
-                )
-            }
-
             {
                 sync && (
                     <Sync setSync={setSync} setMessage={setMessage} fileId={fileId}/>
@@ -278,6 +279,81 @@ export default function ImageView(){
             }
 
             <Success message={message} setMessage={setMessage}/>
-        </div>
+
+        {/*<div className={styles.container}>*/}
+        {/*    <div className={`${styles.innerContainer1} ${isClosed ? styles.closed : ''}`} style={{ width: SIDEBAR_WIDTH }}>*/}
+
+        {/*        <OtherSidebar setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP}*/}
+        {/*              setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} instructions={instructions} setInstruct={setInstruct}*/}
+        {/*                      setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} setLabels={setLabels} setInstructions={setInstructions}*/}
+        {/*                      setBack={setBack} back={back} feedback={feedback} setFeedback={setFeedback} selected={selected} setSelected={setSelected}*/}
+        {/*                      setShare={setShare} setAccess={setAccess} setOther={setOther} other={other} annotator={annotator} setAnnotator={setAnnotator}*/}
+        {/*                      setFeed={setFeed} setVisual={setVisual} visual={visual} file={file} setIsClosed={setIsClosed} width={width} setLabel={setLabel} cat={cat}*/}
+        {/*        />*/}
+        {/*    </div>*/}
+        {/*    <div className={styles.innerContainer2}>*/}
+        {/*        <Header setIsClosed={setIsClosed} width={width} setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} other={other}*/}
+        {/*             setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader} cat={cat} setSync={setSync}*/}
+        {/*            setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back} file={file}*/}
+        {/*        />*/}
+        {/*        {*/}
+        {/*            cat === 'computer' && (*/}
+        {/*                <div className={styles.strip}>*/}
+        {/*                    <p>All your annotations will be saved on your machine</p>*/}
+        {/*                </div>*/}
+        {/*            )*/}
+        {/*        }*/}
+        {/*        <div className={`${css.loader} ${loader ? css.active : ""}`}></div>*/}
+        {/*        <Image loader={loader} file={file} SIDEBAR_WIDTH={SIDEBAR_WIDTH} zoom={zoom} setZoom={setZoom} imageRef={imageRef} containerRef={containerRef}*/}
+        {/*            imageSize={imageSize} setImageSize={setImageSize} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} labels={labels} cat={cat}*/}
+        {/*            setAnnotations={setAnnotations} annotations={annotations} cred={cred} feed={feed} visual={visual} setIsClosed={setIsClosed} width={width}*/}
+        {/*        />*/}
+        {/*    </div>*/}
+        {/*    {*/}
+        {/*        share && (*/}
+        {/*            <Share setShare={setShare} share={share} setMessage={setMessage} file={file} access={access} annotations={annotations} cred={cred} />*/}
+        {/*        )*/}
+        {/*    }*/}
+
+        {/*    {*/}
+        {/*        pop && (*/}
+        {/*            <AnnotatorShare loader={loader} setLoader={setLoader} annotators={annotators} setPop={setPop} cred={cred}*/}
+        {/*                            selected={selected} setSelected={setSelected} setAnnotations={setAnnotations} cat={cat}*/}
+        {/*                            setAnnotator={setAnnotator} setFeed={setFeed} setMessage={setMessage} setMsg={setMsg}*/}
+        {/*                            setBack={setBack} setOther={setOther} setAccess={setAccess} feedback={feedback} setFeedback={setFeedback}/>*/}
+        {/*        )*/}
+        {/*    }*/}
+
+        {/*    {*/}
+        {/*        pop2 && (*/}
+        {/*            <AnnotatorFeedback setPop2={setPop2} loader={loader} setLoader={setLoader} annotators={annotators} setPop={setPop} cred={cred}*/}
+        {/*                            selected={selected} setSelected={setSelected} setAnnotations={setAnnotations} cat={cat}*/}
+        {/*                            setAnnotator={setAnnotator} setFeed={setFeed} setMessage={setMessage} setMsg={setMsg}*/}
+        {/*                            setBack={setBack} setOther={setOther} setAccess={setAccess} feedback={feedback} setFeedback={setFeedback}/>*/}
+        {/*        )*/}
+        {/*    }*/}
+
+        {/*    {*/}
+        {/*        instruct && (*/}
+        {/*            <Instructions setInstruct={setInstruct} setInstructions={setInstructions} instructions={instructions} setMessage={setMessage} file={file} cred={cred} cat={cat}/>*/}
+        {/*        )*/}
+        {/*    }*/}
+
+        {/*    {*/}
+        {/*        label && (*/}
+        {/*            <Labels setLabel={setLabel} setMessage={setMessage} labels={labels} setLabels={setLabels}/>*/}
+        {/*        )*/}
+        {/*    }*/}
+
+        {/*    {*/}
+        {/*        sync && (*/}
+        {/*            <Sync setSync={setSync} setMessage={setMessage} fileId={fileId}/>*/}
+        {/*        )*/}
+        {/*    }*/}
+
+        {/*    <Success message={message} setMessage={setMessage}/>*/}
+        {/*</div>*/}
+
+        </>
     )
 }

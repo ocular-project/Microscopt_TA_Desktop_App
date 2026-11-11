@@ -1,11 +1,24 @@
 .main {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    background-color: rgba(0,0,0,0.8);
-    z-index: 1;
+    /*position: absolute;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*height: 100vh;*/
+    /*width: 100vw;*/
+    /*background-color: rgba(0,0,0,0.8);*/
+    /*z-index: 1;*/
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.imageContainer {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    overflow: auto;
 }
 
 .main2 {
@@ -78,9 +91,9 @@
 
 
 .info {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
+    /*width: 100%;*/
+    /*height: 100%;*/
+    /*overflow-y: auto;*/
 }
 
 @media (max-width: 768px) {
@@ -90,8 +103,8 @@
     }
 
     .info {
-        max-height: 40vh;
-        overflow-y: auto;
+        /*max-height: 40vh;*/
+        /*overflow-y: auto;*/
     }
 }
 
@@ -104,7 +117,7 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: white;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .imageLoadingPlaceholder {
@@ -157,7 +170,7 @@
 }
 
 .header {
-    padding: 10px;
+    /*padding: 10px;*/
     background-color: #ffffff;
     cursor: pointer;
     display: flex;
@@ -167,30 +180,14 @@
     transition: background-color 0.2s ease;
 }
 
-.buttonsDelete {
-    /*margin-left: -10px;*/
-    /*margin-right: -10px;*/
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: red;
-    border-radius: 5px;
-    padding: 10px;
-    cursor: pointer;
-    font-size: 10px;
-    gap: 10px;
-    color: white;
-}
-
 .title {
     font-weight: 600;
-    font-size: 12px;
+    font-size: 14px;
     color: #333;
 }
 
 .icon {
-    font-size: 10px;
+    font-size: 12px;
     color: #666;
     transition: transform 0.3s ease;
 }
@@ -216,7 +213,7 @@
 
 .content p {
     font-weight: 400;
-    font-size: 10px;
+    font-size: 12px;
     margin-bottom: 10px;
 }
 
@@ -226,7 +223,7 @@
 
 .toolDiv {
     display: grid;
-    grid-template-columns: 1fr 50%;
+    grid-template-columns: 1fr 1fr;
     gap: 5px;
     margin-left: -10px;
     margin-right: -10px;
@@ -268,7 +265,24 @@
     padding: 10px;
     cursor: pointer;
     gap: 10px;
+    font-weight: 600;
     color: #F69220;
+}
+
+.buttonsDelete {
+    /*margin-left: -10px;*/
+    /*margin-right: -10px;*/
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: red;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    gap: 10px;
+    color: white;
 }
 
 .delete {
@@ -279,7 +293,7 @@
     cursor: pointer;
     gap: 10px;
     /*min-width: 60px;*/
-    font-size: 8px;
+    font-size: 10px;
     color: black;
     text-align: center;
 }
@@ -309,7 +323,7 @@
 }
 
 .buttons span {
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .annoDiv {
@@ -343,7 +357,7 @@
     background-color: white;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    /*align-items: center;*/
     border-radius: 5px;
     margin: 10px -5px 10px -10px;
     padding: 10px;
@@ -378,7 +392,7 @@
 }
 
 .labels p {
-    font-size: 11px;
+    font-size: 13px;
 }
 
 .labels p:nth-child(2) {
@@ -387,12 +401,12 @@
 }
 
 .annotator h2 {
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 500;
 }
 
 .annotator p {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 400;
     margin-top: 5px;
     margin-bottom: 0;
@@ -403,16 +417,17 @@
     padding: 5px 10px;
     background-color: #F69220;
     color: white;
-    font-size: 8px;
+    font-size: 10px;
     cursor: pointer;
 }
 
 .loadx {
     border-radius: 5px;
-    padding: 5px 20px;
+    padding: 10px 20px;
     background-color: #F69220;
     color: white;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -421,7 +436,7 @@
     padding: 5px 5px;
     background-color: #F69220;
     color: white;
-    font-size: 8px;
+    font-size: 10px;
     cursor: pointer;
     width: 100%;
     text-align: center;
@@ -443,7 +458,7 @@
     border: 1px solid #F69220;
     background-color: white;
     color: #F69220;
-    font-size: 8px;
+    font-size: 10px;
     cursor: pointer;
     width: 100%;
     text-align: center;
@@ -473,7 +488,7 @@
 
 .close {
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .close:hover {
@@ -481,21 +496,14 @@
 }
 
 .closeH1 {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
 }
 
 .select {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
     margin-top: -10px;
-}
-
-.select2 {
-    font-size: 10px;
-    font-weight: 400;
-    margin-top: 5px;
-    color: #677080;
 }
 
 .tabDiv {
@@ -507,7 +515,7 @@
     display: grid;
     justify-content: center;
     align-items: center;
-    font-size: 10px;
+    font-size: 12px;
     color: #677080;
     font-weight: 400;
     padding: 10px;
@@ -543,7 +551,7 @@
     border-radius: 5px;
     width: 18px;
     height: 18px;
-    font-size: 12px;
+    font-size: 14px;
     display: flex;
     color: white;
     align-items: center;
@@ -557,12 +565,12 @@
 }
 
 .selector span {
-    font-size: 11px;
+    font-size: 13px;
 }
 
 .buttonsFlex {
     display: grid;
-    grid-template-columns: 50% 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-top: 20px;
 }
@@ -591,7 +599,7 @@
 }
 
 .backDiv p {
-    font-size: 10px;
+    font-size: 12px;
     color: #677080;
     font-weight: 400;
 }
@@ -605,28 +613,19 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
     cursor: pointer;
     border: 1px solid #dad2d2;
 }
 
 @media (max-width: 768px) {
-    .main2 {
-        grid-template-columns: 1fr; /* Stack on mobile */
-        grid-template-rows: auto 1fr;
-    }
-
-     .main4 {
+    .main4 {
         width: 80vw;
-    }
-
-    .info {
-        /*max-height: 40vh;*/
-        /*overflow-y: auto;*/
     }
 }
 
+/* Mobile */
 @media (max-width: 480px) {
     .main4 {
         width: 90vw;
