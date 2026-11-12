@@ -486,14 +486,14 @@ function App() {
 
                 if (!adbAPI) return;
 
-                console.log('[ADB] Checking installation...');
+                // console.log('[ADB] Checking installation...');
 
                 const adbCheck = await adbAPI.check();
 
                 if (!mounted) return;
 
                 if (adbCheck?.success) {
-                    console.log('[ADB] ADB is already installed.');
+                    // console.log('[ADB] ADB is already installed.');
 
                     const currentStatus = await adbAPI.getStatus();
 
@@ -521,8 +521,8 @@ function App() {
 
                 // setAdbStatus(currentStatus);
 
-                console.log('[ADB] ADB is not installed.');
-                console.log('[NETWORK] Checking internet connection...');
+                // console.log('[ADB] ADB is not installed.');
+                // console.log('[NETWORK] Checking internet connection...');
 
                 setAdbStatus({
                     status: 'checking-internet',
@@ -535,7 +535,7 @@ function App() {
                 // if (currentStatus.status === 'ready') return;
 
                 // Check internet connectivity.
-                console.log('[NETWORK] Checking internet connection...');
+                // console.log('[NETWORK] Checking internet connection...');
 
                 const connected = await window.electronAPI.checkInternet();
 
@@ -563,7 +563,7 @@ function App() {
                     percent: 0
                 });
 
-                console.log('[ADB] Starting installation...');
+                // console.log('[ADB] Starting installation...');
 
                 const result = await adbAPI.startInstall();
 
@@ -580,7 +580,7 @@ function App() {
 
 
             } catch (error) {
-                console.error('[ADB] Initialization failed:', error);
+                // console.error('[ADB] Initialization failed:', error);
 
                 if (mounted) {
                     setAdbStatus({

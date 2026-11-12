@@ -47,6 +47,10 @@ const __dirname = path.dirname(__filename);
 
 app.setName("Microscopy Teaching Aid");
 app.setVersion(packageJson.version)
+
+// console.log("Electron started:", new Date().toLocaleTimeString());
+// console.log("Main process path:", __filename);
+
 const version= app.getVersion();
 // console.log("APP VERSION:", version);
 
@@ -128,7 +132,7 @@ async function createWindow() {
 
 app.whenReady().then(async () => {
 
-    console.log('[APP] Electron application starting...');
+    // console.log('[APP] Electron application starting...');
 
     adbInstaller = new AdbInstaller(app);
 
@@ -143,8 +147,8 @@ app.whenReady().then(async () => {
     // autoUpdater.checkForUpdates();
     if(mainWindow) {
         mainWindow.webContents.once('did-finish-load', async () => {
-            console.log('[APP] React renderer loaded.');
-            console.log('[APP] Starting ADB initialization...');
+            // console.log('[APP] React renderer loaded.');
+            // console.log('[APP] Starting ADB initialization...');
 
             const dir = loadPath();
 
@@ -354,7 +358,7 @@ ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
 
             // ✅ Check if file already exists
             if (fs.existsSync(savePath)) {
-                console.log('File already exists, canceling download:', savePath);
+                // console.log('File already exists, canceling download:', savePath);
                 item.cancel(); // cancel the download
                 return resolve({
                     success: false,
@@ -367,7 +371,7 @@ ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
 
             item.once('done', (_, state) => {
                 if (state === 'completed') {
-                    console.log(savePath)
+                    // console.log(savePath)
                     handleImageUpload(savePath)
                     resolve({
                         success: true,
@@ -401,7 +405,7 @@ ipcMain.handle('fileDownload:downloadZippedFile', async (event, url) => {
 
             // ✅ Check if file already exists
             if (fs.existsSync(savePath)) {
-                console.log('Zipped File already exists, canceling download:', savePath);
+                // console.log('Zipped File already exists, canceling download:', savePath);
                 item.cancel(); // cancel the download
                 return resolve({
                     success: false,
@@ -414,7 +418,7 @@ ipcMain.handle('fileDownload:downloadZippedFile', async (event, url) => {
 
             item.once('done', (_, state) => {
                 if (state === 'completed') {
-                    console.log(savePath)
+                    // console.log(savePath)
                     // handleImageUpload(savePath)
                     resolve({
                         success: true,
@@ -616,7 +620,7 @@ ipcMain.on("download-update", () => {
 });
 
 autoUpdater.on("update-downloaded", () => {
-  console.log("Update downloaded successfully");
+  // console.log("Update downloaded successfully");
 
   mainWindow.webContents.send("update-status", {
     status: "downloaded",
@@ -660,7 +664,7 @@ ipcMain.handle("inference:check", async () => {
     // const pythonRepository = new PythonRepository()
 
     const exists = pythonRepository.exists()
-    console.log(exists)
+    // console.log(exists)
 
     if (!exists) {
         return {
@@ -839,7 +843,7 @@ ipcMain.handle("model:get-info", async () => {
 
 ipcMain.handle("model:download", async (event) => {
     try {
-        console.log("[MODEL] Download requested from frontend");
+        // console.log("[MODEL] Download requested from frontend");
 
         const result = await modelRepository.download(
             (progress) => {
@@ -903,7 +907,7 @@ function updateAdbState({
         log
     ].slice(-100);
 
-    console.log(`[ADB] ${message}`);
+    // console.log(`[ADB] ${message}`);
 
     if (error) {
         console.error(`[ADB ERROR] ${error}`);
@@ -950,9 +954,9 @@ async function initializeAdb() {
                 percent: 100
             });
 
-            console.log(
-                `[APP] Using ADB: ${adbManager.getAdbPath()}`
-            );
+            // console.log(
+            //     `[APP] Using ADB: ${adbManager.getAdbPath()}`
+            // );
 
             return {
                 success: true,
@@ -969,7 +973,7 @@ async function initializeAdb() {
             percent: 0
         });
 
-        console.log('[APP] Starting automatic ADB installation...');
+        // console.log('[APP] Starting automatic ADB installation...');
 
         // The installer must support this callback for detailed
         // progress events. See the note after the code.
@@ -1013,9 +1017,9 @@ async function initializeAdb() {
             percent: 100
         });
 
-        console.log(
-            `[APP] ADB ready: ${adbManager.getAdbPath()}`
-        );
+        // console.log(
+        //     `[APP] ADB ready: ${adbManager.getAdbPath()}`
+        // );
 
         return {
             success: true,

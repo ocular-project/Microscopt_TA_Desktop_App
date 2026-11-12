@@ -45,6 +45,8 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
         scrcpy: null
     })
 
+    const [triggerAction, setTriggerAction] = useState(false);
+
     useEffect(() => {
         if (!isPop) {
             setScreen({folderCreate: false, teamCreate: false, share: false, teamInfo: false, fileInfo: false,
@@ -63,13 +65,13 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
         }
     }, [path]);
 
-
     return (
         <>
             <Header cat={cat} />
             <Links setScreen={setScreen} setIsPop={setIsPop} cat={cat} setLoader={setLoader2} paths={path}
                    loader={loader2} links={links} setFolders={setFolders} setMessage={setMessage}
                    setCheckedIds={setCheckedIds} checkedIds={checkedIds} config={config} setQuota={setQuota}
+                   setSharedAction={setTriggerAction}
             />
 
             <TableInfo cat={cat} systemStatus={systemStatus} config={config}/>
@@ -79,6 +81,7 @@ export default function Container({ cat, setIsView, isView, message, setMessage,
                         setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setMessage={setMessage}
                         setIsView={setIsView} isView={isView} setRename={setRename} config={config}
                         setCheckedIds={setCheckedIds} checkedIds={checkedIds} quota={quota} setQuota={setQuota}
+                        setSharedAction={setTriggerAction} sharedAction={triggerAction}
             />
 
             <div className={`${styles.popup} ${isPop ? styles.active : ""}`}>

@@ -14,7 +14,7 @@ import {handleMessage} from "../../utils/repeating.js";
 
 export default function Table({ cat, setLoader, folders, setFolders, teams, setTeams, setLinks, setScreen, setIsPop,
                                   setFile, setMessage, setIsView, isView, setRename, config, checkedIds, setCheckedIds,
-                                  quota, setQuota }){
+                                  quota, setQuota, setSharedAction, sharedAction }){
 
     const [error, setError] = useState(null)
     const location = useLocation()
@@ -68,7 +68,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
             let response;
             if (config) {
                 response = await window.electronAPI.getFoldersAndFiles(folderId || null);
-                console.log(response)
+                // console.log(response)
                 if (!response.success) {
                      setError(response.error);
                      return
@@ -193,6 +193,7 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
          }
     }, []);
 
+
     return (
         <div className={styles.main}>
             {
@@ -207,7 +208,8 @@ export default function Table({ cat, setLoader, folders, setFolders, teams, setT
                                 <Folders folders={folders} setLoader={setLoader} setMessage={setMessage} setFolders={setFolders}
                                          setScreen={setScreen} setIsPop={setIsPop} setFile={setFile} setIsView={setIsView}
                                          setRename={setRename} config={config} cat={cat} setCheckedIds={setCheckedIds}
-                                         checkedIds={checkedIds} setQuota={setQuota}
+                                         checkedIds={checkedIds} setQuota={setQuota} setSharedAction={setSharedAction}
+                                         sharedAction={sharedAction}
                                 />
                             )
                         }

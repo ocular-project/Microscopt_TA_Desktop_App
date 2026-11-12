@@ -9,9 +9,30 @@ import {handleMessage, sendToDrive} from "../../../utils/repeating.js";
 import {IoMdCheckmark, IoMdClose} from "react-icons/io";
 import {FaFolder} from "react-icons/fa";
 import {IoImageOutline} from "react-icons/io5";
+import {
+  ChevronDown,
+  ChevronUp,
+  X,
+  ImageIcon,
+  FileCode2,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Pause,
+  Play,
+  RotateCw,
+  Folder,
+  Plus,
+  UploadCloud,
+  Clock,
+  Layers
+} from 'lucide-react';
+import Loader from "../helpers/Loader.jsx";
+
 
 export default function Folders({ folders, setLoader, setMessage, setFolders, setScreen, setIsPop, setFile,
-                                    setIsView, setRename, config, cat, setCheckedIds, checkedIds, setQuota }){
+                                    setIsView, setRename, config, cat, setCheckedIds, checkedIds, setQuota,
+                                setSharedAction, sharedAction}){
 
     const [selectedId, setSelectedId] = useState(null);
     const [selectedIconId, setSelectedIconId] = useState(null);
@@ -20,6 +41,9 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
     const popRef = useRef(null);
     const currentPath = location.pathname;
     const [selectedAll, setSelectedAll] = useState(false);
+
+    const [isClosed, setIsClosed] = useState(true);
+
 
     // useEffect(() => {
     //     console.log(folders)
@@ -270,6 +294,18 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
        setScreen(prev => ({...prev, instructions: true}))
     }
 
+    useEffect(() => {
+        if (sharedAction){
+            setIsClosed(false)
+        }
+    }, [sharedAction]);
+
+    useEffect(() => {
+        if (isClosed){
+            setSharedAction(false)
+        }
+    }, [isClosed]);
+
     return (
         <>
             {
@@ -489,6 +525,15 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                     }
                 </tbody>
             </table>
+
+            {
+                !isClosed && (
+                   <Loader isClosed={isClosed} setIsClosed={setIsClosed} setSharedAction={setSharedAction}
+                           setLoader={setLoader} setMessage={setMessage} setCheckedIds={setCheckedIds}
+                           checkedIds={checkedIds} sharedAction={sharedAction}/>
+                )
+            }
+
         </>
     )
 }

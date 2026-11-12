@@ -961,6 +961,9 @@ async function validateImageExists(filePath) {
 export async function transferFiles(fileList, type) {
     try {
 
+        // console.log(fileList)
+        // console.log(type)
+
         const dataArray = await getArrayObject("database.json")
         // const feedbackArray = await getArrayObject("feedback.json")
         const annoArray = await getArrayObject("annotations.json")
@@ -974,10 +977,11 @@ export async function transferFiles(fileList, type) {
         // console.log(fileList)
         const newList = fileList.map(file => file.id)
         let msg = ""
+        let result = []
         let fol = []
         let images = []
         let annotations = []
-
+        //
         const folderLookUp = new Map(
             dataArray.map(item => [item._id, item])
         );
@@ -989,18 +993,21 @@ export async function transferFiles(fileList, type) {
         // console.log(newList)
 
         for (const [index, id] of newList.entries()) {
+
+            let ob = {}
+
             const folder = folderLookUp.get(id)
 
             if (!folder) {
                 const value = index+1
-                msg = `Image record for Image number ${value} doesn't exist`
+                msg = `Image record for this ID ${value} doesn't exist`
                 break
             }
 
-            // console.log("===================================")
-            // console.log(folder)
-            // console.log("===================================")
-
+        //     // console.log("===================================")
+        //     console.log(folder)
+        //     // console.log("===================================")
+        //
             const url = folder.url
             const exists = await imageExists(url);
             if (!exists) {
@@ -1012,16 +1019,38 @@ export async function transferFiles(fileList, type) {
             const obj = {
                 buffer,
                 name: folder.name,
+                _id: folder._id,
                 extension
             }
             images.push(obj)
             fol.push(folder)
 
-            if(!annoLookUp.has(id)){
-                continue
+            ob["imageId"] = folder._id
+            ob["imageName"] = folder.name
+            ob["imageSize"] = folder.size
+            ob["stage"] = "queued"
+            ob["errorMsg"] = null
+            ob["annotationId"] = null
+
+            if (folder.isAnnotated) {
+                const anno = annoLookUp.get(id)
+
+                if (!anno) {
+                    continue
+                }
+
+                annotations.push(anno)
+                ob["annotationId"] = anno._id
+
+                // console.log("===================================")
+                // console.log(anno)
+                // console.log("===================================")
+
             }
-            const anno = annoLookUp.get(id)
-            annotations.push(anno)
+
+            result.push(ob)
+
+        //     const anno = annoLookUp.get(id)
 
         }
 
@@ -1032,9 +1061,12 @@ export async function transferFiles(fileList, type) {
             }
         }
 
+        // console.log(result)
+
         return {
             success: true,
             data: {
+                uploads: result,
                 annotations,
                 folders: fol,
                 images
