@@ -10,7 +10,7 @@ import {
     UploadCloud,
     X, Ban
 } from "lucide-react";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {handleMessage} from "../../../utils/repeating.js";
 import {uploadImage} from "./utils.js";
 
@@ -79,37 +79,41 @@ export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoad
     const errorItem = uploads.find((u) => u.stage === 'image_error' || u.stage === 'annotation_error');
     const pausedItems = uploads.filter((u) => u.stage === 'paused').length;
     const isHalted = Boolean(errorItem);
+    const isQueueHalted = useRef(false);
 
-    useEffect(() => {
-        if (uploads.length === 0) return;
-
-        // 1. All items completed with zero errors -> auto-close widget
-        const allCompleted = uploads.every((u) => u.stage === 'completed');
-        if (allCompleted) {
-          const closeTimer = setTimeout(() => {
-            setIsClosed(true);
-          }, 1000);
-          return () => clearTimeout(closeTimer);
-        }
-
-        // 2. Check if an error occurred
-        const errorIdx = uploads.findIndex(
-          (u) => u.stage === 'image_error' || u.stage === 'annotation_error'
-        );
-
-        if (errorIdx !== -1) {
-          // If error happened on the FIRST item (and no items were completed before it)
-          if (errorIdx === 0 && completedItems === 0) {
-            setIsClosed(true);
-            handleMessage(uploads[0].errorMsg, "error", setMessage)
-          } else if (uploads.some((u) => u.stage !== 'image_error' && u.stage !== 'annotation_error')) {
-            // Error happened after the first item: keep popup open & filter list to ONLY failed items
-            setUploads((prev) =>
-              prev.filter((u) => u.stage === 'image_error' || u.stage === 'annotation_error')
-            );
-          }
-        }
-    }, [uploads, completedItems]);
+    // useEffect(() => {
+    //     if (uploads.length === 0) return;
+    //
+    //     // 1. All items completed with zero errors -> auto-close widget
+    //     const allCompleted = uploads.every((u) => u.stage === 'completed');
+    //     if (allCompleted) {
+    //       const closeTimer = setTimeout(() => {
+    //         setIsClosed(true);
+    //       }, 1000);
+    //       return () => clearTimeout(closeTimer);
+    //     }
+    //
+    //     // 2. Check if an error occurred
+    //     const errorIdx = uploads.findIndex(
+    //       (u) => u.stage === 'image_error' || u.stage === 'annotation_error'
+    //     );
+    //
+    //     console.log(uploads)
+    //     console.log(errorIdx)
+    //
+    //     if (errorIdx !== -1) {
+    //       // If error happened on the FIRST item (and no items were completed before it)
+    //       if (errorIdx === 0 && completedItems === 0) {
+    //         setIsClosed(true);
+    //         handleMessage(uploads[0].errorMsg, "error", setMessage)
+    //       } else if (uploads.some((u) => u.stage !== 'image_error' && u.stage !== 'annotation_error')) {
+    //         // Error happened after the first item: keep popup open & filter list to ONLY failed items
+    //         setUploads((prev) =>
+    //           prev.filter((u) => u.stage === 'image_error' || u.stage === 'annotation_error')
+    //         );
+    //       }
+    //     }
+    // }, [uploads, completedItems]);
 
     useEffect(() => {
         setIsWaitingToStart(true);
@@ -132,80 +136,152 @@ export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoad
         );
 
         const imagesLookUp = new Map(
-            imagesData.annotations.map(item => [item._id, item])
+            imagesData.images.map(item => [item._id, item])
         );
 
-        const interval = setInterval(() => {
-          setUploads((prevUploads) => {
-            // Double check if halted inside updater
-            if (prevUploads.some((u) => u.stage === 'image_error' || u.stage === 'annotation_error')) {
-              return prevUploads;
-            }
+        let isProcessing = false;
 
-            // Find current active item
-            const activeIdx = prevUploads.findIndex(
-              (item) => item.stage === 'uploading_image' || item.stage === 'uploading_annotation'
-            );
+        const interval = setInterval(async () => {
 
-            if (activeIdx !== -1) {
-              return prevUploads.map((item, index) => {
-                if (index === activeIdx) {
-                  // STAGE 1: Image Upload Finishing
-                  if (item.stage === 'uploading_image') {
+            // Stop immediately if an error has occurred
+            if (isQueueHalted.current || isProcessing) return;
 
-                      uploadImage(item, folderLookUp, imagesData)
-                    // const imageSucceeded = Math.random() > 0.2; // 80% chance image succeeds
-                    // if (!imageSucceeded) {
-                    //   return {
-                    //     ...item,
-                    //     stage: 'image_error',
-                    //     errorMsg: 'Image upload failed (Network timeout). Queue halted.',
-                    //   };
-                    // }
+            let activeItem = null;
 
-                    // If image has NO annotations (annotationId === null), complete immediately!
-                    if (!item.annotationId) {
-                      return { ...item, stage: 'completed', errorMsg: null };
-                    }
+            setUploads(prevUploads => {
 
-                    // Otherwise, proceed to upload annotations
-                    return { ...item, stage: 'uploading_annotation' };
-                  }
-
-                  // STAGE 2: Annotation Upload Finishing (Image already succeeded)
-                  if (item.stage === 'uploading_annotation') {
-                    const annotationSucceeded = Math.random() > 0.35; // 65% chance annotation succeeds
-                    if (annotationSucceeded) {
-                      return { ...item, stage: 'completed', errorMsg: null };
-                    } else {
-                      return {
-                        ...item,
-                        stage: 'annotation_error',
-                        errorMsg: 'Image uploaded, but annotation sync failed. Queue halted.',
-                      };
-                    }
-                  }
+                // Check for previous errors
+                if (prevUploads.some(u =>
+                    u.stage === 'image_error' ||
+                    u.stage === 'annotation_error'
+                )) {
+                    isQueueHalted.current = true;
+                    return prevUploads;
                 }
-                return item;
-              });
-            } else {
-              // If no active item, pick the next queued item to start with image upload
-              const nextQueuedIdx = prevUploads.findIndex((item) => item.stage === 'queued');
-              if (nextQueuedIdx !== -1) {
-                return prevUploads.map((item, index) => {
-                  if (index === nextQueuedIdx) {
-                    return { ...item, stage: 'uploading_image' };
-                  }
-                  return item;
-                });
-              }
+
+                const activeIdx = prevUploads.findIndex(
+                    item =>
+                        item.stage === 'uploading_image' ||
+                        item.stage === 'uploading_annotation'
+                );
+
+                if (activeIdx !== -1) {
+                    activeItem = prevUploads[activeIdx];
+                    return prevUploads;
+                }
+
+                const nextQueuedIdx = prevUploads.findIndex(
+                    item => item.stage === 'queued'
+                );
+
+                if (nextQueuedIdx !== -1) {
+                    return prevUploads.map((item, index) =>
+                        index === nextQueuedIdx
+                            ? { ...item, stage: 'uploading_image' }
+                            : item
+                    );
+                }
+
+                return prevUploads;
+            });
+
+            if (!activeItem || isQueueHalted.current) return;
+
+            isProcessing = true;
+
+            try {
+
+                // STAGE 1: Image upload
+                if (activeItem.stage === 'uploading_image') {
+
+                    const result = await uploadImage(
+                        activeItem,
+                        folderLookUp,
+                        imagesLookUp
+                    );
+
+                    if (!result.success && result.error !== "This image was already uploaded") {
+
+                        isQueueHalted.current = true;
+
+                        setUploads(prev =>
+                            prev.map(item =>
+                                item.imageId === activeItem.imageId
+                                    ? {
+                                        ...item,
+                                        stage: 'image_error',
+                                        errorMsg: `${result.error}. Queue halted.`
+                                    }
+                                    : item
+                            )
+                        );
+
+                        return;
+                    }
+
+                    setUploads(prev =>
+                        prev.map(item =>
+                            item.imageId === activeItem.imageId
+                                ? {
+                                    ...item,
+                                    stage: item.annotationId
+                                        ? 'uploading_annotation'
+                                        : 'completed',
+                                    errorMsg: null
+                                }
+                                : item
+                        )
+                    );
+                }
+
+                // STAGE 2: Annotation upload
+                else if (activeItem.stage === 'uploading_annotation') {
+
+                    // Replace with your actual annotation upload function
+                    const annotationResult = Math.random() > 0.35;
+
+                    if (!annotationResult) {
+
+                        isQueueHalted.current = true;
+
+                        setUploads(prev =>
+                            prev.map(item =>
+                                item.imageId === activeItem.imageId
+                                    ? {
+                                        ...item,
+                                        stage: 'annotation_error',
+                                        errorMsg: 'Image uploaded, but annotation sync failed. Queue halted.'
+                                    }
+                                    : item
+                            )
+                        );
+
+                        return;
+                    }
+
+                    setUploads(prev =>
+                        prev.map(item =>
+                            item.imageId === activeItem.imageId
+                                ? {
+                                    ...item,
+                                    stage: 'completed',
+                                    errorMsg: null
+                                }
+                                : item
+                        )
+                    );
+                }
+
+            } catch (error) {
+                console.error('Upload queue error:', error);
+            } finally {
+                isProcessing = false;
             }
 
-            return prevUploads;
-          });
         }, 500);
 
         return () => clearInterval(interval);
+
     }, [isPaused, isClosed, isWaitingToStart, isHalted]);
 
     // Header Title Text
