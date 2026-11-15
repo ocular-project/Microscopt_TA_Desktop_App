@@ -134,12 +134,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
             return ipcRenderer.invoke('adb:retry-install');
         },
 
-        startInstall: () => ipcRenderer.invoke('adb:start-install')
+        startInstall: () => ipcRenderer.invoke('adb:start-install'),
 
         // Check ADB installation
-        // check: () => {
-        //     return ipcRenderer.invoke('adb:check');
-        // },
+        check: () => {
+            return ipcRenderer.invoke('adb:check');
+        },
 
         // Get connected Android devices
         // getDevices: () => {

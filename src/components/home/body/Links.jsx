@@ -11,7 +11,8 @@ import {handleMessage} from "../../utils/repeating";
 import DriveButtons from "./myComputer/DriveButtons.jsx";
 import {refreshQuota} from "../../utils/files/RepeatingFiles.jsx";
 
-export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds, checkedIds, config, setQuota, paths }){
+export default function Links({ setScreen, setIsPop, cat, loader, setLoader, links, setFolders, setMessage, setCheckedIds,
+                                  checkedIds, config, setQuota, paths, setSharedAction }){
 
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -343,6 +344,7 @@ export default function Links({ setScreen, setIsPop, cat, loader, setLoader, lin
                             <ButtonLinks setLoader={setLoader} setScreen={setScreen} setIsPop={setIsPop} path={paths}
                                          setMessage={setMessage} setFolders={setFolders} setCheckedIds={setCheckedIds}
                                          checkedIds={checkedIds} config={config} links={links} cat={cat} setQuota={setQuota}
+                                         setSharedAction={setSharedAction}
                             />
                         // ) : cat === "devices" ? (
                         //     <Button text="Refresh" status="active" onClick={handleRefresh} />

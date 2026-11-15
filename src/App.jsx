@@ -21,6 +21,7 @@ import Devices from "./components/home/Devices.jsx";
 import Adb from "./Adb.jsx";
 import ModelAnalyzer from "./components/home/model/ModelAnalyzer.jsx";
 import { TriangleAlert, Globe, Download, Loader2 } from "lucide-react";
+import Connect from "./components/home/Connect.jsx";
 
 // --------------------------------------------------
 // ADB SETUP POPUP
@@ -375,6 +376,7 @@ function AppRoutes({ path, setPath }) {
         />
 
         <Route path="/devices" element={<Devices path={path} setPath={setPath}/>} />
+        <Route path="/connect_devices" element={<Connect path={path} setPath={setPath}/>} />
         <Route path="/image" element={<ImageAnnotator />} />
         <Route path="/annotation/:cat/:fileId" element={<ImageView />} />
 
@@ -486,17 +488,44 @@ function App() {
 
                 if (!adbAPI) return;
 
-                // First retrieve the current ADB state.
-                const currentStatus = await adbAPI.getStatus();
+                // console.log('[ADB] Checking installation...');
+
+                const adbCheck = await adbAPI.check();
 
                 if (!mounted) return;
 
-                if (currentStatus?.status === 'ready') {
-                    setAdbStatus(currentStatus);
+                if (adbCheck?.success) {
+                    // console.log('[ADB] ADB is already installed.');
+
+                    const currentStatus = await adbAPI.getStatus();
+
+                    if (!mounted) return;
+
+                    setAdbStatus({
+                        ...currentStatus,
+                        status: 'ready',
+                        message: 'Android Debug Bridge is ready.',
+                        percent: 100
+                    });
+
                     return;
                 }
 
+                // First retrieve the current ADB state.
+                // const currentStatus = await adbAPI.getStatus();
+
+                // if (!mounted) return;
+                //
+                // if (currentStatus?.status === 'ready') {
+                //     setAdbStatus(currentStatus);
+                //     return;
+                // }
+
                 // setAdbStatus(currentStatus);
+
+                // console.log('[ADB] ADB is not installed.');
+                // console.log('[NETWORK] Checking internet connection...');
+
                 setAdbStatus({
                     status: 'checking-internet',
                     step: 'Checking connectivity',
@@ -505,10 +534,10 @@ function App() {
                 });
 
                 // ADB is already ready. No installation required.
-                if (currentStatus.status === 'ready') return;
+                // if (currentStatus.status === 'ready') return;
 
                 // Check internet connectivity.
-                console.log('[NETWORK] Checking internet connection...');
+                // console.log('[NETWORK] Checking internet connection...');
 
                 const connected = await window.electronAPI.checkInternet();
 
@@ -536,7 +565,7 @@ function App() {
                     percent: 0
                 });
 
-                console.log('[ADB] Starting installation...');
+                // console.log('[ADB] Starting installation...');
 
                 const result = await adbAPI.startInstall();
 
@@ -553,7 +582,7 @@ function App() {
 
 
             } catch (error) {
-                console.error('[ADB] Initialization failed:', error);
+                // console.error('[ADB] Initialization failed:', error);
 
                 if (mounted) {
                     setAdbStatus({

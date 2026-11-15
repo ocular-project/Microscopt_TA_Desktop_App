@@ -135,6 +135,7 @@ class AdbManager {
     executeAdb(args = [], deviceId = null) {
         return new Promise((resolve) => {
             const adbPath = this.getAdbPath();
+            console.log("This is the ADB path: ", adbPath)
 
             if (!adbPath) {
                 return resolve({
