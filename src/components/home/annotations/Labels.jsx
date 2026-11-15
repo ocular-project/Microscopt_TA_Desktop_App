@@ -5,11 +5,11 @@ import {RxFilePlus} from "react-icons/rx";
 import { Plus, Trash2, GripVertical, AlertCircle, Tag } from 'lucide-react';
 import {handleMessage} from "../../utils/repeating.js";
 
-export default function Labels({ setLabel, setMessage, labels, setLabels }){
+export default function Labels({ setLabel, setMessage, labels, setLabels, filename, setFilename }){
 
     const [loader, setLoader] = useState(false)
     const lastInputRef = useRef(null);
-    const [filename, setFilename] = useState('');
+    // const [filename, setFilename] = useState('');
 
     useEffect(() => {
         if (labels.length > 1 && lastInputRef.current) {
@@ -87,11 +87,7 @@ export default function Labels({ setLabel, setMessage, labels, setLabels }){
                       value={filename}
                        style={{ padding: '10px 20px' }}
                       onChange={(e) => setFilename(e.target.value)}
-                      className={`w-full text-[11px] bg-slate-50 border rounded-lg focus:ring-2 outline-none transition-all placeholder:text-slate-400 ${
-                        isListNameEmpty 
-                        ? 'border-amber-200 focus:ring-amber-400' 
-                        : 'border-slate-200 focus:ring-primary'
-                      }`}
+                      className={`w-full text-sm bg-white border border-slate-300 rounded-lg outline-none transition-all placeholder:text-slate-400`}
                     />
                   </div>
 
@@ -117,41 +113,34 @@ export default function Labels({ setLabel, setMessage, labels, setLabels }){
                                 onChange={(e) => handleInputChange(index, e.target.value)}
                                 placeholder={`Enter label ${index + 1}...`}
                                 style={{ padding: '10px 20px' }}
-                                className={`w-full bg-slate-50 border text-[11px] rounded-lg focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-slate-400 ${
-                                  label.trim() === '' && labels.length > 0 
-                                  ? 'border-amber-200 focus:ring-amber-400' 
-                                  : 'border-slate-200 focus:ring-primary'
-                                }`}
+                                className={`w-full text-sm bg-white border border-slate-300 rounded-lg outline-none transition-all placeholder:text-slate-400`}
                               />
 
-                              {index === labels.length - 1 ? (
-                                <button
-                                  type="button"
-                                  onClick={addLabel}
-                                  disabled={label.trim() === ''}
-                                  className={`shrink-0 flex items-center justify-center w-10 h-10 rounded-lg transition-all shadow-sm active:scale-95 ${
-                                    label.trim() === '' 
-                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                                    : 'bg-primary hover:bg-primary text-white'
-                                  }`}
-                                  title="Add another input"
-                                >
-                                  <Plus size={20} />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => removeLabel(index)}
-                                  className="shrink-0 flex items-center justify-center w-10 h-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                  title="Remove label"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              )}
+                                {
+                                   labels.length !== 1 && (
+                                       <button
+                                          type="button"
+                                          onClick={() => removeLabel(index)}
+                                          className="shrink-0 flex items-center justify-center w-10 h-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                          title="Remove label"
+                                        >
+                                          <Trash2 size={18} />
+                                        </button>
+                                   )
+                               }
                             </div>
                            </div>
                        ))
                    }
+
+                   <button
+                       onClick={addLabel}
+                       className="text-primary font-medium text-sm rounded-lg border px-2.5 py-1.5 flex justify-start items-center gap-2 hover:bg-primary hover:text-white"
+                   >
+                       <Plus size={12}/>
+                       <span>Add Label</span>
+                   </button>
+
                </div>
                <div className={styles.buttonsFlex}>
                    <div className={`${styles.buttons} ${!isInvalid ? styles.active : styles.disabled}`}

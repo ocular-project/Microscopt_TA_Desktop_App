@@ -4,6 +4,7 @@ import React, {useState} from "react";
 import {RxFilePlus} from "react-icons/rx";
 import {handleUploading} from "../../utils/files/RepeatingFiles.jsx";
 import {useNavigate} from "react-router-dom";
+import {handleBack, handleMessage} from "../../utils/repeating.js";
 
 export default function Sync({ setSync, setMessage, fileId }){
 
@@ -12,6 +13,10 @@ export default function Sync({ setSync, setMessage, fileId }){
 
     function handleClose () {
         setSync(false)
+        handleMessage("Image annotations have been saved", "success", setMessage)
+        setTimeout(() => {
+           handleBack(navigate)
+        }, 500)
     }
 
     async function handleSave() {
@@ -28,7 +33,7 @@ export default function Sync({ setSync, setMessage, fileId }){
                    <IoCloseCircleOutline className={styles.close} />
                </div>
                <p className={styles.select}>Would you like to send your latest changes to the online system?</p>
-               <p className={styles.select2}>You will need internet for this</p>
+               <p className="mt-2 text-sm text-primary">You will need internet for this</p>
                <div className={styles.buttonsFlex}>
                    <div className={`${styles.buttons} ${styles.active}`}
                         onClick={() => handleSave()}

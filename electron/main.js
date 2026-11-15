@@ -34,7 +34,8 @@ import https from "https";
 
 import { runInference } from "./repositories/inference.js"
 import ScrcpyManager from "./repositories/scrcpy-manager.js";
-import AdbManager from "./repositories/adb-manager.js";
+import AdbManager from "./repositories/adbManager.js";
+import AdbInstaller from "./repositories/adbInstaller.js";
 import SimpleAdb from "./repositories/simple-adb.js"
 import PythonRepository from "./repositories/python/pythonRepository.js";
 import PythonDependencyRepository from "./repositories/python/pythonDependencyRepository.js";
@@ -46,6 +47,10 @@ const __dirname = path.dirname(__filename);
 
 app.setName("Microscopy Teaching Aid");
 app.setVersion(packageJson.version)
+
+// console.log("Electron started:", new Date().toLocaleTimeString());
+// console.log("Main process path:", __filename);
+
 const version= app.getVersion();
 // console.log("APP VERSION:", version);
 
@@ -58,7 +63,21 @@ autoUpdater.forceDevUpdateConfig = true;
 let mainWindow
 
 // console.log("BEFORE AdbManager");
-const adbManager = new AdbManager();
+// const adbManager = new AdbManager();
+let adbInstaller = null;
+let adbManager = null;
+
+let adbInstallationInProgress = false;
+
+let adbState = {
+    status: 'checking',
+    message: 'Checking ADB installation...',
+    step: 'check',
+    percent: 0,
+    error: null,
+    logs: []
+};
+
 // console.log("AFTER AdbManager");
 
 // console.log("BEFORE ScrcpyManager");
@@ -111,19 +130,36 @@ async function createWindow() {
 
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+
+    // console.log('[APP] Electron application starting...');
+
+    adbInstaller = new AdbInstaller(app);
+
+    adbManager = new AdbManager(
+        adbInstaller.getAdbExecutable()
+    );
+
+    registerAdbHandlers();
+
     createWindow()
+
     // autoUpdater.checkForUpdates();
-    mainWindow.webContents.on("did-finish-load", () => {
-        const dir = loadPath();
-        // console.log(dir)
+    if(mainWindow) {
+        mainWindow.webContents.once('did-finish-load', async () => {
+            // console.log('[APP] React renderer loaded.');
+            // console.log('[APP] Starting ADB initialization...');
 
-        if (dir) {
-            simpleAdbJson = new SimpleAdb(mainWindow, dir);
-        }
+            const dir = loadPath();
 
-        autoUpdater.checkForUpdates();
-    });
+            // await initializeAdb()
+            if (dir) {
+                simpleAdbJson = new SimpleAdb(mainWindow, dir);
+            }
+
+            autoUpdater.checkForUpdates();
+        });
+    }
 });
 
 app.on("window-all-closed", () => {
@@ -137,6 +173,17 @@ app.on("window-all-closed", () => {
 
 app.on('activate', () => {
   if (mainWindow === null) createWindow();
+});
+
+ipcMain.on('app:close', () => {
+    if (simpleAdbJson) {
+         simpleAdbJson.stopPolling()
+    }
+    app.quit();
+});
+
+ipcMain.handle('adb:check-internet', async () => {
+    return await adbInstaller.checkInternetConnection();
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
@@ -311,7 +358,7 @@ ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
 
             // ✅ Check if file already exists
             if (fs.existsSync(savePath)) {
-                console.log('File already exists, canceling download:', savePath);
+                // console.log('File already exists, canceling download:', savePath);
                 item.cancel(); // cancel the download
                 return resolve({
                     success: false,
@@ -324,7 +371,7 @@ ipcMain.handle('fileDownload:downloadFile', async (event, url) => {
 
             item.once('done', (_, state) => {
                 if (state === 'completed') {
-                    console.log(savePath)
+                    // console.log(savePath)
                     handleImageUpload(savePath)
                     resolve({
                         success: true,
@@ -358,7 +405,7 @@ ipcMain.handle('fileDownload:downloadZippedFile', async (event, url) => {
 
             // ✅ Check if file already exists
             if (fs.existsSync(savePath)) {
-                console.log('Zipped File already exists, canceling download:', savePath);
+                // console.log('Zipped File already exists, canceling download:', savePath);
                 item.cancel(); // cancel the download
                 return resolve({
                     success: false,
@@ -371,7 +418,7 @@ ipcMain.handle('fileDownload:downloadZippedFile', async (event, url) => {
 
             item.once('done', (_, state) => {
                 if (state === 'completed') {
-                    console.log(savePath)
+                    // console.log(savePath)
                     // handleImageUpload(savePath)
                     resolve({
                         success: true,
@@ -573,7 +620,7 @@ ipcMain.on("download-update", () => {
 });
 
 autoUpdater.on("update-downloaded", () => {
-  console.log("Update downloaded successfully");
+  // console.log("Update downloaded successfully");
 
   mainWindow.webContents.send("update-status", {
     status: "downloaded",
@@ -617,7 +664,7 @@ ipcMain.handle("inference:check", async () => {
     // const pythonRepository = new PythonRepository()
 
     const exists = pythonRepository.exists()
-    console.log(exists)
+    // console.log(exists)
 
     if (!exists) {
         return {
@@ -796,7 +843,7 @@ ipcMain.handle("model:get-info", async () => {
 
 ipcMain.handle("model:download", async (event) => {
     try {
-        console.log("[MODEL] Download requested from frontend");
+        // console.log("[MODEL] Download requested from frontend");
 
         const result = await modelRepository.download(
             (progress) => {
@@ -824,6 +871,230 @@ ipcMain.handle("model:download", async (event) => {
         );
     }
 });
+
+
+// ------------------------------------
+// ADB STATUS MANAGEMENT
+// ------------------------------------
+
+function updateAdbState({
+    status,
+    message,
+    step,
+    percent,
+    error = null
+}) {
+    adbState = {
+        ...adbState,
+        status,
+        message,
+        step,
+        percent,
+        error
+    };
+
+    const log = {
+        timestamp: new Date().toISOString(),
+        status,
+        step,
+        message,
+        percent,
+        error
+    };
+
+    adbState.logs = [
+        ...adbState.logs,
+        log
+    ].slice(-100);
+
+    // console.log(`[ADB] ${message}`);
+
+    if (error) {
+        console.error(`[ADB ERROR] ${error}`);
+    }
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(
+            'adb:status-changed',
+            adbState
+        );
+    }
+}
+
+// ------------------------------------
+// ADB INSTALLATION
+// ------------------------------------
+
+async function initializeAdb() {
+    if (adbInstallationInProgress) {
+        return {
+            success: false,
+            error: 'ADB installation is already running.'
+        };
+    }
+
+    adbInstallationInProgress = true;
+
+    try {
+        updateAdbState({
+            status: 'checking',
+            step: 'check',
+            message: 'Checking whether ADB is installed...',
+            percent: 0
+        });
+
+        // Check existing ADB installation
+        const check = await adbManager.checkAdbInstalled();
+
+        if (check.success) {
+            updateAdbState({
+                status: 'ready',
+                step: 'complete',
+                message: 'ADB is already installed and working.',
+                percent: 100
+            });
+
+            // console.log(
+            //     `[APP] Using ADB: ${adbManager.getAdbPath()}`
+            // );
+
+            return {
+                success: true,
+                adbPath: adbManager.getAdbPath(),
+                alreadyInstalled: true
+            };
+        }
+
+        // ADB missing: installation required
+        updateAdbState({
+            status: 'installing',
+            step: 'download',
+            message: 'ADB was not found. Preparing Platform Tools download...',
+            percent: 0
+        });
+
+        // console.log('[APP] Starting automatic ADB installation...');
+
+        // The installer must support this callback for detailed
+        // progress events. See the note after the code.
+        const installation = await adbInstaller.install({
+            onProgress: (progress) => {
+                updateAdbState({
+                    status: 'installing',
+                    step: progress.step,
+                    message: progress.message,
+                    percent: progress.percent ?? 0
+                });
+            }
+        });
+
+        if (!installation.success) {
+            throw new Error(
+                installation.error || 'ADB installation failed.'
+            );
+        }
+
+        // Verify using AdbManager
+        updateAdbState({
+            status: 'installing',
+            step: 'verification',
+            message: 'Verifying ADB installation...',
+            percent: 95
+        });
+
+        const finalCheck = await adbManager.checkAdbInstalled();
+
+        if (!finalCheck.success) {
+            throw new Error(
+                finalCheck.error || 'ADB verification failed.'
+            );
+        }
+
+        updateAdbState({
+            status: 'ready',
+            step: 'complete',
+            message: 'ADB installation completed successfully.',
+            percent: 100
+        });
+
+        // console.log(
+        //     `[APP] ADB ready: ${adbManager.getAdbPath()}`
+        // );
+
+        return {
+            success: true,
+            adbPath: adbManager.getAdbPath(),
+            alreadyInstalled: false
+        };
+
+    } catch (error) {
+        updateAdbState({
+            status: 'error',
+            step: adbState.step,
+            message: 'ADB installation failed.',
+            error: error.message
+        });
+
+        return {
+            success: false,
+            error: error.message
+        };
+
+    } finally {
+        adbInstallationInProgress = false;
+    }
+}
+
+// ------------------------------------
+// IPC HANDLERS
+// ------------------------------------
+
+function registerAdbHandlers() {
+
+    // Get current installation state
+    ipcMain.handle('adb:get-status', () => {
+        return adbState;
+    });
+
+    // Retry installation
+    ipcMain.handle('adb:retry-install', async () => {
+        if (adbInstallationInProgress) {
+            return {
+                success: false,
+                error: 'ADB installation is already running.'
+            };
+        }
+
+        return initializeAdb();
+    });
+
+    // Check ADB
+    ipcMain.handle('adb:check', async () => {
+        return adbManager.checkAdbInstalled();
+    });
+
+    // Get connected devices
+    // ipcMain.handle('adb:get-devices', async () => {
+    //     return adbManager.getDevices();
+    // });
+
+    // Execute ADB version check
+    ipcMain.handle('adb:get-version', async () => {
+        return adbManager.getAdbVersion();
+    });
+
+    ipcMain.handle('adb:start-install', async () => {
+        return await initializeAdb();
+    });
+
+    // Check device shell access
+    // ipcMain.handle(
+    //     'adb:check-device',
+    //     async (_event, deviceId) => {
+    //         return adbManager.enableUsbDebugging(deviceId);
+    //     }
+    // );
+}
 
 
 

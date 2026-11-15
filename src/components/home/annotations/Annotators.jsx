@@ -30,10 +30,15 @@ export default function Annotators({ annotators, setAnnotations, cred, setLoader
     );
 
     return (
-        <div className={styles.imgInfo}>
-            <div className={styles.header} onClick={() => handleChange("annotations", !isOpen.annotations)}>
-               <h3 className={styles.title}>Annotations</h3>
-               <span className={`${isOpen.annotations ? styles.open : ''} ${styles.icon}`}>▼</span>
+        <div className="border border-slate-200 bg-white rounded-xl">
+            <div className="flex cursor-pointer items-center justify-between px-4 py-3 transition hover:bg-slate-50"
+                 onClick={() => handleChange("annotations", !isOpen.annotations)}>
+               <h3 className="text-sm font-semibold text-slate-700">Annotations</h3>
+               <span className={`text-xs text-slate-400 transition-transform ${
+                            isOpen.annotations ? "rotate-180" : ""
+                        }`}>
+                            ▼
+               </span>
            </div>
             <div className={`${isOpen.annotations ? styles.open : ''} ${styles.content}`}>
                 {

@@ -9,7 +9,7 @@ import axiosInstance from "../../../utils/files/axiosInstance.js";
 import {refreshQuota} from "../../../utils/files/RepeatingFiles.jsx";
 
 export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage, setFolders, path
-                                        , setCheckedIds, checkedIds, config, links, cat, setQuota }){
+                                        , setCheckedIds, checkedIds, config, links, cat, setQuota, setSharedAction }){
 
     const fileInputRef = useRef(null);
     const { folderId } = useParams();
@@ -142,7 +142,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
     }
 
     async function handleCopy () {
-        setLoader(true)
+        // setLoader(true)
         // console.log(checkedIds)
        try {
            const response = await window.electronAPI.transferFiles(checkedIds, "copy")
@@ -151,30 +151,30 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
                return
            }
            const data = response.data
-           // console.log(data)
-           const formData = new FormData();
-           for (const image of data.images) {
-               const buffer = image.buffer
-               const blob = new Blob([buffer], { type: `image/${image.extension}` })
-               formData.append('files', blob, image.name);
-           }
-           formData.append("folders", JSON.stringify(data.folders))
-           formData.append("annotations", JSON.stringify(data.annotations))
-
-           // console.log([...formData.entries()]);
-
-           const resp = await axiosInstance.post("desktop/files", formData)
-           // // console.log(resp.data)
-           handleMessage(resp.data.message, "success", setMessage)
-           // console.log(resp.data.files)
-           const resp2 = await window.electronAPI.updateFiles(resp.data.files)
-           if (!resp2.success){
-               // console.log(resp2.error)
-               handleMessage(resp2.error, "warning", setMessage)
-               return
-           }
-           // await refreshQuota(setQuota, setMessage, setLoader)
-           await handleRefresh()
+           console.log(data)
+           // const formData = new FormData();
+           // for (const image of data.images) {
+           //     const buffer = image.buffer
+           //     const blob = new Blob([buffer], { type: `image/${image.extension}` })
+           //     formData.append('files', blob, image.name);
+           // }
+           // formData.append("folders", JSON.stringify(data.folders))
+           // formData.append("annotations", JSON.stringify(data.annotations))
+           //
+           // // console.log([...formData.entries()]);
+           //
+           // const resp = await axiosInstance.post("desktop/files", formData)
+           // // // console.log(resp.data)
+           // handleMessage(resp.data.message, "success", setMessage)
+           // // console.log(resp.data.files)
+           // const resp2 = await window.electronAPI.updateFiles(resp.data.files)
+           // if (!resp2.success){
+           //     // console.log(resp2.error)
+           //     handleMessage(resp2.error, "warning", setMessage)
+           //     return
+           // }
+           // // await refreshQuota(setQuota, setMessage, setLoader)
+           // await handleRefresh()
            // handleMessage("Folder/ File delete successfully", "success", setMessage)
            // const data = response.data
            // const buffer = data.buffer
@@ -287,7 +287,7 @@ export default function ButtonLinks({ setLoader, setScreen, setIsPop, setMessage
             {
                 checkedIds.length > 0 ? (
                     <>
-                        <Button text="Upload to My Drive" status="active" onClick={handleCopy} />
+                        <Button text="Upload to My Drive" status="active" onClick={() => setSharedAction(true)} />
                         {/*<Button text="Move to My Drive" status="active" onClick={handleMove} />*/}
                         {/*<div className={styles.main} onClick={handleDelete}>*/}
                         {/*    Delete Selected*/}
