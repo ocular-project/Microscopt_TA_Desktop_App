@@ -530,7 +530,7 @@ export default function Folders({ folders, setLoader, setMessage, setFolders, se
                 !isClosed && (
                    <Loader isClosed={isClosed} setIsClosed={setIsClosed} setSharedAction={setSharedAction}
                            setLoader={setLoader} setMessage={setMessage} setCheckedIds={setCheckedIds}
-                           checkedIds={checkedIds} sharedAction={sharedAction}/>
+                           checkedIds={checkedIds} sharedAction={sharedAction} setFolders={setFolders}/>
                 )
             }
 

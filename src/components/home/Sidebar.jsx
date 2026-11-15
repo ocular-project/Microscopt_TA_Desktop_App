@@ -7,6 +7,9 @@ import {useEffect, useMemo} from "react";
 import {faMobileScreen} from "@fortawesome/free-solid-svg-icons/faMobileScreen";
 import { configg } from "../utils/files/config.js";
 import {IoIosCloudOutline} from "react-icons/io";
+import {
+  MonitorSpeaker
+} from 'lucide-react';
 
 export default function Sidebar({ cat, config, quota }){
 
@@ -72,6 +75,15 @@ export default function Sidebar({ cat, config, quota }){
                                         <div className={styles.linkDiv}>
                                             <FontAwesomeIcon icon={faMobileScreen} />
                                             <span>Connected Devices</span>
+                                        </div>
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/connect_devices" className={getClassName("connect")}>
+                                        <div className={styles.linkDiv}>
+                                            <MonitorSpeaker />
+                                            {/*<FontAwesomeIcon icon={faMobileScreen} />*/}
+                                            <span>How to Connect Devices</span>
                                         </div>
                                     </NavLink>
                                 </li>

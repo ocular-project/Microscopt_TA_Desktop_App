@@ -21,6 +21,7 @@ import Devices from "./components/home/Devices.jsx";
 import Adb from "./Adb.jsx";
 import ModelAnalyzer from "./components/home/model/ModelAnalyzer.jsx";
 import { TriangleAlert, Globe, Download, Loader2 } from "lucide-react";
+import Connect from "./components/home/Connect.jsx";
 
 // --------------------------------------------------
 // ADB SETUP POPUP
@@ -375,6 +376,7 @@ function AppRoutes({ path, setPath }) {
         />
 
         <Route path="/devices" element={<Devices path={path} setPath={setPath}/>} />
+        <Route path="/connect_devices" element={<Connect path={path} setPath={setPath}/>} />
         <Route path="/image" element={<ImageAnnotator />} />
         <Route path="/annotation/:cat/:fileId" element={<ImageView />} />
 

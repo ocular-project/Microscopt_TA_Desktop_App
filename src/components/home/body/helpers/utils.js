@@ -1,4 +1,5 @@
 import axiosInstance from "../../../utils/files/axiosInstance.js";
+import {handleMessage} from "../../../utils/repeating.js";
 
 export async function uploadImage(item, folderLookUp, imageLookUp) {
 
@@ -87,4 +88,23 @@ function handleCatchError (error) {
     }
 
     return message
+}
+
+export async function handleRefresh (setLoader, handleMessage, setMessage, setFolders, folderId) {
+
+    try {
+        const response = await window.electronAPI.getFoldersAndFiles(folderId || null);
+        if (!response.success) {
+             handleMessage(response.error, "error", setMessage)
+             return
+        }
+        setFolders(response.data.folders)
+    }catch (err) {
+    // console.log(err.response)
+    const error = err.response?.data?.error || 'An error occurred'
+    handleMessage(error, "error", setMessage)
+    }finally {
+        setLoader(false)
+    }
+
 }

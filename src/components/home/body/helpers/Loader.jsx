@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {handleMessage} from "../../../utils/repeating.js";
-import {uploadAnnotations, uploadImage} from "./utils.js";
+import {handleRefresh, uploadAnnotations, uploadImage} from "./utils.js";
+import {useParams} from "react-router-dom";
 
 const initialUploads = [
   {
@@ -55,8 +56,9 @@ const initialUploads = [
 ];
 
 export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoader, setCheckedIds, setMessage,
-                                   checkedIds, sharedAction }){
+                                   checkedIds, sharedAction, setFolders }){
 
+    const { folderId } = useParams();
     const [uploads, setUploads] = useState([]);
     const [isMinimized, setIsMinimized] = useState(false);
     const [imagesData, setImagesData] = useState(null)
@@ -79,41 +81,64 @@ export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoad
     const errorItem = uploads.find((u) => u.stage === 'image_error' || u.stage === 'annotation_error');
     const pausedItems = uploads.filter((u) => u.stage === 'paused').length;
     const isHalted = Boolean(errorItem);
+    const isFinalizing = useRef(false);
     const isQueueHalted = useRef(false);
 
-    // useEffect(() => {
-    //     if (uploads.length === 0) return;
-    //
-    //     // 1. All items completed with zero errors -> auto-close widget
-    //     const allCompleted = uploads.every((u) => u.stage === 'completed');
-    //     if (allCompleted) {
-    //       const closeTimer = setTimeout(() => {
-    //         setIsClosed(true);
-    //       }, 1000);
-    //       return () => clearTimeout(closeTimer);
-    //     }
-    //
-    //     // 2. Check if an error occurred
-    //     const errorIdx = uploads.findIndex(
-    //       (u) => u.stage === 'image_error' || u.stage === 'annotation_error'
-    //     );
-    //
-    //     console.log(uploads)
-    //     console.log(errorIdx)
-    //
-    //     if (errorIdx !== -1) {
-    //       // If error happened on the FIRST item (and no items were completed before it)
-    //       if (errorIdx === 0 && completedItems === 0) {
-    //         setIsClosed(true);
-    //         handleMessage(uploads[0].errorMsg, "error", setMessage)
-    //       } else if (uploads.some((u) => u.stage !== 'image_error' && u.stage !== 'annotation_error')) {
-    //         // Error happened after the first item: keep popup open & filter list to ONLY failed items
-    //         setUploads((prev) =>
-    //           prev.filter((u) => u.stage === 'image_error' || u.stage === 'annotation_error')
-    //         );
-    //       }
-    //     }
-    // }, [uploads, completedItems]);
+    async function updateFiles() {
+        const ups = uploads.map(file => file.imageId)
+        try{
+            const resp2 = await window.electronAPI.updateFiles(ups)
+            if (!resp2.success){
+               // console.log(resp2.error)
+               handleMessage(resp2.error, "warning", setMessage)
+               return false
+           }
+            setCheckedIds([])
+            await handleRefresh(setLoader, handleMessage, setMessage, setFolders, folderId)
+            return true
+        } catch(error) {
+            handleMessage(`Error: ${error.message || error}`, "error", setMessage);
+            return false
+        }
+    }
+
+    useEffect(() => {
+        if (uploads.length === 0) return;
+
+        const isCompleted = uploads.every(
+            item => item.stage === 'completed'
+        );
+
+        const hasErrors = uploads.some(item =>
+            item.stage === 'image_error' ||
+            item.stage === 'annotation_error'
+        );
+
+        if (isCompleted) {
+            isFinalizing.current = true;
+            // console.log("Entire upload process completed!");
+
+            // Update UI
+            setLoader(true)
+            const timer = setTimeout(async () => {
+                try {
+                    await updateFiles();
+                } finally {
+                    setIsClosed(true);
+                }
+            }, 2000);
+
+        return () => clearTimeout(timer);
+
+        }
+
+        if (hasErrors) {
+            console.log("Upload process stopped due to an error.");
+
+            // Show error notification
+        }
+
+    }, [uploads]);
 
     useEffect(() => {
         setIsWaitingToStart(true);
