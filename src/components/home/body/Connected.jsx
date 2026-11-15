@@ -287,7 +287,7 @@ export default function Connected() {
               <Sparkles className="w-3.5 h-3.5 text-[#F69220]" />
               <span>Interactive Step-by-Step Walkthrough</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-lx sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight">
               How to Check & Enable{' '}
               <span className="text-[#F69220]">USB Debugging</span> on Android
             </h1>
@@ -361,7 +361,7 @@ export default function Connected() {
                     Phase 1 • Status Check
                   </span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">
+                <h2 className="text-xl sm:text-xl font-bold text-slate-900 mt-0.5">
                   Check if USB Debugging is Already Enabled
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
@@ -598,7 +598,7 @@ export default function Connected() {
                     Phase 2 • Unlock Hidden Menu
                   </span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">
+                <h2 className="text-xl sm:text-xl font-bold text-slate-900 mt-0.5">
                   Activate Developer Options (Tap Build Number 7 Times)
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
@@ -848,7 +848,7 @@ export default function Connected() {
                     Phase 3 • Toggle & Authorize
                   </span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">
+                <h2 className="text-xl sm:text-xl font-bold text-slate-900 mt-0.5">
                   Enable USB Debugging & Authorize Your Computer
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
