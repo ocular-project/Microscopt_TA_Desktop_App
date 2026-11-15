@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {handleMessage} from "../../../utils/repeating.js";
-import {uploadImage} from "./utils.js";
+import {uploadAnnotations, uploadImage} from "./utils.js";
 
 const initialUploads = [
   {
@@ -131,9 +131,11 @@ export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoad
             imagesData.folders.map(item => [item._id, item])
         );
 
+        // console.log(imagesData.annotations)
         const annoLookUp = new Map(
-            imagesData.annotations.map(item => [item._id, item])
+            imagesData.annotations.map(item => [item.imageId, item])
         );
+        // console.log(annoLookUp)
 
         const imagesLookUp = new Map(
             imagesData.images.map(item => [item._id, item])
@@ -237,10 +239,12 @@ export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoad
                 // STAGE 2: Annotation upload
                 else if (activeItem.stage === 'uploading_annotation') {
 
-                    // Replace with your actual annotation upload function
-                    const annotationResult = Math.random() > 0.35;
+                    const annotationResult = await uploadAnnotations(activeItem, annoLookUp)
 
-                    if (!annotationResult) {
+                    // Replace with your actual annotation upload function
+                    // const annotationResult = Math.random() > 0.35;
+
+                    if (!annotationResult.success) {
 
                         isQueueHalted.current = true;
 
@@ -250,7 +254,7 @@ export default function Loader({ isClosed, setIsClosed, setSharedAction, setLoad
                                     ? {
                                         ...item,
                                         stage: 'annotation_error',
-                                        errorMsg: 'Image uploaded, but annotation sync failed. Queue halted.'
+                                        errorMsg: `${annotationResult.error}. Queue halted.`
                                     }
                                     : item
                             )

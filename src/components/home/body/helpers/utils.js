@@ -15,39 +15,76 @@ export async function uploadImage(item, folderLookUp, imageLookUp) {
         formData.append('file', blob, image.name);
         formData.append("folder", JSON.stringify(folder))
 
-        const resp = await axiosInstance.post("desktop/file", formData)
+        const resp = await axiosInstance.post("desktop/fileUpload", formData)
 
         return {
             success:true,
             message: resp.data.message
         }
 
-    }catch (error) {
+    }
+    catch (error) {
         // console.error(error);
 
-        const status = error.response?.status || 500;
-
-        let message;
-
-        switch (status) {
-            case 400:
-                message = error.response?.data?.error || "Invalid upload request.";
-                break;
-
-            case 500:
-                message = "Something went wrong on the server. Please try again later.";
-                break;
-
-            default:
-                message = error.response?.data?.error || error.message || "Image upload failed.";
-        }
+        const message = handleCatchError(error)
 
         // console.log(message)
 
         return {
             success: false,
-            error: message,
-            status
+            error: message
         };
     }
+}
+
+export async function uploadAnnotations(item, annoLookUp) {
+    const itemId = item.imageId
+    const annotations = annoLookUp.get(itemId)
+
+    // console.log(annotations)
+
+    try {
+        const resp = await axiosInstance.post("desktop/annotationsUpload", annotations)
+
+        // console.log(resp)
+
+        return {
+            success:true,
+            message: resp.data.message
+        }
+
+    }
+    catch (error) {
+        // console.error(error);
+
+        const message = handleCatchError(error)
+
+        console.log(message)
+
+        return {
+            success: false,
+            error: message
+        };
+    }
+}
+
+function handleCatchError (error) {
+    const status = error.response?.status || 500;
+
+    let message;
+
+    switch (status) {
+        case 400:
+            message = error.response?.data?.error || "Invalid upload request.";
+            break;
+
+        case 500:
+            message = "Something went wrong on the server. Please try again later.";
+            break;
+
+        default:
+            message = error.response?.data?.error || error.message || "Image upload failed.";
+    }
+
+    return message
 }
