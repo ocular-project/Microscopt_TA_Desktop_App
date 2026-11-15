@@ -313,7 +313,7 @@ export default function OtherSidebar({ setZoom, fitImageToViewport, ZOOM_STEP, s
                                 <h3 className="text-sm font-semibold text-slate-700">
                                     Data Synchronisation
                                 </h3>
-                                <div className="border-t pt-4 border-slate-200 grid grid-cols-2 gap-2">
+                                <div className="border-t pt-4 border-slate-200 grid grid-cols-1 gap-2">
                                     <div className={`${styles.buttons} ${styles.active}`} onClick={handleDownload}>
                                         <span>Download Latest Changes</span>
                                     </div>

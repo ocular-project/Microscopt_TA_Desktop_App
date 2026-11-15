@@ -215,7 +215,7 @@ export default function ImageView(){
                     <Header setIsClosed={setIsClosed} width={width} setZoom={setZoom} fitImageToViewport={fitImageToViewport} ZOOM_STEP={ZOOM_STEP} other={other}
                          setShare={setShare} setAnnotations={setAnnotations} annotations={annotations} setLoader={setLoader}
                         setMessage={setMessage} msg={msg} annotators={annotators} cred={cred} setMsg={setMsg} annotator={annotator} back={back}
-                        onAction={triggerAction} cat={cat} file={file}
+                        onAction={triggerAction} cat={cat} file={file} setSync={setSync}
                     />
                 </header>
 

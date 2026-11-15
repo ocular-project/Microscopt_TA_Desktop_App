@@ -171,6 +171,7 @@ export async function handleLoadFeedbacking(cat, fb, setLoader, setAnnotator, se
 }
 
  export async function handleUploading(setLoader, fileId, setMessage, navigate) {
+        console.log(fileId)
         setLoader(true)
         try {
             const response = await window.electronAPI.getAllAnnotations(fileId)
@@ -198,7 +199,7 @@ export async function handleLoadFeedbacking(cat, fb, setLoader, setAnnotator, se
                 handleBack(navigate)
             }, 500)
         }catch (error) {
-            console.log(error)
+            console.log(error.response?.data)
             handleMessage(`Error: ${error.response?.data?.error || error}`, "error", setMessage);
         }finally {
             setLoader(false)

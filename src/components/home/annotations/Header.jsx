@@ -65,15 +65,21 @@ export default function Header({ setIsClosed, width, setZoom, fitImageToViewport
                    }
                    if (file.isOnline){
                        setSync(true)
+                   }else {
+                       handleMessage("Image annotations have been saved", "success", setMessage)
+                       setTimeout(() => {
+                           handleBack(navigate)
+                       }, 500)
                    }
                }
                else {
                    await axiosInstance.post('/save-annotations', obj)
+                   handleMessage("Image annotations have been saved", "success", setMessage)
+                   setTimeout(() => {
+                       handleBack(navigate)
+                   }, 500)
                }
-               handleMessage("Image annotations have been saved", "success", setMessage)
-               setTimeout(() => {
-                   handleBack(navigate)
-               }, 1000)
+
                // handleBack(navigate)
            }catch (err) {
                console.log(file)
